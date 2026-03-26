@@ -1,2 +1,2 @@
 # Html-s
-Html fot kids
+Html for kids
