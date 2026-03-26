@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SlimSpel Groep 7 🎮</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f0f1a;
+  --card: #1e1e35;
+  --border: #2e2e50;
+  --accent1: #f72585;
+  --accent2: #7209b7;
+  --accent4: #4361ee;
+  --accent5: #4cc9f0;
+  --green: #06d6a0;
+  --yellow: #ffd166;
+  --red: #ef233c;
+  --text: #e8e8ff;
+  --muted: #8888aa;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+.bg-stars {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,.5) 0%,transparent 100%),
+    radial-gradient(1px 1px at 25% 55%, rgba(255,255,255,.3) 0%,transparent 100%),
+    radial-gradient(1px 1px at 45% 85%, rgba(255,255,255,.4) 0%,transparent 100%),
+    radial-gradient(1px 1px at 65% 25%, rgba(255,255,255,.35) 0%,transparent 100%),
+    radial-gradient(1px 1px at 80% 65%, rgba(255,255,255,.3) 0%,transparent 100%),
+    radial-gradient(1px 1px at 92% 40%, rgba(255,255,255,.45) 0%,transparent 100%),
+    radial-gradient(1px 1px at 35% 10%, rgba(255,255,255,.3) 0%,transparent 100%);
+}
+#topbar {
+  position: sticky; top: 0; z-index: 500;
+  background: rgba(15,15,26,.97);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 20px;
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+.logo {
+  font-family: 'Fredoka One', cursive; font-size: 1.4rem;
+  background: linear-gradient(135deg,var(--accent1),var(--accent5));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  white-space: nowrap;
+}
+#player-info { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 180px; }
+#avi {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: linear-gradient(135deg,var(--accent1),var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; flex-shrink: 0;
+}
+#xp-sec { flex: 1; }
+#xp-lbl { font-size: .72rem; color: var(--muted); display: flex; justify-content: space-between; margin-bottom: 3px; }
+#xp-bar-out { height: 7px; background: var(--border); border-radius: 99px; overflow: hidden; }
+#xp-bar-in {
+  height: 100%;
+  background: linear-gradient(90deg,var(--accent1),var(--accent5));
+  border-radius: 99px; transition: width .5s ease; width: 0%;
+}
+#stats-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.sb {
+  display: flex; align-items: center; gap: 4px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 99px; padding: 4px 10px;
+  font-size: .78rem; font-weight: 700; white-space: nowrap;
+}
+#app { position: relative; z-index: 10; max-width: 920px; margin: 0 auto; padding: 24px 16px 80px; }
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* WELCOME */
+#ws { text-align: center; padding: 48px 0; }
+#ws h1 {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(2.2rem,8vw,3.8rem);
+  background: linear-gradient(135deg,var(--accent1),var(--accent5));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: 10px; animation: popIn .5s ease;
+}
+@keyframes popIn { from { transform: scale(.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+#ws > p { color: var(--muted); font-size: 1.05rem; margin-bottom: 32px; }
+#name-setup {
+  display: flex; gap: 10px; max-width: 400px;
+  margin: 0 auto 36px; justify-content: center; flex-wrap: wrap;
+}
+#name-setup input {
+  flex: 1; min-width: 200px; padding: 13px 18px;
+  border-radius: 12px; border: 2px solid var(--border);
+  background: var(--card); color: var(--text);
+  font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 600;
+  outline: none; transition: border-color .2s;
+}
+#name-setup input:focus { border-color: var(--accent1); }
+.feat-grid {
+  display: grid; grid-template-columns: repeat(auto-fill,minmax(130px,1fr));
+  gap: 12px; max-width: 620px; margin: 0 auto;
+}
+.feat-tile {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px 10px; text-align: center;
+}
+.feat-tile .fi { font-size: 1.8rem; display: block; margin-bottom: 6px; }
+.feat-tile .ft { font-weight: 800; font-size: .88rem; }
+.feat-tile .fd { color: var(--muted); font-size: .72rem; margin-top: 3px; }
+
+/* SUBJECTS */
+#ss h2 { font-family: 'Fredoka One', cursive; font-size: 1.8rem; text-align: center; margin-bottom: 4px; }
+.subtitle { color: var(--muted); text-align: center; margin-bottom: 18px; font-size: .92rem; }
+#streak-bar { display: flex; gap: 6px; justify-content: center; margin-bottom: 22px; }
+.sd {
+  width: 34px; height: 34px; border-radius: 8px;
+  background: var(--card); border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .85rem; font-weight: 800; color: var(--muted); transition: all .3s;
+}
+.sd.done { background: linear-gradient(135deg,var(--yellow),#ff9f1c); border-color: var(--yellow); color: #000; }
+#subj-grid {
+  display: grid; grid-template-columns: repeat(auto-fill,minmax(168px,1fr));
+  gap: 14px; margin-bottom: 36px;
+}
+.sc {
+  background: var(--card); border: 2px solid var(--border); border-radius: 20px;
+  padding: 22px 14px 18px; text-align: center; cursor: pointer;
+  transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+  user-select: none;
+}
+.sc:hover { transform: translateY(-4px); border-color: var(--ca,var(--accent1)); box-shadow: 0 8px 28px rgba(0,0,0,.4); }
+.sc:active { transform: translateY(-1px); }
+.sc .se { font-size: 2.4rem; display: block; margin-bottom: 9px; }
+.sc .sn { font-weight: 800; font-size: 1rem; margin-bottom: 3px; }
+.sc .sd2 { font-size: .73rem; color: var(--muted); line-height: 1.4; }
+.sc .sp { margin-top: 11px; height: 5px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.sc .spf { height: 100%; background: var(--ca,var(--accent1)); border-radius: 99px; transition: width .5s; }
+.sc .ss { margin-top: 7px; font-size: .78rem; color: var(--yellow); }
+#ach-sec { margin-top: 8px; }
+#ach-sec h3 { font-family: 'Fredoka One', cursive; font-size: 1.25rem; margin-bottom: 14px; }
+#ach-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(118px,1fr)); gap: 10px; }
+.ac {
+  background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+  padding: 12px 8px; text-align: center;
+  filter: grayscale(1); opacity: .35; transition: all .3s;
+}
+.ac.unlocked { filter: none; opacity: 1; border-color: var(--yellow); background: rgba(255,209,102,.07); }
+.ac .ai { font-size: 1.7rem; display: block; margin-bottom: 5px; }
+.ac .an { font-size: .73rem; font-weight: 800; }
+.ac .ad { font-size: .65rem; color: var(--muted); margin-top: 2px; }
+
+/* QUIZ */
+#qs { max-width: 680px; margin: 0 auto; }
+#qh { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+#back-btn {
+  background: var(--card); border: 1px solid var(--border); color: var(--text);
+  padding: 8px 14px; border-radius: 10px; cursor: pointer;
+  font-family: 'Nunito', sans-serif; font-weight: 700; font-size: .88rem; transition: background .2s;
+}
+#back-btn:hover { background: var(--border); }
+#qtitle { font-family: 'Fredoka One', cursive; font-size: 1.35rem; flex: 1; }
+#qcount { font-size: .82rem; color: var(--muted); white-space: nowrap; }
+#qpb { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; margin-bottom: 22px; }
+#qpi { height: 100%; background: linear-gradient(90deg,var(--accent1),var(--accent5)); border-radius: 99px; transition: width .4s ease; }
+#qcard {
+  background: var(--card); border: 2px solid var(--border); border-radius: 20px;
+  padding: 26px 22px; margin-bottom: 18px; animation: slideUp .3s ease;
+}
+@keyframes slideUp { from { transform: translateY(18px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+#qcat { font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--accent1); margin-bottom: 9px; }
+#qtext { font-size: 1.12rem; font-weight: 700; line-height: 1.6; margin-bottom: 6px; }
+#qhint { font-size: .83rem; color: var(--muted); font-style: italic; margin-bottom: 20px; }
+#agrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width:480px) { #agrid { grid-template-columns: 1fr; } }
+.abtn {
+  background: #1a1a30; border: 2px solid var(--border); color: var(--text);
+  padding: 14px 15px; border-radius: 13px; cursor: pointer;
+  font-family: 'Nunito', sans-serif; font-weight: 700; font-size: .93rem;
+  text-align: left; line-height: 1.4;
+  transition: border-color .15s, background .15s, transform .1s;
+}
+.abtn:hover:not([disabled]) { border-color: var(--accent4); background: rgba(67,97,238,.18); transform: translateY(-2px); }
+.abtn:active:not([disabled]) { transform: translateY(0); }
+.abtn.correct { border-color: var(--green) !important; background: rgba(6,214,160,.18) !important; color: var(--green) !important; }
+.abtn.wrong   { border-color: var(--red)   !important; background: rgba(239,35,60,.18)  !important; color: var(--red)   !important; }
+.abtn[disabled] { cursor: not-allowed; opacity: .85; }
+#fbbox {
+  background: var(--card); border-radius: 15px; padding: 15px 18px;
+  margin-bottom: 14px; border-left: 4px solid var(--green); display: none;
+  animation: slideUp .2s ease;
+}
+#fbbox.bad { border-color: var(--red); }
+#fbtitle { font-weight: 800; margin-bottom: 4px; font-size: .97rem; }
+#fbtext  { font-size: .87rem; color: var(--muted); line-height: 1.5; }
+.xtag {
+  display: inline-block; background: linear-gradient(135deg,var(--accent1),var(--accent2));
+  color: #fff; padding: 2px 10px; border-radius: 99px; font-size: .78rem; font-weight: 800; margin-top: 6px;
+}
+#nxtbtn {
+  width: 100%; padding: 14px; border-radius: 14px; border: none;
+  background: linear-gradient(135deg,var(--accent1),var(--accent2)); color: #fff;
+  font-family: 'Fredoka One', cursive; font-size: 1.08rem; cursor: pointer;
+  transition: transform .2s, filter .2s; display: none;
+}
+#nxtbtn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+
+/* RESULTS */
+#rs { text-align: center; max-width: 500px; margin: 0 auto; }
+#remi { font-size: 5rem; display: block; margin-bottom: 14px; animation: popIn .5s ease; }
+#rtitle {
+  font-family: 'Fredoka One', cursive; font-size: 2rem; margin-bottom: 8px;
+  background: linear-gradient(135deg,var(--accent1),var(--accent5));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+#rsub { color: var(--muted); margin-bottom: 26px; font-size: .95rem; }
+#rstats { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 26px; }
+.rst { background: var(--card); border: 1px solid var(--border); border-radius: 15px; padding: 16px 8px; }
+.rst .rv { font-family: 'Fredoka One', cursive; font-size: 1.9rem; display: block; }
+.rst .rl { font-size: .72rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+
+/* BUTTONS */
+.btnp {
+  display: inline-block; padding: 13px 30px; border-radius: 13px; border: none;
+  background: linear-gradient(135deg,var(--accent1),var(--accent2)); color: #fff;
+  font-family: 'Fredoka One', cursive; font-size: 1.05rem; cursor: pointer;
+  transition: transform .2s, box-shadow .2s;
+}
+.btnp:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(247,37,133,.38); }
+.btns {
+  display: inline-block; padding: 13px 30px; border-radius: 13px;
+  border: 2px solid var(--border); background: transparent; color: var(--text);
+  font-family: 'Fredoka One', cursive; font-size: 1.05rem; cursor: pointer;
+  transition: background .2s; margin-left: 10px;
+}
+.btns:hover { background: var(--card); }
+
+/* TOAST */
+#toast {
+  position: fixed; top: 74px; left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: linear-gradient(135deg,var(--accent1),var(--accent2));
+  color: #fff; padding: 13px 26px; border-radius: 15px;
+  font-family: 'Fredoka One', cursive; font-size: 1.1rem;
+  z-index: 9999; opacity: 0; pointer-events: none; transition: all .35s ease;
+  box-shadow: 0 8px 28px rgba(247,37,133,.45); white-space: nowrap;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.xpop {
+  position: fixed; font-family: 'Fredoka One', cursive;
+  font-size: 1rem; color: var(--yellow); pointer-events: none; z-index: 9999;
+  animation: floatUp 1.1s ease forwards;
+}
+@keyframes floatUp { 0% { opacity:1; transform:translateY(0) scale(1); } 100% { opacity:0; transform:translateY(-70px) scale(1.4); } }
+
+@media (max-width:600px) {
+  #subj-grid { grid-template-columns: repeat(2,1fr); }
+  #topbar { padding: 8px 10px; gap: 8px; }
+  .sb:not(:first-child) { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-stars"></div>
+
+<div id="topbar">
+  <div class="logo">🎮 SlimSpel</div>
+  <div id="player-info">
+    <div id="avi">🦊</div>
+    <div id="xp-sec">
+      <div id="xp-lbl">
+        <span id="pname">Speler</span>
+        <span>Level <span id="lvlsp">1</span> · <span id="xpsp">0</span> XP</span>
+      </div>
+      <div id="xp-bar-out"><div id="xp-bar-in"></div></div>
+    </div>
+  </div>
+  <div id="stats-row">
+    <div class="sb">🔥 <span id="sbst">0</span></div>
+    <div class="sb">⭐ <span id="sbsr">0</span></div>
+    <div class="sb">✅ <span id="sbco">0</span></div>
+  </div>
+</div>
+
+<div id="app">
+
+  <!-- WELCOME -->
+  <div id="ws" class="screen active">
+    <h1>SlimSpel Groep 7 🚀</h1>
+    <p>Leer rekenen, taal, topo, spelling, Engels, AI, biologie, meetkunde & verkeer — door te spelen!</p>
+    <div id="name-setup">
+      <input type="text" id="ninput" placeholder="Jouw naam..." maxlength="20" />
+      <button class="btnp" id="startbtn">Spelen! 🎮</button>
+    </div>
+    <div class="feat-grid">
+      <div class="feat-tile"><span class="fi">📚</span><div class="ft">9 Vakken</div><div class="fd">Taal, Rekenen, Topo & meer</div></div>
+      <div class="feat-tile"><span class="fi">⭐</span><div class="ft">XP & Levels</div><div class="fd">Verdien punten per vraag</div></div>
+      <div class="feat-tile"><span class="fi">🔥</span><div class="ft">Streaks</div><div class="fd">Bonus XP bij reeksen</div></div>
+      <div class="feat-tile"><span class="fi">🏆</span><div class="ft">Achievements</div><div class="fd">15 badges te unlocken</div></div>
+      <div class="feat-tile"><span class="fi">🤖</span><div class="ft">AI Sectie</div><div class="fd">Leer slim AI gebruiken</div></div>
+      <div class="feat-tile"><span class="fi">🚦</span><div class="ft">Verkeer</div><div class="fd">Theorie voor verkeersexamen</div></div>
+    </div>
+  </div>
+
+  <!-- SUBJECTS -->
+  <div id="ss" class="screen">
+    <h2 id="greet">Welkom! 👋</h2>
+    <p class="subtitle">Kies een vak — elke vraag levert XP op!</p>
+    <div id="streak-bar"></div>
+    <div id="subj-grid"></div>
+    <div id="ach-sec">
+      <h3>🏆 Achievements</h3>
+      <div id="ach-grid"></div>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="qs" class="screen">
+    <div id="qh">
+      <button id="back-btn">← Terug</button>
+      <div id="qtitle">Vak</div>
+      <div id="qcount">Vraag 1/10</div>
+    </div>
+    <div id="qpb"><div id="qpi" style="width:0%"></div></div>
+    <div id="qcard">
+      <div id="qcat"></div>
+      <div id="qtext"></div>
+      <div id="qhint"></div>
+      <div id="agrid"></div>
+    </div>
+    <div id="fbbox">
+      <div id="fbtitle"></div>
+      <div id="fbtext"></div>
+      <div class="xtag" id="xtag">+15 XP</div>
+    </div>
+    <button id="nxtbtn">Volgende vraag →</button>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="rs" class="screen">
+    <span id="remi">🎉</span>
+    <h2 id="rtitle">Geweldig!</h2>
+    <p id="rsub">Ronde afgerond!</p>
+    <div id="rstats">
+      <div class="rst"><span class="rv" id="rvsco" style="color:var(--green)">-</span><span class="rl">Score</span></div>
+      <div class="rst"><span class="rv" id="rvxp" style="color:var(--accent1)">-</span><span class="rl">XP verdiend</span></div>
+      <div class="rst"><span class="rv" id="rvst" style="color:var(--yellow)">-</span><span class="rl">Sterren</span></div>
+    </div>
+    <button class="btnp" id="againbtn">Nog een ronde 🔄</button>
+    <button class="btns" id="homebtn">Kies vak 📚</button>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+const BANK = {
+  taal: [
+    {cat:"Woordsoorten",q:"Wat is het werkwoord in: 'De hond rent door de tuin'?",a:["rent","hond","tuin","de"],c:0,hint:"Een werkwoord beschrijft een handeling.",ex:"'Rent' is het werkwoord — het beschrijft wat de hond doet."},
+    {cat:"Woordsoorten",q:"Welk woord is een zelfstandig naamwoord?",a:["mooi","school","snel","maar"],c:1,hint:"Een persoon, dier, ding of plek.",ex:"'School' is een zelfstandig naamwoord — een concrete plek."},
+    {cat:"Woordsoorten",q:"Wat is een bijvoeglijk naamwoord in 'De grote rode appel'?",a:["De","appel","grote","een"],c:2,hint:"Het beschrijft hoe iets is.",ex:"'Grote' beschrijft de appel — bijvoeglijk naamwoord!"},
+    {cat:"Zinsbouw",q:"Wat is het onderwerp in 'Mijn broer speelt gitaar'?",a:["speelt","gitaar","Mijn broer","Mijn"],c:2,hint:"Wie voert de handeling uit?",ex:"'Mijn broer' is het onderwerp — hij speelt gitaar."},
+    {cat:"Woordsoorten",q:"Welk woord is een voornaamwoord?",a:["lopen","groot","hij","maar"],c:2,hint:"Het vervangt een naam.",ex:"'Hij' vervangt een naam — voornaamwoord!"},
+    {cat:"Zinsbouw",q:"Wat is het gezegde in 'Lisa eet een boterham'?",a:["Lisa","een boterham","eet een boterham","eet"],c:2,hint:"Wat doet het onderwerp?",ex:"'Eet een boterham' is het gezegde — het vertelt wat Lisa doet."},
+    {cat:"Woordsoorten",q:"Wat is een lidwoord?",a:["op","de","rennen","mooi"],c:1,hint:"Er zijn maar twee in het Nederlands.",ex:"'De' en 'het' zijn de twee lidwoorden."},
+    {cat:"Zinsbouw",q:"Welke zin is een vraagzin?",a:["Kom morgen!","Ga naar huis.","Wanneer begint de les?","De les is begonnen."],c:2,hint:"Eindigt op een vraagteken.",ex:"'Wanneer begint de les?' is een vraagzin."},
+    {cat:"Begrijpend lezen",q:"Wat doe je als je een tekst 'scant'?",a:["Alles langzaam lezen","Snel specifieke info zoeken","De tekst kopiëren","De tekst vertalen"],c:1,hint:"Je zoekt iets specifieks.",ex:"Scannen = snel kijken voor een specifiek woord of getal."},
+    {cat:"Begrijpend lezen",q:"Welk leesdoel hoort bij 'globaal lezen'?",a:["Elk woord begrijpen","Hoofdlijnen begrijpen","Alles van buiten leren","Spelfouten zoeken"],c:1,hint:"Je leest voor het grote plaatje.",ex:"Bij globaal lezen wil je snel begrijpen waar een tekst over gaat."},
+  ],
+  rekenen: [
+    {cat:"Procenten",q:"Wat is 25% van 80?",a:["15","20","25","30"],c:1,hint:"25% = ¼ — deel door 4.",ex:"80 ÷ 4 = 20."},
+    {cat:"Procenten",q:"Een trui kost €60 met 10% korting. Wat betaal je?",a:["€6","€50","€54","€56"],c:2,hint:"10% aftrekken van €60.",ex:"10% van €60 = €6. €60 - €6 = €54."},
+    {cat:"Breuken",q:"Hoeveel is ½ + ¼?",a:["¾","⅔","1","⅜"],c:0,hint:"½ = ²⁄₄.",ex:"²⁄₄ + ¼ = ¾."},
+    {cat:"Metriek stelsel",q:"Hoeveel centimeter is 3,5 meter?",a:["35","305","350","3500"],c:2,hint:"1 meter = 100 cm.",ex:"3,5 × 100 = 350 cm."},
+    {cat:"Metriek stelsel",q:"Hoeveel gram is 2 kilogram?",a:["20","200","2000","20000"],c:2,hint:"1 kg = 1000 gram.",ex:"2 × 1000 = 2000 gram."},
+    {cat:"Procenten",q:"Wat is 50% van 200?",a:["50","100","150","25"],c:1,hint:"50% = de helft.",ex:"200 ÷ 2 = 100."},
+    {cat:"Breuken",q:"¾ van 20 is...?",a:["15","12","10","9"],c:0,hint:"¼ van 20 × 3.",ex:"5 × 3 = 15."},
+    {cat:"Getallen",q:"Wat is 345.678 + 123.456?",a:["469.134","469.034","468.134","470.134"],c:0,hint:"Tel kolom voor kolom op.",ex:"345.678 + 123.456 = 469.134."},
+    {cat:"Metriek stelsel",q:"Hoeveel milliliter is 1,5 liter?",a:["150","1500","15000","15"],c:1,hint:"1 liter = 1000 ml.",ex:"1,5 × 1000 = 1500 ml."},
+    {cat:"Procenten",q:"Van €100 naar €80 — hoeveel procent korting?",a:["10%","15%","20%","25%"],c:2,hint:"Verschil ÷ originele prijs × 100.",ex:"€20 ÷ €100 = 20%."},
+  ],
+  topo: [
+    {cat:"Provincies NL",q:"Wat is de hoofdstad van Zeeland?",a:["Vlissingen","Middelburg","Goes","Terneuzen"],c:1,hint:"Klinkt als 'midden van de burg'.",ex:"Middelburg is de hoofdstad van Zeeland."},
+    {cat:"Provincies NL",q:"Welke provincie ligt het meest noordoostelijk?",a:["Friesland","Groningen","Drenthe","Noord-Holland"],c:1,hint:"Zelfde naam als de hoofdstad.",ex:"Groningen is de meest noordoostelijke provincie."},
+    {cat:"Rivieren NL",q:"Welke rivier stroomt door Rotterdam?",a:["Maas","Rijn","IJssel","Schelde"],c:0,hint:"Rotterdam: Nieuwe ...",ex:"De Maas (Nieuwe Maas) stroomt door Rotterdam."},
+    {cat:"Europa",q:"Wat is de hoofdstad van Duitsland?",a:["München","Hamburg","Frankfurt","Berlijn"],c:3,hint:"Begint met een B.",ex:"Berlijn is de hoofdstad van Duitsland."},
+    {cat:"Europa",q:"Welk land grenst NIET aan Nederland?",a:["Duitsland","België","Luxemburg","Frankrijk"],c:3,hint:"Nederland heeft maar 2 landburen.",ex:"Nederland grenst aan Duitsland en België."},
+    {cat:"Provincies NL",q:"Welke twee provincies heetten samen 'Holland'?",a:["Gelderland & Utrecht","Noord & Zuid-Holland","Noord-Brabant & Zeeland","Flevoland & Friesland"],c:1,hint:"Amsterdam en Den Haag liggen erin.",ex:"Noord-Holland en Zuid-Holland waren vroeger samen één gewest."},
+    {cat:"Europa",q:"Wat is de hoofdstad van Frankrijk?",a:["Lyon","Marseille","Parijs","Bordeaux"],c:2,hint:"Eiffeltoren staat hier.",ex:"Parijs is de hoofdstad van Frankrijk."},
+    {cat:"Rivieren NL",q:"Welke rivier komt via Arnhem Nederland in?",a:["Maas","Schelde","Rijn","IJssel"],c:2,hint:"4 letters, vanuit Duitsland.",ex:"De Rijn stroomt vanuit Duitsland via Arnhem Nederland in."},
+    {cat:"Provincies NL",q:"Hoeveel provincies heeft Nederland?",a:["10","11","12","13"],c:2,hint:"Flevoland was de laatste.",ex:"Nederland heeft 12 provincies."},
+    {cat:"Europa",q:"Welk land is het grootst in West-Europa (excl. Rusland)?",a:["Duitsland","Frankrijk","Spanje","Italië"],c:1,hint:"Baguettes & Eiffeltoren.",ex:"Frankrijk is het grootst in West-Europa."},
+  ],
+  spelling: [
+    {cat:"dt-regels",q:"'Hij _____ naar school.' (fietsen)",a:["fietst","fietsd","fietsdt","fiets"],c:0,hint:"Stam + t bij hij/zij/het.",ex:"Stam = fiets → fietst."},
+    {cat:"dt-regels",q:"'Wat _____ jij?' (doen)",a:["doet","doed","doet","doe"],c:3,hint:"Jij/je na werkwoord = geen -t!",ex:"Inversie: 'Wat doe jij?' — geen -t."},
+    {cat:"Moeilijke woorden",q:"Welk woord is correct gespeld?",a:["agresief","agressief","agreasief","aggressief"],c:3,hint:"Twee g's én twee s'en!",ex:"a-g-g-r-e-s-s-i-e-f."},
+    {cat:"dt-regels",q:"'Gisteren _____ het hard.' (waaien — verleden tijd)",a:["waait","waaide","waaiden","waai"],c:1,hint:"Verleden tijd enkelvoud.",ex:"Waaide — verleden tijd enkelvoud van waaien."},
+    {cat:"Moeilijke woorden",q:"Juiste spelling van het apparaat?",a:["komputor","computer","compjoeter","computor"],c:1,hint:"Leenwoord uit het Engels.",ex:"Computer eindigt op -er."},
+    {cat:"dt-regels",q:"'De kinderen _____ buiten.' (spelen)",a:["speelt","spelen","spielen","speeld"],c:1,hint:"Meervoud = geen -t.",ex:"Meervoud gebruikt de hele infinitief: spelen."},
+    {cat:"Moeilijke woorden",q:"Kies de juiste spelling:",a:["existentie","existantie","existensie","existencie"],c:0,hint:"ex-is-ten-tie.",ex:"Existentie eindigt op -tie."},
+    {cat:"dt-regels",q:"'Mijn vader _____ vroeg op.' (staan — tegenwoordige tijd)",a:["staat","staan","staan","stond"],c:0,hint:"Stam + t bij hij.",ex:"Stam = sta → staat."},
+    {cat:"Moeilijke woorden",q:"Juiste spelling?",a:["caffee","café","caffée","caf"],c:1,hint:"Accent aigu op de e.",ex:"Café is Frans leenwoord — accent op de e."},
+    {cat:"dt-regels",q:"'Ik _____ gisteren te laat.' (aankomen)",a:["kom aan","kwamen aan","kamt aan","kwam aan"],c:3,hint:"Verleden tijd, ik, enkelvoud.",ex:"Ik kwam aan — verleden tijd enkelvoud."},
+  ],
+  engels: [
+    {cat:"Woordenschat",q:"What does 'neighbour' mean?",a:["Buurman/vrouw","Broer/zus","Vriend","Leraar"],c:0,hint:"Someone who lives near you.",ex:"Neighbour = buurman of buurvrouw."},
+    {cat:"Grammatica",q:"Choose the correct sentence:",a:["She don't like pizza.","She doesn't like pizza.","She not like pizza.","She no like pizza."],c:1,hint:"He/she/it → 'doesn't'.",ex:"Met she/he/it gebruik je 'doesn't' voor ontkenning."},
+    {cat:"Woordenschat",q:"What is the English word for 'vliegtuig'?",a:["Ship","Train","Airplane","Helicopter"],c:2,hint:"It flies through the air.",ex:"Vliegtuig = airplane."},
+    {cat:"Grammatica",q:"Past tense of 'go'?",a:["Goed","Went","Gone","Goes"],c:1,hint:"Irregular verb!",ex:"Go → went."},
+    {cat:"Woordenschat",q:"'Friendly' means...?",a:["Vriendelijk","Vrolijk","Grappig","Knap"],c:0,hint:"Think: friend + ly.",ex:"Friendly = vriendelijk."},
+    {cat:"Grammatica",q:"'There ___ many students.'",a:["is","am","are","be"],c:2,hint:"Plural → are.",ex:"Met meervoud gebruik je 'are'."},
+    {cat:"Woordenschat",q:"What does 'exhausted' mean?",a:["Opgewonden","Uitgeput","Boos","Verdrietig"],c:1,hint:"After a marathon you feel...",ex:"Exhausted = uitgeput."},
+    {cat:"Grammatica",q:"'I ___ to school every day.' (walk)",a:["walks","walking","walked","walk"],c:3,hint:"First person = no -s.",ex:"Met I gebruik je de basisvorm: walk."},
+    {cat:"Woordenschat",q:"English word for 'herfst'?",a:["Spring","Summer","Autumn","Winter"],c:2,hint:"Leaves fall in this season.",ex:"Herfst = Autumn / Fall."},
+    {cat:"Grammatica",q:"Correct question form:",a:["Where you live?","Where do you live?","Where does you live?","Where you does live?"],c:1,hint:"Questions need do/does.",ex:"Where do you live?"},
+  ],
+  ai: [
+    {cat:"Wat is AI?",q:"Wat betekent 'AI'?",a:["Automatisch Internet","Artificiële Intelligentie","Algemene Informatie","Actieve Inhoud"],c:1,hint:"Kunstmatige intelligentie.",ex:"AI = Artificial Intelligence = Artificiële Intelligentie."},
+    {cat:"Hoe werkt AI?",q:"Hoe leert een AI-taalmodel?",a:["Leest alle bibliotheekboeken","Getraind op miljarden teksten","Onthoudt alles wat je typt","Verbindt met jouw brein"],c:1,hint:"Heel veel voorbeeldteksten.",ex:"AI-modellen worden getraind op miljarden teksten en leren patronen."},
+    {cat:"Slim gebruik",q:"Wat is een GOEDE manier om AI te gebruiken bij huiswerk?",a:["AI schrijft het antwoord voor je","AI vraag om uitleg als je iets niet begrijpt","AI maakt al je sommen","AI schrijft je scriptie"],c:1,hint:"AI = hulpmiddel, geen vervanging.",ex:"Gebruik AI voor uitleg — zelf nadenken blijft het belangrijkst!"},
+    {cat:"Veiligheid",q:"Wat mag je NOOIT aan een AI vertellen?",a:["Je lievelingskleur","Je woonadres en telefoonnummer","Je favoriete sport","De naam van je school"],c:1,hint:"Denk aan je privacy!",ex:"Woonadres, telefoonnummer en persoonlijke data houd je altijd privé."},
+    {cat:"Slim gebruik",q:"Een AI geeft een antwoord. Wat doe je daarna?",a:["Alles geloven en kopiëren","Controleren en zelf nadenken","Direct aan leraar sturen","Niks — AI is altijd goed"],c:1,hint:"AI kan fouten maken!",ex:"AI kan onjuiste info geven. Controleer altijd!"},
+    {cat:"Hoe werkt AI?",q:"Wat kan een AI-chatbot NIET?",a:["Tekst schrijven","Vragen beantwoorden","Echt gevoelens begrijpen","Gedichten maken"],c:2,hint:"AI heeft geen echte emoties.",ex:"AI genereert tekst over gevoelens maar begrijpt ze niet echt."},
+    {cat:"Slim gebruik",q:"Hoe schrijf je een goede prompt voor AI?",a:["Zo kort mogelijk","Zo duidelijk en specifiek mogelijk","In hoofdletters","Met veel uitroeptekens"],c:1,hint:"Denk goed na wat je wilt.",ex:"Hoe specifieker je vraag, hoe beter het antwoord!"},
+    {cat:"Veiligheid",q:"Je vriend gebruikt AI voor al zijn toetsen. Jij vindt dat...",a:["Super slim!","Slim tijdbesparen","Niet eerlijk, je leert er niks van","Dan doe ik dat ook"],c:2,hint:"Wat is het doel van toetsen?",ex:"Toetsen zijn er om te laten zien wat JÍJ weet."},
+    {cat:"Hoe werkt AI?",q:"Wat is een 'deepfake'?",a:["Een diepe oceaan","Een nep foto/video gemaakt door AI","Een nieuw type computer","Een computerspel"],c:1,hint:"Deep learning + fake = ?",ex:"Een deepfake is nep beeld gemaakt met AI — kan er heel echt uitzien!"},
+    {cat:"Slim gebruik",q:"Waarvoor is AI écht nuttig?",a:["Om nooit meer zelf te denken","Creatieve ideeën en uitleg begrijpen","Opdrachten inleveren als jouw werk","Alles voor je laten doen"],c:1,hint:"AI is een tool, zoals een calculator.",ex:"AI helpt met ideeën en uitleg — maar jij blijft degene die nadenkt!"},
+  ],
+  biologie: [
+    {cat:"Planten",q:"Welk proces gebruiken planten om voedsel te maken van zonlicht?",a:["Ademhaling","Fotosynthese","Verdamping","Vertering"],c:1,hint:"Foto = licht, synthese = samenstellen.",ex:"Fotosynthese: CO₂ + water + licht → glucose + zuurstof."},
+    {cat:"Lichaam",q:"Welk orgaan pompt bloed door je lichaam?",a:["Long","Lever","Hart","Nier"],c:2,hint:"Het klopt de hele dag.",ex:"Het hart is een spier die bloed rondpompt."},
+    {cat:"Lichaam",q:"Hoeveel botten heeft een volwassen mens?",a:["106","206","306","406"],c:1,hint:"Iets meer dan 200.",ex:"Een volwassen mens heeft 206 botten."},
+    {cat:"Dieren",q:"Welk dier is een zoogdier?",a:["Slang","Kikker","Vleermuis","Krokodil"],c:2,hint:"Het voedt zijn jongen met melk.",ex:"Een vleermuis is een zoogdier — het enige vliegende zoogdier!"},
+    {cat:"Planten",q:"Welk gas geven planten overdag af bij fotosynthese?",a:["Koolstofdioxide","Stikstof","Zuurstof","Waterdamp"],c:2,hint:"Wij ademen het in.",ex:"Planten geven zuurstof af — wat wij inademen!"},
+    {cat:"Lichaam",q:"Wat doet de long?",a:["Bloed zuiveren","Zuurstof opnemen en CO₂ afgeven","Voedsel verteren","Hormonen aanmaken"],c:1,hint:"Ademen...",ex:"Longen zorgen voor gasuitwisseling: O₂ in, CO₂ eruit."},
+    {cat:"Dieren",q:"Wat zijn koudbloedige dieren?",a:["Zoogdieren","Vogels","Reptielen","Insecten"],c:2,hint:"Ze gebruiken zonwarmte.",ex:"Reptielen zijn koudbloedig — lichaamstemperatuur past zich aan de omgeving aan."},
+    {cat:"Planten",q:"Welk deel van de plant neemt water op uit de grond?",a:["Bladeren","Stengel","Wortels","Bloemen"],c:2,hint:"Zit onder de grond.",ex:"De wortels nemen water en voedingsstoffen op uit de grond."},
+    {cat:"Lichaam",q:"Welk orgaan maakt gal aan?",a:["Maag","Nier","Lever","Hart"],c:2,hint:"Ligt rechts in je buik.",ex:"De lever maakt gal aan om vetten te helpen verteren."},
+    {cat:"Dieren",q:"Hoe noem je dieren die alleen planten eten?",a:["Carnivoren","Herbivoren","Omnivoren","Insectivoren"],c:1,hint:"Herbi = plant.",ex:"Herbivoren eten alleen planten. Voorbeelden: koe, konijn, paard."},
+  ],
+  meetkunde: [
+    {cat:"Oppervlakte",q:"Oppervlakte van een rechthoek van 6 × 4 cm?",a:["10 cm²","20 cm²","24 cm²","28 cm²"],c:2,hint:"Lengte × breedte.",ex:"6 × 4 = 24 cm²."},
+    {cat:"Omtrek",q:"Omtrek van een vierkant met zijde 5 cm?",a:["10 cm","15 cm","20 cm","25 cm"],c:2,hint:"Alle 4 zijden optellen.",ex:"4 × 5 = 20 cm."},
+    {cat:"Oppervlakte",q:"Oppervlakte driehoek: grondlijn 8 cm, hoogte 5 cm?",a:["13 cm²","20 cm²","40 cm²","80 cm²"],c:1,hint:"½ × grondlijn × hoogte.",ex:"½ × 8 × 5 = 20 cm²."},
+    {cat:"Vormen",q:"Hoeveel hoeken heeft een zeshoek?",a:["5","6","7","8"],c:1,hint:"Zes = six.",ex:"Een zeshoek heeft 6 hoeken en 6 zijden."},
+    {cat:"Omtrek",q:"Omtrek van een rechthoek van 7 × 3 cm?",a:["10 cm","14 cm","20 cm","21 cm"],c:2,hint:"2 × (lengte + breedte).",ex:"2 × (7 + 3) = 20 cm."},
+    {cat:"Begrippen",q:"Wat is de middellijn van een cirkel?",a:["De buitenrand","Van middelpunt tot rand","Door het middelpunt van rand tot rand","De omtrek"],c:2,hint:"Gaat door het middelpunt.",ex:"De middellijn loopt door het middelpunt — het is 2 × de straal."},
+    {cat:"Oppervlakte",q:"Kamer van 5 × 4 meter. Hoeveel m² vloer?",a:["9 m²","18 m²","20 m²","25 m²"],c:2,hint:"Lengte × breedte.",ex:"5 × 4 = 20 m²."},
+    {cat:"Vormen",q:"Hoeveel graden telt een rechte hoek?",a:["45°","60°","90°","180°"],c:2,hint:"Het hoekje van een vierkant.",ex:"Een rechte hoek is altijd 90°."},
+    {cat:"Omtrek",q:"Omtrek van een gelijkzijdige driehoek met zijde 6 cm?",a:["12 cm","16 cm","18 cm","24 cm"],c:2,hint:"Alle 3 zijden gelijk.",ex:"3 × 6 = 18 cm."},
+    {cat:"Oppervlakte",q:"Oppervlakte van een vierkant met zijde 9 cm?",a:["36 cm²","72 cm²","81 cm²","99 cm²"],c:2,hint:"Zijde × zijde.",ex:"9 × 9 = 81 cm²."},
+  ],
+  verkeer: [
+    {cat:"Verkeerstekens",q:"Wat betekent een rood verkeerslicht?",a:["Langzamer rijden","Stoppen","Opletten","Doorrijden"],c:1,hint:"Rood = stop!",ex:"Bij rood licht moet je altijd stoppen voor de stopstreep."},
+    {cat:"Voorrang",q:"Wie heeft voorrang op een rotonde?",a:["Voertuigen die oprijden","Voertuigen op de rotonde","Fietsers altijd","Grootste voertuig"],c:1,hint:"Je staat stil voor wie al rondrijdt.",ex:"Voertuigen die al op de rotonde zijn hebben altijd voorrang."},
+    {cat:"Verkeerstekens",q:"Blauw vierkant bord met witte pijl omhoog?",a:["Verbod te stoppen","Verplicht rechtdoor","Eenrichtingsverkeer","Snelheidsbeperking"],c:1,hint:"Blauw + pijl = verplichting.",ex:"Blauw bord met witte pijl: verplicht rechtdoor rijden."},
+    {cat:"Fietsers",q:"Aan welke kant van de weg fietsen fietsers?",a:["Links","Rechts","Midden","Overal"],c:1,hint:"In Nederland rijdt iedereen...",ex:"In Nederland rijdt al het verkeer rechts."},
+    {cat:"Verkeerstekens",q:"Wat is de maximumsnelheid in een 30-zone?",a:["10 km/u","20 km/u","30 km/u","50 km/u"],c:2,hint:"Er staat een 30 op het bord.",ex:"In een 30-zone is de max 30 km/u."},
+    {cat:"Veiligheid",q:"Wat doe je bij het oversteken als voetganger?",a:["Snel rennen","Links-rechts-links kijken, dan oversteken","Wachten tot er niemand is","Gewoon oversteken"],c:1,hint:"Kijk altijd goed!",ex:"Links-rechts-links kijken en zeker zijn dat het veilig is."},
+    {cat:"Verkeerstekens",q:"Driehoekig bord met uitroepteken — wat betekent het?",a:["Verbod","Gevaar (algemeen)","Verplicht","Informatie"],c:1,hint:"Driehoek = waarschuwing.",ex:"Driehoekig bord = waarschuwing voor gevaar."},
+    {cat:"Voorrang",q:"Wie gaat voor: tram of auto?",a:["Auto","Tram","Wie het eerst aankomt","Wie rechts rijdt"],c:1,hint:"Groot voertuig op rails.",ex:"Een tram heeft altijd voorrang boven auto's."},
+    {cat:"Fietsers",q:"Moet een fietser 's avonds verlichting hebben?",a:["Nee","Ja, voor- en achterlicht","Alleen achterlicht","Alleen voorlicht"],c:1,hint:"Zien én gezien worden!",ex:"Bij donker is voor- én achterlicht wettelijk verplicht."},
+    {cat:"Veiligheid",q:"Wat is gevaarlijk aan een zebrapad zonder stoplicht?",a:["Het is te smal","Auto's zijn niet verplicht te stoppen als voetgangers niet zichtbaar zijn","Het is altijd veilig","Er gelden andere regels"],c:1,hint:"Jij moet zelf zien of het veilig is.",ex:"Bij een zebrapad zonder licht moet je goed controleren of auto's stoppen."},
+  ],
+};
+
+const SUBJECTS = [
+  {id:"taal",      icon:"📖", name:"Taal",             desc:"Woordsoorten, zinsbouw & begrijpend lezen",   ca:"#f72585"},
+  {id:"rekenen",   icon:"🔢", name:"Rekenen",           desc:"Procenten, breuken & metriek stelsel",        ca:"#4cc9f0"},
+  {id:"topo",      icon:"🗺️", name:"Topografie",       desc:"Provincies, steden, rivieren & Europa",      ca:"#06d6a0"},
+  {id:"spelling",  icon:"✍️", name:"Spelling",          desc:"dt-regels & moeilijke woorden",              ca:"#7209b7"},
+  {id:"engels",    icon:"🇬🇧", name:"Engels",           desc:"Woordenschat & grammatica",                  ca:"#f77f00"},
+  {id:"ai",        icon:"🤖", name:"AI & Technologie",  desc:"Wat is AI? Gebruik het slim & veilig",        ca:"#ffd166"},
+  {id:"biologie",  icon:"🌿", name:"Biologie",           desc:"Planten, dieren & menselijk lichaam",        ca:"#43aa8b"},
+  {id:"meetkunde", icon:"📐", name:"Meetkunde",          desc:"Oppervlakte, omtrek & vormen",               ca:"#e76f51"},
+  {id:"verkeer",   icon:"🚦", name:"Verkeer",            desc:"Verkeerstekens, voorrang & veiligheid",      ca:"#e63946"},
+];
+
+const ACHS = [
+  {id:"f1",    icon:"🌟", name:"Eerste stap",      desc:"Eerste vraag goed",        ok: s=>s.totalCorrect>=1},
+  {id:"s3",    icon:"🔥", name:"Op stoom!",         desc:"3 op rij goed",            ok: s=>s.streak>=3},
+  {id:"s5",    icon:"💥", name:"Vuurbal!",           desc:"5 op rij goed",           ok: s=>s.streak>=5},
+  {id:"tl",    icon:"📖", name:"Taalkampioen",      desc:"Taal 8+/10",              ok: s=>(s.best.taal||0)>=8},
+  {id:"rk",    icon:"🔢", name:"Rekenwonder",       desc:"Rekenen 8+/10",           ok: s=>(s.best.rekenen||0)>=8},
+  {id:"tp",    icon:"🗺️", name:"Topo-held",        desc:"Topo 8+/10",             ok: s=>(s.best.topo||0)>=8},
+  {id:"ai",    icon:"🤖", name:"AI-expert",         desc:"AI 8+/10",                ok: s=>(s.best.ai||0)>=8},
+  {id:"bi",    icon:"🌿", name:"Bioloog",            desc:"Biologie 8+/10",         ok: s=>(s.best.biologie||0)>=8},
+  {id:"gm",    icon:"📐", name:"Meetkunde-ace",     desc:"Meetkunde 8+/10",         ok: s=>(s.best.meetkunde||0)>=8},
+  {id:"vk",    icon:"🚦", name:"Verkeersexpert",    desc:"Verkeer 8+/10",           ok: s=>(s.best.verkeer||0)>=8},
+  {id:"l5",    icon:"⚡", name:"Power speler",      desc:"Level 5 bereikt",          ok: s=>s.level>=5},
+  {id:"l10",   icon:"🌈", name:"Legende",            desc:"Level 10 bereikt",        ok: s=>s.level>=10},
+  {id:"all",   icon:"🏆", name:"Alleskunner",        desc:"Elk vak gespeeld",        ok: s=>Object.keys(s.best).length>=9},
+  {id:"x500",  icon:"💎", name:"XP-verzamelaar",    desc:"500 XP verdiend",          ok: s=>s.xp>=500},
+  {id:"perf",  icon:"👑", name:"Perfect!",           desc:"10/10 in een ronde",      ok: s=>(s.perfectRounds||0)>=1},
+];
+
+// ── STATE ──
+let G = {
+  name:"Speler", xp:0, level:1,
+  totalCorrect:0, streak:0, totalStars:0,
+  best:{}, subStars:{}, unlocked:[], perfectRounds:0,
+  days:[true,true,false,false,false,false,false]
+};
+let Q = {sub:null,qs:[],idx:0,correct:0,xpEarned:0,answered:false};
+
+const XPL = 120;
+const calcLvl = x => Math.floor(x/XPL)+1;
+const xpPct  = x => ((x%XPL)/XPL)*100;
+
+// ── TOPBAR ──
+function refreshTop() {
+  document.getElementById('pname').textContent   = G.name;
+  document.getElementById('lvlsp').textContent   = G.level;
+  document.getElementById('xpsp').textContent    = G.xp;
+  document.getElementById('xp-bar-in').style.width = xpPct(G.xp)+'%';
+  document.getElementById('sbst').textContent    = G.streak;
+  document.getElementById('sbsr').textContent    = G.totalStars;
+  document.getElementById('sbco').textContent    = G.totalCorrect;
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ── BUILD SUBJECT GRID ──
+function buildGrid() {
+  document.getElementById('subj-grid').innerHTML = SUBJECTS.map(s=>{
+    const best = G.best[s.id]||0;
+    const st   = G.subStars[s.id]||0;
+    return `<div class="sc" style="--ca:${s.ca}" data-id="${s.id}">
+      <span class="se">${s.icon}</span>
+      <div class="sn">${s.name}</div>
+      <div class="sd2">${s.desc}</div>
+      <div class="sp"><div class="spf" style="width:${(best/10)*100}%"></div></div>
+      <div class="ss">${'⭐'.repeat(st)+'☆'.repeat(5-st)}</div>
+    </div>`;
+  }).join('');
+  document.querySelectorAll('.sc').forEach(el=>{
+    el.addEventListener('click', ()=> startSubject(el.dataset.id));
+  });
+}
+
+function buildAchs() {
+  document.getElementById('ach-grid').innerHTML = ACHS.map(a=>`
+    <div class="ac ${G.unlocked.includes(a.id)?'unlocked':''}">
+      <span class="ai">${a.icon}</span>
+      <div class="an">${a.name}</div>
+      <div class="ad">${a.desc}</div>
+    </div>`).join('');
+}
+
+function buildStreak() {
+  const d=['Ma','Di','Wo','Do','Vr','Za','Zo'];
+  document.getElementById('streak-bar').innerHTML =
+    d.map((x,i)=>`<div class="sd ${G.days[i]?'done':''}">${G.days[i]?'🔥':x}</div>`).join('');
+}
+
+// ── START GAME ──
+function startGame() {
+  const n = document.getElementById('ninput').value.trim();
+  if (n) G.name = n;
+  document.getElementById('greet').textContent = `Hoi ${G.name}! 👋`;
+  buildGrid(); buildAchs(); buildStreak(); refreshTop();
+  showScreen('ss');
+}
+
+// ── START SUBJECT ──
+function startSubject(id) {
+  Q = {sub:id, qs:[], idx:0, correct:0, xpEarned:0, answered:false};
+  const arr = [...BANK[id]];
+  for (let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+  Q.qs = arr;
+  const s = SUBJECTS.find(x=>x.id===id);
+  document.getElementById('qtitle').textContent = s.icon+' '+s.name;
+  showScreen('qs');
+  renderQuestion();
+}
+
+// ── RENDER QUESTION ──
+function renderQuestion() {
+  const q = Q.qs[Q.idx];
+  Q.answered = false;
+  const tot = Q.qs.length;
+
+  document.getElementById('qcount').textContent  = `Vraag ${Q.idx+1}/${tot}`;
+  document.getElementById('qpi').style.width     = (Q.idx/tot*100)+'%';
+  document.getElementById('qcat').textContent    = q.cat;
+  document.getElementById('qtext').textContent   = q.q;
+  document.getElementById('qhint').textContent   = q.hint ? `💡 Hint: ${q.hint}` : '';
+
+  const correctText = q.a[q.c];
+  const order = [0,1,2,3].sort(()=>Math.random()-.5);
+  const grid = document.getElementById('agrid');
+  grid.innerHTML = '';
+
+  order.forEach(origIdx => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'abtn';
+    btn.textContent = q.a[origIdx];
+    btn.dataset.ok = q.a[origIdx]===correctText ? '1':'0';
+    btn.addEventListener('click', function(){ handleAnswer(this, q); }, {once:true});
+    grid.appendChild(btn);
+  });
+
+  document.getElementById('fbbox').style.display  = 'none';
+  document.getElementById('nxtbtn').style.display = 'none';
+
+  const card = document.getElementById('qcard');
+  card.style.animation = 'none';
+  void card.offsetWidth;
+  card.style.animation = '';
+}
+
+// ── HANDLE ANSWER ──
+function handleAnswer(btn, q) {
+  if (Q.answered) return;
+  Q.answered = true;
+
+  const ok = btn.dataset.ok === '1';
+  document.querySelectorAll('.abtn').forEach(b=>{
+    b.disabled = true;
+    if (b.dataset.ok==='1') b.classList.add('correct');
+    else if (b===btn) b.classList.add('wrong');
+  });
+
+  const fb = document.getElementById('fbbox');
+  if (ok) {
+    Q.correct++; G.totalCorrect++; G.streak++;
+    const bonus = G.streak>=5?10:G.streak>=3?5:0;
+    const xp = 15+bonus;
+    Q.xpEarned += xp;
+    addXP(xp);
+    fb.className = '';
+    document.getElementById('fbtitle').textContent = praise();
+    document.getElementById('fbtext').textContent  = q.ex;
+    document.getElementById('xtag').textContent    = `+${xp} XP${bonus?` 🔥 Streak bonus!`:''}`;
+    spawnXP(btn, xp);
+  } else {
+    G.streak = 0;
+    fb.className = 'bad';
+    document.getElementById('fbtitle').textContent = '❌ Helaas, niet goed...';
+    document.getElementById('fbtext').textContent  = q.ex;
+    document.getElementById('xtag').textContent    = '+0 XP';
+  }
+
+  fb.style.display = 'block';
+  document.getElementById('nxtbtn').style.display = 'block';
+  checkAchs(); refreshTop();
+}
+
+// ── NEXT Q ──
+function nextQ() {
+  Q.idx++;
+  if (Q.idx >= Q.qs.length) showResults();
+  else renderQuestion();
+}
+
+// ── RESULTS ──
+function showResults() {
+  const tot = Q.qs.length;
+  const pct = Q.correct/tot;
+  const st  = pct>=.9?5:pct>=.8?4:pct>=.6?3:pct>=.4?2:1;
+  let emoji='😔', title='Blijf oefenen!';
+  if (pct>=.9){emoji='🏆';title='Fantastisch!';}
+  else if(pct>=.7){emoji='🎉';title='Goed gedaan!';}
+  else if(pct>=.5){emoji='👍';title='Aardig bezig!';}
+
+  document.getElementById('remi').textContent  = emoji;
+  document.getElementById('rtitle').textContent = title;
+  const sname = SUBJECTS.find(s=>s.id===Q.sub).name;
+  document.getElementById('rsub').textContent   = `${Q.correct}/${tot} goed in ${sname}.`;
+  document.getElementById('rvsco').textContent  = `${Q.correct}/${tot}`;
+  document.getElementById('rvxp').textContent   = `+${Q.xpEarned}`;
+  document.getElementById('rvst').textContent   = '⭐'.repeat(st);
+
+  if (!G.best[Q.sub] || Q.correct>G.best[Q.sub]) G.best[Q.sub]=Q.correct;
+  if (!G.subStars[Q.sub] || st>G.subStars[Q.sub]) {
+    G.subStars[Q.sub]=st;
+    G.totalStars = Object.values(G.subStars).reduce((a,b)=>a+b,0);
+  }
+  if (Q.correct===tot) G.perfectRounds=(G.perfectRounds||0)+1;
+
+  checkAchs(); refreshTop();
+  showScreen('rs');
+}
+
+// ── XP / LEVELS ──
+function addXP(n) {
+  const old = G.level;
+  G.xp += n;
+  G.level = calcLvl(G.xp);
+  if (G.level > old) toast(`🎉 Level up! Je bent nu Level ${G.level}!`);
+}
+
+// ── ACHIEVEMENTS ──
+function checkAchs() {
+  ACHS.forEach(a=>{
+    if (!G.unlocked.includes(a.id) && a.ok(G)) {
+      G.unlocked.push(a.id);
+      toast(`${a.icon} Achievement: <strong>${a.name}</strong>!`);
+    }
+  });
+}
+
+// ── TOAST QUEUE ──
+let tq=[], tb=false;
+function toast(msg) { tq.push(msg); if(!tb) drainToast(); }
+function drainToast() {
+  if (!tq.length){tb=false;return;} tb=true;
+  const t=document.getElementById('toast');
+  t.innerHTML=tq.shift(); t.classList.add('show');
+  setTimeout(()=>{ t.classList.remove('show'); setTimeout(drainToast,400); },2800);
+}
+
+// ── HELPERS ──
+const PRAISES=['✅ Correct!','🎯 Goed zo!','⭐ Uitstekend!','🌟 Super!','🔥 Geweldig!','💪 Topprestatie!','🏆 Briljant!','🎊 Wow!'];
+function praise(){ return PRAISES[Math.floor(Math.random()*PRAISES.length)]; }
+function spawnXP(btn,xp){
+  const r=btn.getBoundingClientRect();
+  const p=document.createElement('div');
+  p.className='xpop'; p.textContent=`+${xp} XP`;
+  p.style.left=(r.left+r.width/2-20)+'px';
+  p.style.top=(r.top+window.scrollY-10)+'px';
+  document.body.appendChild(p);
+  setTimeout(()=>p.remove(),1200);
+}
+
+// ── INIT EVENT LISTENERS ──
+document.getElementById('startbtn').addEventListener('click', startGame);
+document.getElementById('ninput').addEventListener('keydown', e=>{ if(e.key==='Enter') startGame(); });
+document.getElementById('back-btn').addEventListener('click', ()=>{ buildGrid(); buildAchs(); showScreen('ss'); });
+document.getElementById('nxtbtn').addEventListener('click', nextQ);
+document.getElementById('againbtn').addEventListener('click', ()=> startSubject(Q.sub));
+document.getElementById('homebtn').addEventListener('click', ()=>{ buildGrid(); buildAchs(); showScreen('ss'); });
+</script>
+</body>
+</html>
