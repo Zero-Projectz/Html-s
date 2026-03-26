@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a0a2e">
+<meta name="description" content="CodeQuest - Leer coderen en AI op een leuke manier!">
+<title>CodeQuest 🚀</title>
+<link rel="manifest" href="data:application/json,{%22name%22:%22CodeQuest%22,%22short_name%22:%22CodeQuest%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%231a0a2e%22,%22theme_color%22:%22%231a0a2e%22}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0720;
+  --bg2: #1a0a3e;
+  --card: #1e1040;
+  --card2: #261454;
+  --accent: #ff6b35;
+  --accent2: #ffd700;
+  --accent3: #00e5ff;
+  --accent4: #a259ff;
+  --green: #39ff14;
+  --pink: #ff2d78;
+  --text: #f0e6ff;
+  --muted: #9980c4;
+  --radius: 18px;
+  --shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-image:
+    radial-gradient(ellipse at 20% 20%, rgba(162,89,255,0.15) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 80%, rgba(0,229,255,0.1) 0%, transparent 60%);
+}
+
+/* STARS BACKGROUND */
+.stars {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  overflow: hidden;
+}
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: white;
+  animation: twinkle var(--dur, 3s) infinite alternate;
+}
+@keyframes twinkle { from{opacity:0.2;} to{opacity:1;} }
+
+/* SCREENS */
+.screen { display:none; position:relative; z-index:1; min-height:100vh; }
+.screen.active { display:block; }
+
+/* TOP BAR */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px;
+  background: rgba(26,10,62,0.9);
+  backdrop-filter: blur(10px);
+  border-bottom: 2px solid rgba(162,89,255,0.3);
+  position: sticky; top: 0; z-index: 100;
+  gap: 10px;
+}
+.topbar-logo { font-family:'Fredoka One'; font-size:1.4rem; color:var(--accent2); }
+.topbar-stats { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+.stat-badge {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 20px; padding: 4px 12px;
+  font-weight:700; font-size:0.9rem;
+}
+.stat-badge .icon { font-size:1.1rem; }
+
+/* XP BAR */
+.xp-bar-wrap { padding: 0 20px 0; margin-top:6px; }
+.xp-label { font-size:0.75rem; color:var(--muted); margin-bottom:3px; }
+.xp-bar {
+  height:10px; border-radius:10px;
+  background: rgba(255,255,255,0.1);
+  overflow:hidden;
+}
+.xp-fill {
+  height:100%; border-radius:10px;
+  background: linear-gradient(90deg, var(--accent4), var(--accent3));
+  transition: width 0.6s cubic-bezier(.34,1.56,.64,1);
+  box-shadow: 0 0 10px var(--accent4);
+}
+
+/* HOME SCREEN */
+#home { padding: 20px; }
+.hero {
+  text-align: center;
+  padding: 30px 20px 20px;
+}
+.hero-robot {
+  font-size: 5rem;
+  display: block;
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-12px);} }
+
+.hero h1 {
+  font-family:'Fredoka One';
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  background: linear-gradient(135deg, var(--accent2), var(--accent), var(--pink));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin: 10px 0 6px;
+}
+.hero p { color: var(--muted); font-size:1.05rem; }
+
+.worlds-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px; margin-top: 24px;
+}
+.world-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.25s;
+  position: relative; overflow: hidden;
+  text-align: center;
+}
+.world-card::before {
+  content:''; position:absolute; inset:0;
+  background: var(--glow-color, rgba(162,89,255,0.15));
+  opacity:0; transition:opacity 0.3s;
+}
+.world-card:hover { transform:translateY(-4px); border-color: var(--glow-color,var(--accent4)); box-shadow:0 0 20px var(--glow-color,var(--accent4)); }
+.world-card:hover::before { opacity:1; }
+.world-card.locked { opacity:0.5; cursor:not-allowed; filter:grayscale(0.5); }
+.world-icon { font-size:2.8rem; display:block; margin-bottom:8px; }
+.world-name { font-family:'Fredoka One'; font-size:1.05rem; }
+.world-desc { font-size:0.78rem; color:var(--muted); margin-top:4px; }
+.world-progress-bar { height:5px; border-radius:5px; background:rgba(255,255,255,0.1); margin-top:10px; overflow:hidden; }
+.world-progress-fill { height:100%; border-radius:5px; background:var(--glow-color,var(--accent4)); }
+.lock-icon { position:absolute; top:10px; right:10px; font-size:1rem; }
+
+/* LEADERBOARD SECTION */
+.section-title {
+  font-family:'Fredoka One'; font-size:1.3rem;
+  margin: 24px 0 12px;
+  display:flex; align-items:center; gap:8px;
+}
+.lb-list { display:flex; flex-direction:column; gap:8px; }
+.lb-item {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 12px 16px;
+  display: flex; align-items:center; gap:14px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.lb-rank { font-family:'Fredoka One'; font-size:1.2rem; width:30px; text-align:center; }
+.lb-rank.gold { color:var(--accent2); text-shadow:0 0 10px var(--accent2); }
+.lb-rank.silver { color:#c0c0c0; }
+.lb-rank.bronze { color:#cd7f32; }
+.lb-avatar { font-size:1.8rem; }
+.lb-name { flex:1; font-weight:700; }
+.lb-xp { font-weight:800; color:var(--accent3); }
+
+/* BADGES */
+.badges-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(80px,1fr)); gap:10px; }
+.badge-item {
+  background:var(--card); border-radius:14px; padding:12px 8px;
+  text-align:center; cursor:default;
+  border:2px solid transparent;
+  transition:all 0.2s;
+}
+.badge-item.earned { border-color:var(--accent2); box-shadow:0 0 12px rgba(255,215,0,0.3); }
+.badge-item.locked-badge { opacity:0.4; filter:grayscale(1); }
+.badge-icon { font-size:2rem; display:block; }
+.badge-name { font-size:0.65rem; font-weight:700; margin-top:4px; color:var(--muted); }
+
+/* GAME SCREEN */
+#game { padding: 16px; max-width: 700px; margin:0 auto; }
+.game-header {
+  display:flex; align-items:center; gap:12px; margin-bottom:16px;
+}
+.back-btn {
+  background: rgba(255,255,255,0.1); border:none; color:var(--text);
+  border-radius:12px; padding:8px 14px; cursor:pointer; font-size:1rem;
+  font-family:'Nunito'; font-weight:700; transition:all 0.2s;
+}
+.back-btn:hover { background:rgba(255,255,255,0.2); }
+.game-title { font-family:'Fredoka One'; font-size:1.3rem; }
+.question-count { margin-left:auto; color:var(--muted); font-weight:700; }
+
+/* CHALLENGE CARD */
+.challenge-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 16px;
+  border: 2px solid rgba(162,89,255,0.3);
+  position:relative; overflow:hidden;
+}
+.challenge-card::after {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg,var(--accent4),var(--accent3));
+}
+.challenge-type {
+  font-size:0.75rem; font-weight:800; letter-spacing:2px;
+  color:var(--accent4); text-transform:uppercase; margin-bottom:8px;
+}
+.challenge-question {
+  font-size:1.1rem; font-weight:700; line-height:1.5;
+  margin-bottom:16px;
+}
+.challenge-mascot {
+  font-size:2.5rem; float:right; margin-left:12px;
+  animation:float 2s ease-in-out infinite;
+}
+.challenge-hint {
+  background:rgba(0,229,255,0.1); border-radius:10px; padding:10px 14px;
+  font-size:0.85rem; color:var(--accent3); margin-bottom:16px;
+  border-left:3px solid var(--accent3);
+}
+
+/* BLOCK CODING */
+.blocks-area {
+  display:flex; flex-direction:column; gap:8px;
+  background:rgba(0,0,0,0.3); border-radius:14px; padding:14px;
+  min-height:80px; margin-bottom:12px;
+  border:2px dashed rgba(162,89,255,0.3);
+}
+.block-palette { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+.code-block {
+  border-radius:10px; padding:8px 14px;
+  font-weight:700; font-size:0.85rem;
+  cursor:grab; user-select:none;
+  transition:all 0.2s; border:none;
+  font-family:'Nunito';
+}
+.code-block:active { cursor:grabbing; transform:scale(1.05); }
+.block-start { background:#ff6b35; color:white; }
+.block-move { background:#a259ff; color:white; }
+.block-turn { background:#00e5ff; color:#0d0720; }
+.block-if { background:#ffd700; color:#0d0720; }
+.block-repeat { background:#39ff14; color:#0d0720; }
+.block-sound { background:#ff2d78; color:white; }
+
+/* OPTIONS */
+.options-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.option-btn {
+  background:var(--card2); border:2px solid rgba(255,255,255,0.1);
+  color:var(--text); border-radius:14px; padding:14px 12px;
+  font-family:'Nunito'; font-size:0.95rem; font-weight:700;
+  cursor:pointer; transition:all 0.25s; text-align:left;
+  display:flex; align-items:center; gap:8px;
+}
+.option-btn:hover { background:rgba(162,89,255,0.2); border-color:var(--accent4); transform:translateY(-2px); }
+.option-btn.correct { background:rgba(57,255,20,0.2); border-color:var(--green); }
+.option-btn.wrong { background:rgba(255,45,120,0.2); border-color:var(--pink); }
+.option-btn:disabled { cursor:not-allowed; }
+.option-letter {
+  background:rgba(255,255,255,0.15); border-radius:8px;
+  width:26px; height:26px; display:flex; align-items:center; justify-content:center;
+  font-size:0.8rem; flex-shrink:0;
+}
+
+/* SEQUENCE */
+.sequence-area {
+  display:flex; flex-wrap:wrap; gap:8px; min-height:50px;
+  background:rgba(0,0,0,0.3); border-radius:12px; padding:10px;
+  border:2px dashed rgba(162,89,255,0.3); margin-bottom:12px;
+  align-items:center;
+}
+.seq-block {
+  background:var(--accent4); color:white;
+  border-radius:8px; padding:6px 12px;
+  font-weight:700; font-size:0.85rem; cursor:pointer;
+  transition:all 0.2s;
+}
+.seq-block:hover { opacity:0.8; }
+
+/* RESULT OVERLAY */
+.result-overlay {
+  position:fixed; inset:0; z-index:200;
+  display:none; align-items:center; justify-content:center;
+  background:rgba(0,0,0,0.7); backdrop-filter:blur(4px);
+}
+.result-overlay.show { display:flex; }
+.result-box {
+  background:var(--card);
+  border-radius:24px; padding:36px 32px;
+  text-align:center; max-width:360px; width:90%;
+  border:3px solid var(--accent2);
+  box-shadow:0 0 40px rgba(255,215,0,0.3);
+  animation:popIn 0.4s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn { from{transform:scale(0.5);opacity:0;} to{transform:scale(1);opacity:1;} }
+.result-emoji { font-size:4rem; display:block; margin-bottom:12px; }
+.result-title { font-family:'Fredoka One'; font-size:2rem; margin-bottom:8px; }
+.result-msg { color:var(--muted); margin-bottom:20px; font-size:0.95rem; }
+.result-xp { font-family:'Fredoka One'; font-size:1.5rem; color:var(--accent2); margin-bottom:20px; }
+.btn-primary {
+  background:linear-gradient(135deg,var(--accent),var(--pink));
+  border:none; color:white;
+  border-radius:14px; padding:14px 28px;
+  font-family:'Nunito'; font-size:1rem; font-weight:800;
+  cursor:pointer; transition:all 0.2s; width:100%;
+}
+.btn-primary:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(255,107,53,0.4); }
+
+/* LEVEL UP OVERLAY */
+.levelup-overlay {
+  position:fixed; inset:0; z-index:300;
+  display:none; align-items:center; justify-content:center;
+  background:rgba(0,0,0,0.85);
+}
+.levelup-overlay.show { display:flex; }
+.levelup-box {
+  text-align:center;
+  animation:levelPop 0.5s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes levelPop { from{transform:scale(0) rotate(-10deg);} to{transform:scale(1) rotate(0);} }
+.levelup-stars { font-size:3rem; }
+.levelup-text { font-family:'Fredoka One'; font-size:3rem; color:var(--accent2); text-shadow:0 0 30px var(--accent2); }
+.levelup-sub { font-size:1.2rem; color:var(--text); margin-top:8px; }
+
+/* TOAST */
+.toast {
+  position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(100px);
+  background:var(--card2); border-radius:14px; padding:12px 24px;
+  font-weight:700; font-size:0.95rem;
+  transition:transform 0.4s cubic-bezier(.34,1.56,.64,1);
+  z-index:999; border:2px solid rgba(255,255,255,0.1);
+  display:flex; align-items:center; gap:8px;
+}
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+/* NAV */
+.bottom-nav {
+  position:fixed; bottom:0; left:0; right:0; z-index:100;
+  background:rgba(26,10,62,0.95);
+  backdrop-filter:blur(10px);
+  border-top:2px solid rgba(162,89,255,0.3);
+  display:flex; justify-content:space-around; padding:10px 0 16px;
+}
+.nav-btn {
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  background:none; border:none; color:var(--muted);
+  font-family:'Nunito'; font-size:0.7rem; font-weight:700;
+  cursor:pointer; transition:all 0.2s; padding:4px 16px; border-radius:12px;
+}
+.nav-btn.active { color:var(--accent3); }
+.nav-btn .nav-icon { font-size:1.4rem; }
+.nav-btn.active .nav-icon { filter:drop-shadow(0 0 6px var(--accent3)); }
+
+/* WORLD SCREEN */
+#world-screen { padding:16px; max-width:700px; margin:0 auto; }
+.levels-list { display:flex; flex-direction:column; gap:10px; }
+.level-item {
+  background:var(--card); border-radius:16px; padding:16px 20px;
+  display:flex; align-items:center; gap:16px;
+  cursor:pointer; border:2px solid transparent;
+  transition:all 0.25s;
+}
+.level-item:hover { border-color:var(--accent4); transform:translateX(4px); }
+.level-item.locked-lvl { opacity:0.5; cursor:not-allowed; }
+.level-item.completed { border-color:rgba(57,255,20,0.5); }
+.level-num { font-family:'Fredoka One'; font-size:1.4rem; width:40px; text-align:center; }
+.level-info { flex:1; }
+.level-name { font-weight:800; font-size:1rem; }
+.level-desc { font-size:0.8rem; color:var(--muted); }
+.level-stars { font-size:1.2rem; }
+
+/* PROFILE SCREEN */
+#profile { padding:20px; max-width:600px; margin:0 auto; padding-bottom:80px; }
+.profile-hero {
+  text-align:center; padding:24px;
+  background:var(--card); border-radius:var(--radius);
+  margin-bottom:20px; position:relative; overflow:hidden;
+}
+.profile-hero::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(162,89,255,0.2),rgba(0,229,255,0.1));
+}
+.profile-avatar { font-size:5rem; display:block; position:relative; }
+.profile-name { font-family:'Fredoka One'; font-size:1.8rem; position:relative; margin-top:8px; }
+.profile-level { color:var(--accent2); font-weight:800; position:relative; }
+.stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+.stat-card {
+  background:var(--card); border-radius:16px; padding:16px;
+  text-align:center;
+}
+.stat-card-val { font-family:'Fredoka One'; font-size:2rem; color:var(--accent3); }
+.stat-card-label { font-size:0.8rem; color:var(--muted); font-weight:700; }
+
+/* ROBOT dialog */
+.robot-dialog {
+  background:rgba(0,229,255,0.1); border:2px solid var(--accent3);
+  border-radius:16px; padding:16px 18px;
+  margin-bottom:16px; font-size:0.95rem;
+  position:relative;
+}
+.robot-dialog::before {
+  content:'🤖'; position:absolute; top:-16px; left:16px;
+  font-size:1.5rem;
+}
+
+/* CONFETTI CANVAS */
+#confetti { position:fixed; inset:0; pointer-events:none; z-index:250; }
+
+/* Scrollable areas */
+.scroll-area { padding-bottom:80px; }
+
+/* Responsive */
+@media(max-width:480px) {
+  .options-grid { grid-template-columns:1fr; }
+  .worlds-grid { grid-template-columns:repeat(2,1fr); }
+}
+
+.drag-over { border-color:var(--accent3) !important; background:rgba(0,229,255,0.05) !important; }
+.placed-block {
+  background:var(--accent4); color:white; border-radius:8px;
+  padding:6px 12px; font-weight:700; font-size:0.85rem;
+  cursor:pointer; animation:blockIn 0.2s ease;
+}
+@keyframes blockIn { from{transform:scale(0.8);opacity:0;} to{transform:scale(1);opacity:1;} }
+</style>
+</head>
+<body>
+
+<div class="stars" id="starsContainer"></div>
+<canvas id="confetti"></canvas>
+
+<!-- HOME SCREEN -->
+<div id="home" class="screen active">
+  <div class="topbar">
+    <div class="topbar-logo">🚀 CodeQuest</div>
+    <div class="topbar-stats">
+      <div class="stat-badge"><span class="icon">⭐</span><span id="xpDisplay">0 XP</span></div>
+      <div class="stat-badge"><span class="icon">🔥</span><span id="streakDisplay">0</span></div>
+      <div class="stat-badge"><span class="icon">🏆</span>Lvl <span id="levelDisplay">1</span></div>
+    </div>
+  </div>
+  <div class="xp-bar-wrap">
+    <div class="xp-label" id="xpLabel">0 / 100 XP naar level 2</div>
+    <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+  </div>
+
+  <div style="padding:16px 16px 80px;">
+    <div class="hero">
+      <span class="hero-robot">🤖</span>
+      <h1>CodeQuest</h1>
+      <p>Leer coderen, AI en algoritmes — op jouw eigen tempo!</p>
+    </div>
+
+    <div class="robot-dialog">
+      Hé avonturier! Ik ben <strong>Robo</strong>, jouw coding-buddy. Kies een wereld en laten we beginnen! 💫
+    </div>
+
+    <div class="section-title">🌍 Werelden</div>
+    <div class="worlds-grid" id="worldsGrid"></div>
+
+    <div class="section-title">🏅 Jouw Badges</div>
+    <div class="badges-grid" id="badgesGrid"></div>
+
+    <div class="section-title">🏆 Toplijst</div>
+    <div class="lb-list" id="leaderboard"></div>
+  </div>
+</div>
+
+<!-- WORLD SCREEN -->
+<div id="world-screen" class="screen">
+  <div class="topbar">
+    <div class="topbar-logo" id="worldScreenTitle">Wereld</div>
+    <div class="topbar-stats">
+      <div class="stat-badge"><span class="icon">⭐</span><span id="xpDisplay2">0 XP</span></div>
+    </div>
+  </div>
+  <div style="padding:16px 16px 80px;">
+    <div class="robot-dialog" id="worldRobotMsg">Klaar voor een nieuw avontuur?</div>
+    <div class="section-title">📋 Levels</div>
+    <div class="levels-list" id="levelsList"></div>
+  </div>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="game" class="screen">
+  <div class="game-header">
+    <button class="back-btn" onclick="goBack()">← Terug</button>
+    <div class="game-title" id="gameTitle">Uitdaging</div>
+    <div class="question-count" id="questionCount">1/5</div>
+  </div>
+
+  <div class="xp-bar-wrap" style="padding:0;margin-bottom:12px;">
+    <div class="xp-bar"><div class="xp-fill" id="xpFillGame" style="width:0%"></div></div>
+  </div>
+
+  <div id="challengeArea"></div>
+
+  <div class="result-overlay" id="resultOverlay">
+    <div class="result-box">
+      <span class="result-emoji" id="resultEmoji">🎉</span>
+      <div class="result-title" id="resultTitle">Goed zo!</div>
+      <div class="result-msg" id="resultMsg">Je hebt de vraag correct beantwoord!</div>
+      <div class="result-xp" id="resultXP">+25 XP</div>
+      <button class="btn-primary" id="resultNextBtn" onclick="nextChallenge()">Volgende →</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE SCREEN -->
+<div id="profile" class="screen">
+  <div class="topbar">
+    <div class="topbar-logo">👤 Profiel</div>
+  </div>
+  <div style="padding:16px 16px 80px;">
+    <div class="profile-hero">
+      <span class="profile-avatar">🧑‍🚀</span>
+      <div class="profile-name" id="profileName">Code Avonturier</div>
+      <div class="profile-level" id="profileLevel">Level 1 - Beginner</div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-card-val" id="totalXPStat">0</div><div class="stat-card-label">Totale XP</div></div>
+      <div class="stat-card"><div class="stat-card-val" id="streakStat">0</div><div class="stat-card-label">Dag Streak 🔥</div></div>
+      <div class="stat-card"><div class="stat-card-val" id="completedStat">0</div><div class="stat-card-label">Uitdagingen</div></div>
+      <div class="stat-card"><div class="stat-card-val" id="badgesStat">0</div><div class="stat-card-label">Badges 🏅</div></div>
+    </div>
+
+    <div class="section-title">🎓 Voortgang per wereld</div>
+    <div id="worldProgress"></div>
+
+    <div class="section-title">🏅 Alle Badges</div>
+    <div class="badges-grid" id="allBadgesGrid"></div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" id="navHome" onclick="showScreen('home')">
+    <span class="nav-icon">🏠</span>Home
+  </button>
+  <button class="nav-btn" id="navPlay" onclick="showWorldSelect()">
+    <span class="nav-icon">🎮</span>Spelen
+  </button>
+  <button class="nav-btn" id="navProfile" onclick="showScreen('profile');updateProfile()">
+    <span class="nav-icon">👤</span>Profiel
+  </button>
+</nav>
+
+<!-- LEVEL UP OVERLAY -->
+<div class="levelup-overlay" id="levelupOverlay">
+  <div class="levelup-box">
+    <div class="levelup-stars">✨⭐✨</div>
+    <div class="levelup-text">LEVEL UP!</div>
+    <div class="levelup-sub" id="levelupSub">Je bent nu Level 2!</div>
+    <button class="btn-primary" style="margin-top:20px;width:auto;padding:12px 32px;" onclick="closeLevelup()">Geweldig! 🚀</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">🎉 Toast</div>
+
+<script>
+// ============ STATE ============
+let state = {
+  xp: 0, level: 1, streak: 1, completed: 0,
+  badges: [], worldProgress: {},
+  currentWorld: null, currentLevel: null,
+  currentChallengeIndex: 0, challenges: [],
+  sessionCorrect: 0,
+};
+
+const XP_PER_LEVEL = 100;
+const levels_config = [
+  { title:'Wereld 1 beginner level 1', xp:5 },
+  { title:'Wereld 1 beginner level 2', xp:10 },
+];
+
+// ============ WORLDS DATA ============
+const worlds = [
+  {
+    id:'coding', name:'Coding Eiland', icon:'💻', color:'#a259ff',
+    desc:'Leer programmeren met blokken',
+    robomsg:'Op dit eiland leer je hoe computers begrijpen wat jij wil! We gebruiken code-blokken als LEGO! 🧱',
+    levels:[
+      { name:'Hallo Robot!', desc:'Stuur je eerste opdracht', icon:'👋', challenges:['coding_seq1','coding_seq2','coding_mc1','coding_mc2','coding_drag1'] },
+      { name:'De Lus', desc:'Herhaling in code', icon:'🔄', challenges:['coding_loop1','coding_loop2','coding_mc3','coding_mc4','coding_drag2'] },
+      { name:'Als dan...', desc:'Beslissingen maken', icon:'🔀', challenges:['coding_if1','coding_if2','coding_mc5','coding_mc6','coding_drag3'] },
+    ]
+  },
+  {
+    id:'ai', name:'AI Wereld', icon:'🤖', color:'#00e5ff',
+    desc:'Ontdek hoe AI werkt',
+    robomsg:'AI is superintelligent? Nee! AI leert van voorbeelden, net zoals jij! Laten we kijken hoe! 🧠',
+    levels:[
+      { name:'Wat is AI?', desc:'Leer de basis van kunstmatige intelligentie', icon:'🧠', challenges:['ai_mc1','ai_mc2','ai_mc3','ai_mc4','ai_mc5'] },
+      { name:'AI leert!', desc:'Hoe AI trainingsdata gebruikt', icon:'📚', challenges:['ai_mc6','ai_mc7','ai_mc8','ai_mc9','ai_mc10'] },
+      { name:'AI in het leven', desc:'AI om je heen', icon:'🌍', challenges:['ai_mc11','ai_mc12','ai_mc13','ai_mc14','ai_mc15'] },
+    ]
+  },
+  {
+    id:'algo', name:'Algoritme Jungle', icon:'🌿', color:'#39ff14',
+    desc:'Ontdek stap-voor-stap denken',
+    robomsg:'Een algoritme is een recept voor een computer! Stap voor stap naar het antwoord! 🍳',
+    levels:[
+      { name:'Stap voor Stap', desc:'Maak jouw eerste algoritme', icon:'👣', challenges:['algo_mc1','algo_mc2','algo_seq1','algo_seq2','algo_mc3'] },
+      { name:'Sorteren', desc:'Leer hoe computers sorteren', icon:'📊', challenges:['algo_sort1','algo_mc4','algo_mc5','algo_seq3','algo_mc6'] },
+      { name:'Zoeken', desc:'Vind het snelst!', icon:'🔍', challenges:['algo_mc7','algo_mc8','algo_mc9','algo_mc10','algo_mc11'] },
+    ]
+  },
+  {
+    id:'data', name:'Data Stad', icon:'📊', color:'#ffd700',
+    desc:'Leer patronen zien in data',
+    robomsg:'Data zijn feiten en cijfers. Als je ze bekijkt kun je verbazingwekkende dingen ontdekken! 🔎',
+    levels:[
+      { name:'Wat is Data?', desc:'Leer over informatie', icon:'📋', challenges:['data_mc1','data_mc2','data_mc3','data_mc4','data_mc5'] },
+      { name:'Patronen', desc:'Vind het patroon', icon:'🔮', challenges:['data_pat1','data_pat2','data_mc6','data_mc7','data_mc8'] },
+      { name:'Grafieken', desc:'Data visualiseren', icon:'📈', challenges:['data_mc9','data_mc10','data_mc11','data_mc12','data_mc13'] },
+    ]
+  },
+];
+
+// ============ ALL CHALLENGES ============
+const allChallenges = {
+  // CODING
+  coding_mc1: { type:'mc', emoji:'💻',
+    question:'Wat is een programma?', hint:'🤖 Robo zegt: Denk aan een recept voor een computer!',
+    options:['Een lijst instructies voor een computer','Een spelletje op je telefoon','Een boek over computers','Een soort robot'],
+    correct:0, explanation:'Een programma is een lijst instructies die de computer vertelt wat hij moet doen!' },
+  coding_mc2: { type:'mc', emoji:'🖥️',
+    question:'Wat doet een computer als er een FOUT in de code zit?', hint:'🤖 Robo zegt: Computers volgen regels heel precies!',
+    options:['Hij raapt gewoon iets','Hij stopt of geeft een foutmelding','Hij wordt boos','Hij vraagt om hulp'],
+    correct:1, explanation:'Computers volgen regels precies. Een fout in de code zorgt voor een foutmelding of het programma stopt!' },
+  coding_mc3: { type:'mc', emoji:'🔄',
+    question:'Wat is een LOOP in programmeren?', hint:'🤖 Robo zegt: Wat als je 100x hetzelfde moet doen?',
+    options:['Een sprong in het spel','Iets wat je vele keren herhaalt','Een kleur in de code','Een soort bug'],
+    correct:1, explanation:'Een loop (lus) herhaalt een stuk code. Handig als je iets meerdere keren wilt doen!' },
+  coding_mc4: { type:'mc', emoji:'🐛',
+    question:'Hoe heet een fout in de code?', hint:'🤖 Robo zegt: Er kruipt iets door je code...',
+    options:['Crash','Blok','Bug','Glitch'],
+    correct:2, explanation:'Een fout in de code heet een "bug". De term komt van vroeger toen een echte kever een computer kapotmaakte!' },
+  coding_mc5: { type:'mc', emoji:'🔀',
+    question:'Wat doet een IF-statement?', hint:'🤖 Robo zegt: Als het regent, neem ik een paraplu...',
+    options:['Herhaal iets 10 keer','Maak een keuze op basis van een voorwaarde','Maak de code sneller','Zet de computer uit'],
+    correct:1, explanation:'Een IF-statement laat de computer een keuze maken. Als een voorwaarde waar is, dan doet hij iets!' },
+  coding_mc6: { type:'mc', emoji:'📦',
+    question:'Wat is een variabele?', hint:'🤖 Robo zegt: Denk aan een doos met een naam erop!',
+    options:['Een soort lus','Een opslagplaats voor informatie','Een soort bug','Een kleur in het scherm'],
+    correct:1, explanation:'Een variabele is als een doos: je geeft hem een naam en stopt er informatie in die je later kunt gebruiken!' },
+
+  coding_seq1: { type:'sequence', emoji:'🎯',
+    question:'Zet de stappen in de juiste volgorde om de robot naar de ster te sturen:',
+    hint:'🤖 Robo zegt: Begin altijd met opstarten!',
+    correctSeq:['Start','Ga vooruit','Draai rechts','Ga vooruit','Stop'],
+    options:['Ga vooruit','Draai rechts','Start','Stop','Ga vooruit'] },
+  coding_seq2: { type:'sequence', emoji:'🤖',
+    question:'Zet de stappen op volgorde om een robot te laten dansen:',
+    hint:'🤖 Robo zegt: Stap voor stap, dan gaat het vanzelf!',
+    correctSeq:['Start muziek','Beweeg armen','Draai rond','Herhaal 4x','Stop muziek'],
+    options:['Herhaal 4x','Start muziek','Stop muziek','Draai rond','Beweeg armen'] },
+  coding_drag1: { type:'drag', emoji:'🧩',
+    question:'Sleep de CODE-BLOKKEN naar het veld om de robot te laten bewegen:',
+    hint:'🤖 Robo zegt: Bouw je programma als LEGO!',
+    correctBlocks:['Start','Ga vooruit','Ga vooruit','Stop'],
+    availableBlocks:[
+      {text:'Start',cls:'block-start'},{text:'Ga vooruit',cls:'block-move'},{text:'Draai links',cls:'block-turn'},
+      {text:'Ga vooruit',cls:'block-move'},{text:'Stop',cls:'block-start'},{text:'Spring',cls:'block-sound'}] },
+  coding_drag2: { type:'drag', emoji:'🔄',
+    question:'Bouw een LOOP: laat de robot 3 keer vooruit gaan:',
+    hint:'🤖 Robo zegt: Met een lus hoef je niet alles te herhalen!',
+    correctBlocks:['Start','Herhaal 3x','Ga vooruit','Stop'],
+    availableBlocks:[
+      {text:'Start',cls:'block-start'},{text:'Herhaal 3x',cls:'block-repeat'},{text:'Ga vooruit',cls:'block-move'},
+      {text:'Draai rechts',cls:'block-turn'},{text:'Stop',cls:'block-start'},{text:'Maak geluid',cls:'block-sound'}] },
+  coding_drag3: { type:'drag', emoji:'🔀',
+    question:'Maak een keuze: als er een muur is, draai dan:',
+    hint:'🤖 Robo zegt: Als... dan...',
+    correctBlocks:['Start','Als muur','Draai links','Stop'],
+    availableBlocks:[
+      {text:'Start',cls:'block-start'},{text:'Als muur',cls:'block-if'},{text:'Draai links',cls:'block-turn'},
+      {text:'Ga vooruit',cls:'block-move'},{text:'Stop',cls:'block-start'},{text:'Spring',cls:'block-sound'}] },
+  coding_loop1: { type:'mc', emoji:'🔄',
+    question:'Hoeveel keer voert de computer dit uit: HERHAAL 5x { Zeg "Hallo!" }',
+    hint:'🤖 Robo zegt: Tel de lus!',
+    options:['1 keer','3 keer','5 keer','10 keer'], correct:2,
+    explanation:'De lus zegt "Herhaal 5x" dus de computer zegt 5 keer "Hallo!"' },
+  coding_loop2: { type:'mc', emoji:'♾️',
+    question:'Wat is een ONEINDIGE lus?', hint:'🤖 Robo zegt: Stopt hij ooit?',
+    options:['Een lus die 100 keer draait','Een lus die nooit stopt','Een lus met 0 herhalingen','Een lus in een lus'],
+    correct:1, explanation:'Een oneindige lus stopt nooit. Dat is meestal een bug! De computer blijft dan voor altijd hetzelfde doen.' },
+  coding_if1: { type:'mc', emoji:'☀️',
+    question:'Als het regent, pak dan een paraplu. Welk codewoord hoort hier bij?', hint:'🤖 Robo zegt: Keuzes maken!',
+    options:['LOOP','IF','FUNCTION','VARIABLE'], correct:1,
+    explanation:'IF (als) gebruik je voor beslissingen. Als iets waar is, doe dan iets!' },
+  coding_if2: { type:'mc', emoji:'🚦',
+    question:'Wat betekent "ELSE" bij een IF-statement?',
+    hint:'🤖 Robo zegt: Wat als de voorwaarde NIET waar is?',
+    options:['Doe het opnieuw','Anders (als het niet waar is)','Stop de code','Maak een lus'],
+    correct:1, explanation:'ELSE betekent "anders". Als de IF-voorwaarde niet waar is, voert de computer de ELSE-code uit!' },
+
+  // AI
+  ai_mc1: { type:'mc', emoji:'🧠',
+    question:'Wat betekent AI?', hint:'🤖 Robo zegt: Het is in het Engels!',
+    options:['Automatische Instructie','Altijd Intelligent','Kunstmatige Intelligentie','Android Internet'],
+    correct:2, explanation:'AI staat voor Kunstmatige Intelligentie (Artificial Intelligence). Het is intelligentie gemaakt door mensen!' },
+  ai_mc2: { type:'mc', emoji:'🤖',
+    question:'Hoe "leert" een AI?', hint:'🤖 Robo zegt: Net zoals jij leert van voorbeelden!',
+    options:['Door boeken te lezen','Door heel veel voorbeelden te zien','Door naar school te gaan','Door TV te kijken'],
+    correct:1, explanation:'AI leert door heel veel voorbeelden te analyseren. Zo leert een AI katten herkennen door duizenden kattenfoto\'s!' },
+  ai_mc3: { type:'mc', emoji:'🐱',
+    question:'Je laat een AI 1000 foto\'s van katten zien. Daarna kan de AI:',
+    hint:'🤖 Robo zegt: Wat denk je dat de AI heeft geleerd?',
+    options:['Katten horen','Nieuwe katten herkennen','Zelf een kat zijn','Katten begrijpen'],
+    correct:1, explanation:'Na 1000 voorbeelden leert de AI patronen herkennen. Zo kan hij nieuwe katten herkennen die hij nog nooit heeft gezien!' },
+  ai_mc4: { type:'mc', emoji:'🎙️',
+    question:'Welk apparaat gebruikt AI om jou te begrijpen?',
+    hint:'🤖 Robo zegt: Je praat ermee!',
+    options:['De muis','De printer','De spraakassistent (Siri/Google)','Het toetsenbord'],
+    correct:2, explanation:'Spraakassistenten zoals Siri en Google gebruiken AI om jouw stem te begrijpen en antwoorden te geven!' },
+  ai_mc5: { type:'mc', emoji:'🚗',
+    question:'Hoe "ziet" een zelfrijdende auto de weg?',
+    hint:'🤖 Robo zegt: Geen mensenogen nodig!',
+    options:['Met een camera alleen','Met sensoren en camera\'s + AI','Door GPS','Met een radar'],
+    correct:1, explanation:'Zelfrijdende auto\'s gebruiken cameras, sensoren en AI samen om de weg, andere auto\'s en voetgangers te herkennen!' },
+  ai_mc6: { type:'mc', emoji:'📊',
+    question:'Wat is "trainingsdata" bij AI?',
+    hint:'🤖 Robo zegt: Hoe leer jij eigenlijk rekenen?',
+    options:['De snelheid van de computer','De voorbeelden waarmee AI leert','Het geheugen van de AI','De naam van het programma'],
+    correct:1, explanation:'Trainingsdata zijn de voorbeelden die een AI gebruikt om te leren. Meer voorbeelden = slimmere AI!' },
+  ai_mc7: { type:'mc', emoji:'❌',
+    question:'Kan een AI altijd fouten maken?',
+    hint:'🤖 Robo zegt: Zelfs ik maak fouten!',
+    options:['Nee, AI is altijd perfect','Ja, AI kan fouten maken','Alleen oude AI','Alleen als de stroom uitvalt'],
+    correct:1, explanation:'AI kan fouten maken, vooral als de trainingsdata niet goed is of als het iets tegenkomt wat het nog niet kent!' },
+  ai_mc8: { type:'mc', emoji:'🎨',
+    question:'Kan AI kunst maken?',
+    hint:'🤖 Robo zegt: Denk aan DALL-E of Midjourney!',
+    options:['Nee, AI kan niet creatief zijn','Ja, AI kan afbeeldingen en muziek maken','Alleen teksten','Alleen wiskunde'],
+    correct:1, explanation:'AI kan kunst, muziek en teksten maken door te leren van bestaande voorbeelden. Bijzonder, toch?' },
+  ai_mc9: { type:'mc', emoji:'🔮',
+    question:'Wat kan AI NIET?',
+    hint:'🤖 Robo zegt: Ik kan veel, maar niet alles!',
+    options:['Afbeeldingen herkennen','Tekst schrijven','Gevoelens echt voelen','Vertalen'],
+    correct:2, explanation:'AI heeft geen echte gevoelens. Het doet alsof, maar er is geen bewustzijn achter!' },
+  ai_mc10: { type:'mc', emoji:'📱',
+    question:'Welk voorbeeld van AI gebruik jij elke dag?',
+    hint:'🤖 Robo zegt: Check je telefoon!',
+    options:['De lichtschakelaar','Autocorrectie op je telefoon','De thermostaat','Het stopcontact'],
+    correct:1, explanation:'Autocorrectie is AI! Het leert van hoe mensen typen en helpt je de juiste woorden te vinden.' },
+  ai_mc11: { type:'mc', emoji:'🏥',
+    question:'Hoe helpt AI in ziekenhuizen?',
+    hint:'🤖 Robo zegt: Dokters krijgen hulp!',
+    options:['AI opereert alleen','AI helpt röntgenfoto\'s analyseren','AI geeft medicijnen','AI praat met patiënten'],
+    correct:1, explanation:'AI helpt artsen röntgenfoto\'s te analyseren en ziektes sneller te herkennen. Maar de arts beslist altijd zelf!' },
+  ai_mc12: { type:'mc', emoji:'🌍',
+    question:'Kan AI helpen bij klimaatverandering?',
+    hint:'🤖 Robo zegt: De planeet heeft hulp nodig!',
+    options:['Nee, dat is te moeilijk','Ja, door energie beter te beheren','Alleen bij het weer','AI maakt het erger'],
+    correct:1, explanation:'AI kan energieverbruik optimaliseren, weerspatronen voorspellen en helpen duurzame oplossingen te vinden!' },
+  ai_mc13: { type:'mc', emoji:'🎮',
+    question:'Hoe gebruikt een game AI?',
+    hint:'🤖 Robo zegt: De tegenstander in een game is slim dankzij...',
+    options:['Er zijn echte spelers achter','AI bestuurt de computervijanden','De game zoekt online','Willekeurige knoppen'],
+    correct:1, explanation:'In games gebruikt AI om tegenstanders slim te laten bewegen en reageren op wat jij doet!' },
+  ai_mc14: { type:'mc', emoji:'🔍',
+    question:'Hoe weet YouTube welke video\'s jij leuk vindt?',
+    hint:'🤖 Robo zegt: Hij houdt bij wat je kijkt!',
+    options:['Iemand kiest voor je','AI analyseert wat je kijkt en aanbeveelt vergelijkbare video\'s','Je vrienden kiezen','Willekeurig'],
+    correct:1, explanation:'YouTube gebruikt AI om bij te houden wat je kijkt en soortgelijke video\'s aan te bevelen. Dat heet een aanbevelingssysteem!' },
+  ai_mc15: { type:'mc', emoji:'⚠️',
+    question:'Wat is een gevaar van AI?',
+    hint:'🤖 Robo zegt: Zelfs ik kan fouten maken of misbruikt worden...',
+    options:['AI werkt te langzaam','AI kan vooroordelen leren van slechte data','AI gebruikt te weinig stroom','AI is te duur'],
+    correct:1, explanation:'Als de trainingsdata vooroordelen bevat, leert de AI die ook. Daarom is goede, eerlijke data zo belangrijk!' },
+
+  // ALGORITMES
+  algo_mc1: { type:'mc', emoji:'📋',
+    question:'Wat is een algoritme?',
+    hint:'🤖 Robo zegt: Denk aan een recept!',
+    options:['Een soort computer','Een stap-voor-stap plan om een probleem op te lossen','Een programmeertaal','Een soort robot'],
+    correct:1, explanation:'Een algoritme is een stap-voor-stap plan. Net als een recept: volg de stappen en je krijgt het resultaat!' },
+  algo_mc2: { type:'mc', emoji:'🍳',
+    question:'Welk voorbeeld is een algoritme?',
+    hint:'🤖 Robo zegt: Welke heeft duidelijke stappen?',
+    options:['Een schilderij','Een recept','Een boek','Een foto'],
+    correct:1, explanation:'Een recept is een algoritme! Het heeft duidelijke stappen: pak dit, doe dat, wacht zo lang...' },
+  algo_mc3: { type:'mc', emoji:'⚡',
+    question:'Waarom is een goed algoritme belangrijk?',
+    hint:'🤖 Robo zegt: Snelheid telt!',
+    options:['Het ziet er mooier uit','Het is sneller en gebruikt minder energie','Het is langer','Het heeft meer kleuren'],
+    correct:1, explanation:'Een goed algoritme lost een probleem sneller op met minder stappen. Dat spaart tijd en energie!' },
+  algo_mc4: { type:'mc', emoji:'🃏',
+    question:'Je hebt 10 kaarten door elkaar. Hoe sorteer je het snelst?',
+    hint:'🤖 Robo zegt: Denk slim, niet hard!',
+    options:['Gewoon willekeurig schudden','Vergelijk steeds twee kaarten en zet de kleinste links','Een voor een van de grond pakken','Alle kaarten tegelijk gooien'],
+    correct:1, explanation:'Door steeds twee kaarten te vergelijken en de kleinste te verplaatsen, sorteer je snel en slim!' },
+  algo_mc5: { type:'mc', emoji:'🔢',
+    question:'Hoe sorteert een computer getallen van klein naar groot?',
+    hint:'🤖 Robo zegt: Vergelijken is de sleutel!',
+    options:['Hij raadt het gewoon','Hij vergelijkt getallen en zet ze op volgorde','Hij telt alles op','Hij gooit ze door elkaar'],
+    correct:1, explanation:'Een sorteeralgoritme vergelijkt getallen en wisselt ze om totdat alles op volgorde staat!' },
+  algo_mc6: { type:'mc', emoji:'🏃',
+    question:'Wat is "bubble sort"?',
+    hint:'🤖 Robo zegt: Bellen drijven omhoog!',
+    options:['Sorteren door te schudden','Grote getallen "borrelen" omhoog door vergelijkingen','Sorteren op kleur','Willekeurig sorteren'],
+    correct:1, explanation:'Bij bubble sort vergelijk je twee buren en wissel je ze om als de grote aan de linkerkant staat. Zo borrelen grote getallen naar boven!' },
+  algo_mc7: { type:'mc', emoji:'🔍',
+    question:'Je zoekt het getal 7 in de rij: 1,2,3,4,5,6,7,8,9,10. Hoe zoek je het snelst?',
+    hint:'🤖 Robo zegt: Halveer en zoek!',
+    options:['Begin bij 1 en ga door','Controleer het midden: 5. 7>5, zoek rechts helft','Controleer willekeurig','Begin bij 10'],
+    correct:1, explanation:'Binair zoeken! Check het midden, als je getal groter is ga je rechts zoeken, anders links. Heel snel!' },
+  algo_mc8: { type:'mc', emoji:'📞',
+    question:'Hoe werkt een telefoonboek (algoritme)?',
+    hint:'🤖 Robo zegt: Namen staan op alfabetische volgorde!',
+    options:['Willekeurige volgorde','Alfabetisch gesorteerd zodat je snel vindt','Op telefoonnummer','Op datum toegevoegd'],
+    correct:1, explanation:'Een telefoonboek gebruikt het sorteeralgoritme: alfabetisch. Zo vind je snel wie je zoekt!' },
+  algo_mc9: { type:'mc', emoji:'🗺️',
+    question:'GPS zoekt de kortste route. Wat gebruikt het?',
+    hint:'🤖 Robo zegt: Er zijn heel veel mogelijke routes!',
+    options:['Het kiest willekeurig','Een zoekalgoritme dat alle routes vergelijkt','Het vraagt aan mensen','Het gaat altijd rechtdoor'],
+    correct:1, explanation:'GPS gebruikt slimme zoekalgoritmes (zoals Dijkstra) om de kortste of snelste route te berekenen!' },
+  algo_mc10: { type:'mc', emoji:'🌐',
+    question:'Hoe vindt Google de beste zoekresultaten?',
+    hint:'🤖 Robo zegt: Miljoenen websites in milliseconden!',
+    options:['Iemand zoekt handmatig','Een algoritme rangschikt websites op relevantie','Willekeurig','Alleen bekende websites'],
+    correct:1, explanation:'Google\'s PageRank-algoritme analyseert miljoenen websites en rangschikt ze op relevantie voor jouw zoekopdracht!' },
+  algo_mc11: { type:'mc', emoji:'🎯',
+    question:'Wat is een "efficiënt" algoritme?',
+    hint:'🤖 Robo zegt: Minder stappen = beter!',
+    options:['Een algoritme dat veel stappen heeft','Een algoritme dat het probleem oplost met zo min mogelijk stappen','Een algoritme met mooie code','Een lang algoritme'],
+    correct:1, explanation:'Efficiënt betekent: het probleem oplossen met zo weinig mogelijk stappen en tijd. Minder = beter!' },
+
+  algo_seq1: { type:'sequence', emoji:'🍕',
+    question:'Zet de stappen op volgorde om een pizza te maken (algoritme):',
+    hint:'🤖 Robo zegt: Volgorde is alles bij een algoritme!',
+    correctSeq:['Verwarm oven','Maak deeg','Leg toppings','Bak 20 min','Eet!'],
+    options:['Bak 20 min','Eet!','Maak deeg','Verwarm oven','Leg toppings'] },
+  algo_seq2: { type:'sequence', emoji:'🦷',
+    question:'Algoritme: tandenpoetsen. Zet op volgorde:',
+    hint:'🤖 Robo zegt: Wat doe je eerst?',
+    correctSeq:['Pak tandenborstel','Doe tandpasta','Poets 2 min','Spoel mond','Klaar!'],
+    options:['Spoel mond','Poets 2 min','Doe tandpasta','Klaar!','Pak tandenborstel'] },
+  algo_seq3: { type:'sequence', emoji:'🔢',
+    question:'Sorteer deze getallen stap voor stap: [3, 1, 2]',
+    hint:'🤖 Robo zegt: Vergelijk steeds twee!',
+    correctSeq:['Vergelijk 3 en 1','Wissel: [1,3,2]','Vergelijk 3 en 2','Wissel: [1,2,3]','Klaar!'],
+    options:['Klaar!','Wissel: [1,2,3]','Vergelijk 3 en 1','Vergelijk 3 en 2','Wissel: [1,3,2]'] },
+  algo_sort1: { type:'mc', emoji:'🔢',
+    question:'Sorteer van klein naar groot: 5, 2, 8, 1. Wat is het resultaat?',
+    hint:'🤖 Robo zegt: Klein naar groot!',
+    options:['8,5,2,1','1,2,5,8','2,1,5,8','5,2,8,1'],
+    correct:1, explanation:'Van klein naar groot: 1, 2, 5, 8. Goed gesorteerd!' },
+
+  // DATA
+  data_mc1: { type:'mc', emoji:'📊',
+    question:'Wat is "data"?',
+    hint:'🤖 Robo zegt: Het is overal om je heen!',
+    options:['Een soort computer','Verzamelde feiten en informatie','Een spelletje','Een boek'],
+    correct:1, explanation:'Data zijn verzamelde feiten en informatie. Temperaturen, namen, scores - het is allemaal data!' },
+  data_mc2: { type:'mc', emoji:'📱',
+    question:'Welk voorbeeld is data?',
+    hint:'🤖 Robo zegt: Kijk om je heen!',
+    options:['Een potlood','De temperatuur van gisteren','Een stoel','Een lamp'],
+    correct:1, explanation:'De temperatuur van gisteren is data! Het is een meetbaar feit dat opgeslagen kan worden.' },
+  data_mc3: { type:'mc', emoji:'🔒',
+    question:'Waarom is het belangrijk om je data te beschermen?',
+    hint:'🤖 Robo zegt: Jouw info is waardevol!',
+    options:['Het is niet belangrijk','Zodat anderen het niet misbruiken','Om het te vergeten','Om het te wissen'],
+    correct:1, explanation:'Persoonlijke data (naam, adres, wachtwoorden) moet je beschermen zodat anderen het niet kunnen misbruiken!' },
+  data_mc4: { type:'mc', emoji:'📈',
+    question:'Wat is het doel van data verzamelen?',
+    hint:'🤖 Robo zegt: Waarom tellen we dingen?',
+    options:['Om te bewaren in een la','Om patronen te vinden en betere beslissingen te nemen','Om het te vergeten','Om het te printen'],
+    correct:1, explanation:'Data verzamelen helpt ons patronen te vinden en betere beslissingen te nemen. Meer data = slimmere keuzes!' },
+  data_mc5: { type:'mc', emoji:'🏫',
+    question:'Een school telt hoeveel leerlingen elke dag aanwezig zijn. Dat is:',
+    hint:'🤖 Robo zegt: Ze meten iets...',
+    options:['Spelen','Data verzamelen','Kunst maken','Koken'],
+    correct:1, explanation:'Het bijhouden van aanwezigheid is data verzamelen. De school gebruikt die data om te plannen!' },
+  data_mc6: { type:'mc', emoji:'🌡️',
+    question:'Als het elke dag warmer wordt, is dat een:',
+    hint:'🤖 Robo zegt: Iets wat zich herhaalt of verandert...',
+    options:['Toeval','Patroon','Fout','Algoritme'],
+    correct:1, explanation:'Een patroon is iets wat zich herhaalt of een trend volgt. Stijgende temperaturen zijn een patroon!' },
+  data_mc7: { type:'mc', emoji:'🎲',
+    question:'Je gooit 10 keer een munt. 7 keer kop, 3 keer munt. Wat vertelt deze data?',
+    hint:'🤖 Robo zegt: Kijk naar de getallen!',
+    options:['De munt is kapot','Meer kans op kop in deze worp','De munt valt altijd op kop','Data klopt niet'],
+    correct:1, explanation:'De data toont dat kop vaker voorkwam in deze worp. Maar bij meer worpen worden de kansen gelijker!' },
+  data_mc8: { type:'mc', emoji:'📉',
+    question:'Een grafiek laat zien dat ijsjes verkopen stijgt in de zomer. Dat betekent:',
+    hint:'🤖 Robo zegt: Warm weer en ijsjes...',
+    options:['Toeval','Er is een verband tussen warm weer en ijsjesverkoop','Ijsjes zijn goedkoper in zomer','Geen patroon'],
+    correct:1, explanation:'De data toont een verband: warm weer → meer ijsjes verkopen. Zo vind je patronen in data!' },
+  data_mc9: { type:'mc', emoji:'📊',
+    question:'Welke grafiek gebruik je om scores te vergelijken?',
+    hint:'🤖 Robo zegt: Balken naast elkaar!',
+    options:['Cirkeldiagram','Staafdiagram','Lijndiagram','Tabel'],
+    correct:1, explanation:'Een staafdiagram (bar chart) is perfect om dingen naast elkaar te vergelijken. Langste balk = hoogste waarde!' },
+  data_mc10: { type:'mc', emoji:'🥧',
+    question:'Je wilt laten zien welk deel van de klas voetbal speelt. Welke grafiek?',
+    hint:'🤖 Robo zegt: Denk aan een taartpunt!',
+    options:['Staafdiagram','Lijndiagram','Cirkeldiagram (taartdiagram)','Puntenwolk'],
+    correct:2, explanation:'Een cirkeldiagram (taartdiagram) laat zien welk deel van het geheel iets is. Perfect voor percentages!' },
+  data_mc11: { type:'mc', emoji:'📈',
+    question:'Welke grafiek is het best voor temperatuurverloop over een week?',
+    hint:'🤖 Robo zegt: Verloop in de tijd!',
+    options:['Cirkeldiagram','Staafdiagram','Lijndiagram','Tabel'],
+    correct:2, explanation:'Een lijndiagram is perfect voor veranderingen in de tijd. Je ziet meteen of het stijgt of daalt!' },
+  data_mc12: { type:'mc', emoji:'🔢',
+    question:'Wat betekent het "gemiddelde" van data?',
+    hint:'🤖 Robo zegt: Tel op en deel!',
+    options:['Het grootste getal','Tel alle getallen op en deel door hoeveel er zijn','Het kleinste getal','Het middelste getal'],
+    correct:1, explanation:'Het gemiddelde bereken je door alle getallen op te tellen en te delen door het aantal getallen!' },
+  data_mc13: { type:'mc', emoji:'🎓',
+    question:'Klas A heeft scores: 8,7,9,6,10. Wat is het gemiddelde?',
+    hint:'🤖 Robo zegt: Tel op: 8+7+9+6+10 = 40, deel door 5!',
+    options:['7','7.5','8','9'],
+    correct:2, explanation:'8+7+9+6+10 = 40. 40 ÷ 5 = 8. Het gemiddelde is 8!' },
+
+  data_pat1: { type:'sequence', emoji:'🔮',
+    question:'Wat is het volgende getal in het patroon? 2, 4, 6, 8, ...',
+    hint:'🤖 Robo zegt: Welk patroon zie je?',
+    correctSeq:['Bekijk de stappen: +2','2+2=4, 4+2=6','6+2=8, dus: 8+2=','Antwoord: 10!','Patroon gevonden!'],
+    options:['Antwoord: 10!','6+2=8, dus: 8+2=','Bekijk de stappen: +2','Patroon gevonden!','2+2=4, 4+2=6'] },
+  data_pat2: { type:'sequence', emoji:'🌈',
+    question:'Kleurpatroon: Rood, Blauw, Groen, Rood, Blauw, ... Wat komt er?',
+    hint:'🤖 Robo zegt: Het herhaalt zich!',
+    correctSeq:['Herkennen: 3 kleuren','Rood→Blauw→Groen','Dan begint het opnieuw','Na Blauw komt:','Groen!'],
+    options:['Groen!','Rood→Blauw→Groen','Na Blauw komt:','Dan begint het opnieuw','Herkennen: 3 kleuren'] },
+};
+
+// ============ BADGES ============
+const badgeDefs = [
+  { id:'first_win', icon:'🏆', name:'Eerste Winnaar', desc:'Los je eerste uitdaging op', condition: s => s.completed >= 1 },
+  { id:'coding_master', icon:'💻', name:'Code Meester', desc:'Voltooi Coding Eiland', condition: s => (s.worldProgress['coding']||0) >= 3 },
+  { id:'ai_expert', icon:'🤖', name:'AI Expert', desc:'Voltooi AI Wereld', condition: s => (s.worldProgress['ai']||0) >= 3 },
+  { id:'algo_hero', icon:'⚡', name:'Algo Held', desc:'Voltooi Algoritme Jungle', condition: s => (s.worldProgress['algo']||0) >= 3 },
+  { id:'data_scientist', icon:'📊', name:'Data Scientist', desc:'Voltooi Data Stad', condition: s => (s.worldProgress['data']||0) >= 3 },
+  { id:'xp100', icon:'⭐', name:'XP 100', desc:'Verdien 100 XP', condition: s => s.xp >= 100 },
+  { id:'xp500', icon:'🌟', name:'XP 500', desc:'Verdien 500 XP', condition: s => s.xp >= 500 },
+  { id:'streak3', icon:'🔥', name:'Op Steak!', desc:'3 dagen op rij', condition: s => s.streak >= 3 },
+  { id:'perfect', icon:'💯', name:'Perfect Score', desc:'5/5 juist in een level', condition: s => s.sessionCorrect >= 5 },
+  { id:'explorer', icon:'🌍', name:'Ontdekker', desc:'Start alle 4 werelden', condition: s => Object.keys(s.worldProgress||{}).length >= 4 },
+];
+
+// ============ LEADERBOARD ============
+const leaderboard = [
+  { name:'🦁 LeeuwCode', xp:1250, avatar:'🦁' },
+  { name:'🦊 SlimmeFox', xp:980, avatar:'🦊' },
+  { name:'🐧 PingCode', xp:820, avatar:'🐧' },
+  { name:'🐬 DataDolfijn', xp:750, avatar:'🐬' },
+  { name:'Jij', xp:0, avatar:'🧑‍🚀', isPlayer:true },
+];
+
+// ============ INIT ============
+function init() {
+  createStars();
+  loadState();
+  renderWorlds();
+  renderLeaderboard();
+  renderBadges();
+  updateXPBar();
+}
+
+function createStars() {
+  const c = document.getElementById('starsContainer');
+  for(let i=0;i<60;i++) {
+    const s = document.createElement('div');
+    s.className='star';
+    const sz = Math.random()*3+1;
+    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--dur:${2+Math.random()*4}s;animation-delay:${Math.random()*4}s`;
+    c.appendChild(s);
+  }
+}
+
+function loadState() {
+  const saved = localStorage.getItem('codequest_state');
+  if(saved) try { Object.assign(state, JSON.parse(saved)); } catch(e){}
+}
+
+function saveState() {
+  localStorage.setItem('codequest_state', JSON.stringify(state));
+}
+
+// ============ SCREENS ============
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  const map = {home:'navHome','world-screen':'navPlay',game:'navPlay',profile:'navProfile'};
+  if(map[id]) document.getElementById(map[id])?.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function showWorldSelect() {
+  showScreen('home');
+  setTimeout(()=>document.getElementById('worldsGrid').scrollIntoView({behavior:'smooth'}),100);
+}
+
+// ============ RENDER HOME ============
+function renderWorlds() {
+  const grid = document.getElementById('worldsGrid');
+  grid.innerHTML = worlds.map(w => {
+    const prog = state.worldProgress[w.id] || 0;
+    const total = w.levels.length;
+    const pct = Math.round((prog/total)*100);
+    return `<div class="world-card" style="--glow-color:${w.color}" onclick="openWorld('${w.id}')">
+      <span class="world-icon">${w.icon}</span>
+      <div class="world-name">${w.name}</div>
+      <div class="world-desc">${w.desc}</div>
+      <div class="world-progress-bar"><div class="world-progress-fill" style="width:${pct}%;background:${w.color}"></div></div>
+      <div style="font-size:0.7rem;color:var(--muted);margin-top:4px">${prog}/${total} levels</div>
+    </div>`;
+  }).join('');
+}
+
+function renderLeaderboard() {
+  const lb = [...leaderboard];
+  lb[4].xp = state.xp;
+  lb.sort((a,b)=>b.xp-a.xp);
+  const top5 = lb.slice(0,5);
+  const ranks = ['🥇','🥈','🥉','4','5'];
+  const rankCls = ['gold','silver','bronze','',''];
+  document.getElementById('leaderboard').innerHTML = top5.map((p,i)=>`
+    <div class="lb-item" ${p.isPlayer?'style="border:2px solid var(--accent2)"':''}>
+      <div class="lb-rank ${rankCls[i]}">${ranks[i]}</div>
+      <div class="lb-avatar">${p.avatar}</div>
+      <div class="lb-name">${p.name}${p.isPlayer?' (Jij)':''}</div>
+      <div class="lb-xp">${p.xp} XP</div>
+    </div>`).join('');
+}
+
+function renderBadges() {
+  checkBadges();
+  const grid = document.getElementById('badgesGrid');
+  grid.innerHTML = badgeDefs.slice(0,6).map(b=>{
+    const earned = state.badges.includes(b.id);
+    return `<div class="badge-item ${earned?'earned':'locked-badge'}" title="${b.desc}">
+      <span class="badge-icon">${b.icon}</span>
+      <div class="badge-name">${b.name}</div>
+    </div>`;
+  }).join('');
+}
+
+function checkBadges() {
+  badgeDefs.forEach(b => {
+    if(!state.badges.includes(b.id) && b.condition(state)) {
+      state.badges.push(b.id);
+      showToast(`🏅 Badge: ${b.name}!`);
+    }
+  });
+  saveState();
+}
+
+function updateXPBar() {
+  const xpInLevel = state.xp % XP_PER_LEVEL;
+  const pct = (xpInLevel/XP_PER_LEVEL)*100;
+  document.querySelectorAll('.xp-fill').forEach(f=>f.style.width=pct+'%');
+  document.getElementById('xpDisplay').textContent = state.xp+' XP';
+  if(document.getElementById('xpDisplay2')) document.getElementById('xpDisplay2').textContent = state.xp+' XP';
+  document.getElementById('levelDisplay').textContent = state.level;
+  document.getElementById('streakDisplay').textContent = state.streak;
+  const nextLvlXP = state.level * XP_PER_LEVEL;
+  document.getElementById('xpLabel').textContent = `${xpInLevel} / ${XP_PER_LEVEL} XP naar level ${state.level+1}`;
+}
+
+// ============ WORLD SCREEN ============
+function openWorld(worldId) {
+  const world = worlds.find(w=>w.id===worldId);
+  state.currentWorld = worldId;
+  document.getElementById('worldScreenTitle').textContent = world.icon+' '+world.name;
+  document.getElementById('worldRobotMsg').textContent = world.robomsg;
+  document.getElementById('xpDisplay2').textContent = state.xp+' XP';
+
+  const prog = state.worldProgress[worldId] || 0;
+  document.getElementById('levelsList').innerHTML = world.levels.map((lvl,i)=>{
+    const completed = i < prog;
+    const locked = i > prog;
+    return `<div class="level-item ${completed?'completed':''} ${locked?'locked-lvl':''}"
+      onclick="${locked?'showToast(\'🔒 Voltooi het vorige level!\')':'startLevel(\''+worldId+'\','+i+')'}">
+      <div class="level-num">${completed?'✅':locked?'🔒':world.levels[i].icon}</div>
+      <div class="level-info">
+        <div class="level-name">Level ${i+1}: ${lvl.name}</div>
+        <div class="level-desc">${lvl.desc}</div>
+      </div>
+      <div class="level-stars">${completed?'⭐⭐⭐':locked?'':'➡️'}</div>
+    </div>`;
+  }).join('');
+
+  showScreen('world-screen');
+}
+
+// ============ GAME ============
+function startLevel(worldId, levelIdx) {
+  state.currentWorld = worldId;
+  state.currentLevel = levelIdx;
+  const world = worlds.find(w=>w.id===worldId);
+  const level = world.levels[levelIdx];
+  state.challenges = level.challenges.map(id=>allChallenges[id]).filter(Boolean);
+  state.currentChallengeIndex = 0;
+  state.sessionCorrect = 0;
+
+  document.getElementById('gameTitle').textContent = level.name;
+  showScreen('game');
+  renderChallenge();
+}
+
+function renderChallenge() {
+  const ch = state.challenges[state.currentChallengeIndex];
+  if(!ch) { endLevel(); return; }
+
+  const total = state.challenges.length;
+  const idx = state.currentChallengeIndex;
+  document.getElementById('questionCount').textContent = `${idx+1}/${total}`;
+  updateXPBar();
+
+  let html = `<div class="challenge-card">
+    <div class="challenge-type">${getTypeLabel(ch.type)}</div>
+    <div class="challenge-question"><span class="challenge-mascot">${ch.emoji||'🤖'}</span>${ch.question}</div>
+    <div class="challenge-hint">${ch.hint||''}</div>
+  </div>`;
+
+  if(ch.type==='mc') {
+    html += `<div class="options-grid">
+      ${ch.options.map((o,i)=>`<button class="option-btn" onclick="answerMC(${i})" data-i="${i}">
+        <span class="option-letter">${['A','B','C','D'][i]}</span>${o}
+      </button>`).join('')}
+    </div>`;
+  } else if(ch.type==='sequence') {
+    renderSequenceChallenge(ch, html);
+    return;
+  } else if(ch.type==='drag') {
+    renderDragChallenge(ch, html);
+    return;
+  }
+
+  document.getElementById('challengeArea').innerHTML = html;
+}
+
+function getTypeLabel(t) {
+  return {mc:'❓ Meerkeuze',sequence:'🔢 Volgorde bepalen',drag:'🧩 Slepen & bouwen'}[t]||'Uitdaging';
+}
+
+function answerMC(idx) {
+  const ch = state.challenges[state.currentChallengeIndex];
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach(b=>b.disabled=true);
+  const correct = idx === ch.correct;
+  btns[idx].classList.add(correct?'correct':'wrong');
+  if(!correct) btns[ch.correct].classList.add('correct');
+
+  if(correct) {
+    state.sessionCorrect++;
+    showResult(true, ch.explanation||'Correct!', 25);
+  } else {
+    showResult(false, ch.explanation||'Probeer het opnieuw!', 5);
+  }
+}
+
+function renderSequenceChallenge(ch, baseHtml) {
+  const shuffled = [...ch.options].sort(()=>Math.random()-0.5);
+  let seqState = [];
+  const area = document.getElementById('challengeArea');
+
+  function render() {
+    area.innerHTML = baseHtml + `
+    <div style="margin-bottom:8px;font-size:0.85rem;color:var(--muted)">Klik op de stappen in de juiste volgorde:</div>
+    <div class="sequence-area" id="seqDropArea">
+      ${seqState.map((s,i)=>`<div class="seq-block" onclick="removeSeq(${i})" title="Klik om te verwijderen">${s}</div>`).join('')}
+      ${seqState.length===0?'<span style="color:var(--muted);font-size:0.85rem">Klik hieronder op de stappen...</span>':''}
+    </div>
+    <div class="block-palette">
+      ${shuffled.filter(s=>!seqState.includes(s)).map(s=>`<button class="code-block block-move" onclick="addSeq('${s.replace(/'/g,"\\'")}',this)">${s}</button>`).join('')}
+    </div>
+    ${seqState.length===ch.correctSeq.length?`<button class="btn-primary" onclick="checkSeq()">✅ Controleer!</button>`:''}`;
+  }
+
+  window.addSeq = (step) => { if(!seqState.includes(step)) seqState.push(step); render(); };
+  window.removeSeq = (i) => { seqState.splice(i,1); render(); };
+  window.checkSeq = () => {
+    const correct = JSON.stringify(seqState)===JSON.stringify(ch.correctSeq);
+    if(correct) { state.sessionCorrect++; showResult(true,'Perfecte volgorde! 🎉',30); }
+    else showResult(false,'Niet helemaal. De juiste volgorde is: '+ch.correctSeq.join(' → '),5);
+  };
+
+  render();
+}
+
+function renderDragChallenge(ch, baseHtml) {
+  let placed = [];
+  const area = document.getElementById('challengeArea');
+
+  function render() {
+    area.innerHTML = baseHtml + `
+    <div style="margin-bottom:8px;font-size:0.85rem;color:var(--muted)">Klik op de blokken om ze toe te voegen (juiste volgorde):</div>
+    <div class="blocks-area" id="dropZone">
+      ${placed.map((b,i)=>`<div class="placed-block" onclick="removeBlock(${i})" title="Klik om te verwijderen">${b.text}</div>`).join('')}
+      ${placed.length===0?'<span style="color:var(--muted);font-size:0.85rem">Sleep of klik blokken hierheen...</span>':''}
+    </div>
+    <div class="block-palette">
+      ${ch.availableBlocks.map((b,i)=>`<button class="code-block ${b.cls}" onclick="addBlock(${i})">${b.text}</button>`).join('')}
+    </div>
+    ${placed.length>0?`<div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn-primary" onclick="checkDrag()" style="flex:1">✅ Controleer!</button>
+      <button class="back-btn" onclick="placed=[];render()" style="">🗑️ Leeg</button>
+    </div>`:''}`;
+  }
+
+  window.addBlock = (i) => { placed.push(ch.availableBlocks[i]); render(); };
+  window.removeBlock = (i) => { placed.splice(i,1); render(); };
+  window.checkDrag = () => {
+    const placedTexts = placed.map(b=>b.text);
+    const correct = JSON.stringify(placedTexts)===JSON.stringify(ch.correctBlocks);
+    if(correct) { state.sessionCorrect++; showResult(true,'Geweldig programmeerwerk! 💻',35); }
+    else showResult(false,'Bijna! De juiste volgorde was: '+ch.correctBlocks.join(' → '),5);
+  };
+
+  render();
+}
+
+// ============ RESULT ============
+function showResult(correct, msg, xpGain) {
+  const overlay = document.getElementById('resultOverlay');
+  document.getElementById('resultEmoji').textContent = correct?'🎉':'😅';
+  document.getElementById('resultTitle').textContent = correct?['Super!','Geweldig!','Toppie!','Briljant!'][Math.floor(Math.random()*4)]:'Bijna!';
+  document.getElementById('resultMsg').textContent = msg;
+
+  addXP(xpGain);
+  document.getElementById('resultXP').textContent = `+${xpGain} XP`;
+  const isLast = state.currentChallengeIndex >= state.challenges.length-1;
+  document.getElementById('resultNextBtn').textContent = isLast?'🏁 Niveau voltooid!':'Volgende →';
+
+  overlay.classList.add('show');
+  if(correct) confettiPop();
+}
+
+function nextChallenge() {
+  document.getElementById('resultOverlay').classList.remove('show');
+  state.currentChallengeIndex++;
+  if(state.currentChallengeIndex >= state.challenges.length) {
+    endLevel();
+  } else {
+    renderChallenge();
+  }
+}
+
+function endLevel() {
+  const worldId = state.currentWorld;
+  const lvlIdx = state.currentLevel;
+  const prev = state.worldProgress[worldId]||0;
+  if(lvlIdx >= prev) state.worldProgress[worldId] = lvlIdx+1;
+  state.completed++;
+  addXP(50);
+  checkBadges();
+  saveState();
+  renderWorlds();
+  showToast('🏆 Level voltooid! +50 XP bonus!');
+  setTimeout(()=>openWorld(worldId), 800);
+}
+
+function goBack() {
+  if(state.currentWorld) openWorld(state.currentWorld);
+  else showScreen('home');
+}
+
+// ============ XP & LEVELS ============
+function addXP(amount) {
+  const prevLevel = state.level;
+  state.xp += amount;
+  state.level = Math.floor(state.xp / XP_PER_LEVEL) + 1;
+  updateXPBar();
+  saveState();
+  if(state.level > prevLevel) {
+    document.getElementById('levelupSub').textContent = `Je bent nu Level ${state.level}!`;
+    document.getElementById('levelupOverlay').classList.add('show');
+    confettiPop(true);
+  }
+}
+
+function closeLevelup() {
+  document.getElementById('levelupOverlay').classList.remove('show');
+}
+
+// ============ PROFILE ============
+function updateProfile() {
+  document.getElementById('profileName').textContent = 'Code Avonturier';
+  const levels_names = ['Beginner','Leerling','Amateur','Pro','Expert','Meester','Legende'];
+  document.getElementById('profileLevel').textContent = `Level ${state.level} - ${levels_names[Math.min(state.level-1,levels_names.length-1)]}`;
+  document.getElementById('totalXPStat').textContent = state.xp;
+  document.getElementById('streakStat').textContent = state.streak;
+  document.getElementById('completedStat').textContent = state.completed;
+  document.getElementById('badgesStat').textContent = state.badges.length;
+
+  document.getElementById('worldProgress').innerHTML = worlds.map(w=>{
+    const prog = state.worldProgress[w.id]||0;
+    const pct = Math.round((prog/w.levels.length)*100);
+    return `<div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-weight:700">${w.icon} ${w.name}</span>
+        <span style="color:var(--muted)">${prog}/${w.levels.length}</span>
+      </div>
+      <div class="xp-bar"><div class="xp-fill" style="width:${pct}%;background:${w.color}"></div></div>
+    </div>`;
+  }).join('');
+
+  checkBadges();
+  document.getElementById('allBadgesGrid').innerHTML = badgeDefs.map(b=>{
+    const earned = state.badges.includes(b.id);
+    return `<div class="badge-item ${earned?'earned':'locked-badge'}" title="${b.desc}">
+      <span class="badge-icon">${b.icon}</span>
+      <div class="badge-name">${b.name}</div>
+    </div>`;
+  }).join('');
+}
+
+// ============ TOAST ============
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// ============ CONFETTI ============
+function confettiPop(big=false) {
+  const canvas = document.getElementById('confetti');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const particles = [];
+  const colors = ['#ff6b35','#ffd700','#a259ff','#00e5ff','#39ff14','#ff2d78'];
+  const count = big?150:80;
+
+  for(let i=0;i<count;i++) {
+    particles.push({
+      x: Math.random()*canvas.width, y: Math.random()*canvas.height*0.5,
+      vx:(Math.random()-0.5)*6, vy:(Math.random()-3)*5,
+      color:colors[Math.floor(Math.random()*colors.length)],
+      size:6+Math.random()*6, alpha:1, rot:Math.random()*360, rotV:(Math.random()-0.5)*5
+    });
+  }
+
+  let frame;
+  function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy; p.vy+=0.15; p.rot+=p.rotV; p.alpha-=0.012;
+      if(p.alpha<=0) return;
+      ctx.save(); ctx.globalAlpha=p.alpha;
+      ctx.translate(p.x,p.y); ctx.rotate(p.rot*Math.PI/180);
+      ctx.fillStyle=p.color;
+      ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size);
+      ctx.restore();
+    });
+    if(particles.some(p=>p.alpha>0)) frame=requestAnimationFrame(draw);
+    else ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+  cancelAnimationFrame(frame);
+  draw();
+}
+
+// ============ START ============
+init();
+</script>
+</body>
+</html>
