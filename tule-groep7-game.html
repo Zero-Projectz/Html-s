@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a0533">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="KlasQuest">
+<title>KlasQuest – Groep 7</title>
+<link rel="manifest" href="data:application/json,{%22name%22:%22KlasQuest%22,%22short_name%22:%22KlasQuest%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%231a0533%22,%22theme_color%22:%22%231a0533%22}">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0228;
+    --bg2: #1a0533;
+    --card: #1e0a3c;
+    --card2: #2a1050;
+    --border: #3d1a6e;
+    --accent: #c084fc;
+    --accent2: #e879f9;
+    --gold: #fbbf24;
+    --green: #4ade80;
+    --red: #f87171;
+    --blue: #60a5fa;
+    --orange: #fb923c;
+    --text: #f0e6ff;
+    --muted: #8b6bac;
+    --xp-bar: #7c3aed;
+    --shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* BACKGROUND STARS */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 30% 50%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 50% 10%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 70% 70%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 85% 35%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 20% 80%, rgba(200,160,255,0.4) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 60% 90%, rgba(200,160,255,0.3) 0%, transparent 100%),
+      radial-gradient(2px 2px at 90% 15%, rgba(200,160,255,0.5) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .screen { 
+    display: none; 
+    position: relative; 
+    z-index: 1;
+    min-height: 100vh;
+  }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* ===== HOME SCREEN ===== */
+  #home {
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .logo-area {
+    animation: floatIn 0.8s ease both;
+  }
+
+  .game-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2.8rem, 10vw, 4.5rem);
+    background: linear-gradient(135deg, #c084fc, #e879f9, #fbbf24);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    text-shadow: none;
+    filter: drop-shadow(0 0 20px rgba(192,132,252,0.5));
+  }
+
+  .game-subtitle {
+    font-size: 1rem;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+
+  .avatar-display {
+    font-size: 5rem;
+    animation: pulse 3s ease infinite;
+    filter: drop-shadow(0 0 20px rgba(192,132,252,0.6));
+  }
+
+  .player-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 20px 28px;
+    width: 100%;
+    max-width: 380px;
+    animation: floatIn 0.8s 0.2s ease both;
+    box-shadow: var(--shadow);
+  }
+
+  .player-name {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--accent);
+  }
+
+  .player-level {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .xp-bar-wrap {
+    background: rgba(255,255,255,0.08);
+    border-radius: 10px;
+    height: 14px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .xp-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #7c3aed, #c084fc, #e879f9);
+    border-radius: 10px;
+    transition: width 0.8s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: 0 0 10px rgba(192,132,252,0.7);
+  }
+
+  .xp-label {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 6px;
+    text-align: right;
+  }
+
+  .stats-row {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 16px;
+    gap: 12px;
+  }
+
+  .stat-item {
+    text-align: center;
+  }
+
+  .stat-val {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.6rem;
+    color: var(--gold);
+  }
+
+  .stat-lbl {
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* SUBJECT GRID */
+  .subjects-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    animation: floatIn 0.8s 0.3s ease both;
+  }
+
+  .subjects-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    width: 100%;
+    max-width: 380px;
+    animation: floatIn 0.8s 0.4s ease both;
+  }
+
+  .subject-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 18px 14px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .subject-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.2s;
+    border-radius: inherit;
+  }
+
+  .subject-btn:active { transform: scale(0.96); }
+  .subject-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,0.4); }
+
+  .subject-btn.nl::before { background: linear-gradient(135deg, #3b1f6b, #1e0a3c); }
+  .subject-btn.rw::before { background: linear-gradient(135deg, #1f3b6b, #0a1e3c); }
+  .subject-btn.en::before { background: linear-gradient(135deg, #1f5b3b, #0a2e1c); }
+  .subject-btn.ow::before { background: linear-gradient(135deg, #5b3b1f, #2e1c0a); }
+  .subject-btn:hover::before { opacity: 1; }
+
+  .subject-btn.nl { border-color: rgba(192,132,252,0.4); }
+  .subject-btn.rw { border-color: rgba(96,165,250,0.4); }
+  .subject-btn.en { border-color: rgba(74,222,128,0.4); }
+  .subject-btn.ow { border-color: rgba(251,191,36,0.4); }
+
+  .subj-icon { font-size: 2.2rem; display: block; margin-bottom: 6px; }
+  .subj-name { font-weight: 800; font-size: 0.95rem; display: block; }
+  .subj-prog { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+
+  .subject-btn.nl .subj-name { color: var(--accent); }
+  .subject-btn.rw .subj-name { color: var(--blue); }
+  .subject-btn.en .subj-name { color: var(--green); }
+  .subject-btn.ow .subj-name { color: var(--gold); }
+
+  .name-input-area {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    max-width: 380px;
+    animation: floatIn 0.8s 0.1s ease both;
+  }
+
+  .name-input {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .name-input:focus { border-color: var(--accent); }
+  .name-input::placeholder { color: var(--muted); }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #7c3aed, #c084fc);
+    border: none;
+    border-radius: 14px;
+    padding: 12px 20px;
+    color: white;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 15px rgba(124,58,237,0.4);
+    white-space: nowrap;
+  }
+
+  .btn-primary:active { transform: scale(0.96); }
+  .btn-primary:hover { box-shadow: 0 6px 20px rgba(124,58,237,0.6); transform: translateY(-2px); }
+
+  /* ===== QUIZ SCREEN ===== */
+  #quiz {
+    padding: 0;
+    justify-content: flex-start;
+  }
+
+  .quiz-header {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 20px 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(10px);
+  }
+
+  .back-btn {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 12px;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+
+  .back-btn:hover { background: var(--border); }
+
+  .quiz-header-info { flex: 1; }
+
+  .quiz-subject-name {
+    font-weight: 800;
+    font-size: 1rem;
+  }
+
+  .quiz-progress-wrap {
+    background: rgba(255,255,255,0.08);
+    border-radius: 8px;
+    height: 6px;
+    margin-top: 5px;
+  }
+
+  .quiz-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 8px;
+    transition: width 0.4s ease;
+  }
+
+  .quiz-question-count {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  .streak-badge {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    border-radius: 12px;
+    padding: 6px 12px;
+    font-weight: 800;
+    font-size: 0.85rem;
+    color: #1a0533;
+    white-space: nowrap;
+    transition: transform 0.2s;
+  }
+
+  .streak-badge.pop { animation: popBounce 0.4s ease; }
+
+  .quiz-body {
+    flex: 1;
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .question-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    animation: slideUp 0.4s ease;
+    box-shadow: var(--shadow);
+  }
+
+  .question-category {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .question-text {
+    font-size: clamp(1rem, 3.5vw, 1.2rem);
+    font-weight: 700;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  .answers-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .answer-btn {
+    background: var(--card2);
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 14px;
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s, background 0.15s;
+    text-align: center;
+    line-height: 1.3;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .answer-btn:hover:not(:disabled) { transform: scale(1.03); border-color: var(--accent); background: #2a1060; }
+  .answer-btn:active:not(:disabled) { transform: scale(0.97); }
+
+  .answer-btn.correct {
+    border-color: var(--green);
+    background: rgba(74,222,128,0.15);
+    color: var(--green);
+    animation: correctPulse 0.5s ease;
+  }
+
+  .answer-btn.wrong {
+    border-color: var(--red);
+    background: rgba(248,113,113,0.15);
+    color: var(--red);
+    animation: shake 0.4s ease;
+  }
+
+  .answer-btn:disabled { cursor: not-allowed; }
+
+  /* FEEDBACK */
+  .feedback-bar {
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: none;
+    align-items: center;
+    gap: 14px;
+    animation: slideUp 0.3s ease;
+  }
+
+  .feedback-bar.show { display: flex; }
+  .feedback-bar.correct { background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.3); }
+  .feedback-bar.wrong { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.3); }
+
+  .feedback-icon { font-size: 1.8rem; flex-shrink: 0; }
+  .feedback-text { flex: 1; }
+  .feedback-title { font-weight: 800; font-size: 1rem; }
+  .feedback-bar.correct .feedback-title { color: var(--green); }
+  .feedback-bar.wrong .feedback-title { color: var(--red); }
+  .feedback-explain { font-size: 0.82rem; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+
+  .xp-gain {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem;
+    color: var(--gold);
+    flex-shrink: 0;
+  }
+
+  .next-btn {
+    background: linear-gradient(135deg, #7c3aed, #c084fc);
+    border: none;
+    border-radius: 14px;
+    padding: 16px;
+    color: white;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    width: 100%;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 15px rgba(124,58,237,0.4);
+    display: none;
+  }
+
+  .next-btn.show { display: block; animation: slideUp 0.3s ease; }
+  .next-btn:active { transform: scale(0.97); }
+  .next-btn:hover { box-shadow: 0 6px 20px rgba(124,58,237,0.6); transform: translateY(-2px); }
+
+  /* TIMER */
+  .timer-ring {
+    position: relative;
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+  }
+
+  .timer-ring svg { transform: rotate(-90deg); }
+  .timer-ring-bg { stroke: rgba(255,255,255,0.1); }
+  .timer-ring-fill {
+    stroke: var(--accent);
+    stroke-dasharray: 126;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 1s linear, stroke 0.3s;
+  }
+
+  .timer-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    color: var(--text);
+  }
+
+  /* ===== RESULT SCREEN ===== */
+  #result {
+    align-items: center;
+    justify-content: center;
+    padding: 30px 20px;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .result-emoji { font-size: 5rem; animation: bounceIn 0.8s ease; }
+
+  .result-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.2rem;
+    animation: floatIn 0.6s 0.2s ease both;
+  }
+
+  .result-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    width: 100%;
+    max-width: 380px;
+    animation: floatIn 0.6s 0.3s ease both;
+    box-shadow: var(--shadow);
+  }
+
+  .result-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .result-stat { text-align: center; }
+  .result-stat-val { font-family: 'Fredoka One', cursive; font-size: 2rem; }
+  .result-stat-lbl { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  .result-xp-earned {
+    background: linear-gradient(135deg, rgba(251,191,36,0.1), rgba(251,191,36,0.05));
+    border: 1px solid rgba(251,191,36,0.3);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .result-xp-title { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .result-xp-val { font-family: 'Fredoka One', cursive; font-size: 2.5rem; color: var(--gold); }
+
+  .level-up-badge {
+    background: linear-gradient(135deg, #7c3aed, #c084fc);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 16px;
+    display: none;
+    animation: bounceIn 0.5s ease;
+  }
+
+  .level-up-badge.show { display: block; }
+  .level-up-badge-title { font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: white; }
+  .level-up-badge-sub { font-size: 0.82rem; color: rgba(255,255,255,0.7); }
+
+  .result-btns { display: flex; flex-direction: column; gap: 10px; }
+
+  .btn-secondary {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.15s;
+  }
+
+  .btn-secondary:hover { background: var(--border); transform: translateY(-2px); }
+  .btn-secondary:active { transform: scale(0.97); }
+
+  /* LEVEL UP POPUP */
+  .levelup-popup {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+
+  .levelup-popup.show {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .levelup-inner {
+    background: var(--card);
+    border: 2px solid var(--accent);
+    border-radius: 28px;
+    padding: 40px 32px;
+    text-align: center;
+    max-width: 320px;
+    width: 90%;
+    animation: bounceIn 0.5s ease;
+    box-shadow: 0 0 60px rgba(192,132,252,0.4);
+  }
+
+  .levelup-icon { font-size: 4rem; display: block; margin-bottom: 12px; }
+  .levelup-title { font-family: 'Fredoka One', cursive; font-size: 2rem; color: var(--accent); margin-bottom: 4px; }
+  .levelup-level { font-family: 'Fredoka One', cursive; font-size: 3.5rem; color: var(--gold); line-height: 1; }
+  .levelup-sub { color: var(--muted); font-size: 0.9rem; margin-top: 8px; margin-bottom: 20px; }
+
+  /* XP FLOAT */
+  .xp-float {
+    position: fixed;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    color: var(--gold);
+    pointer-events: none;
+    z-index: 200;
+    text-shadow: 0 0 10px rgba(251,191,36,0.8);
+    animation: xpFloat 1.2s ease forwards;
+  }
+
+  /* ACHIEVEMENTS */
+  .achievement-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--card);
+    border: 1px solid var(--gold);
+    border-radius: 16px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 150;
+    box-shadow: 0 0 20px rgba(251,191,36,0.3);
+    animation: slideInRight 0.4s ease, slideOutRight 0.4s ease 3s forwards;
+    max-width: 280px;
+  }
+
+  .ach-icon { font-size: 1.8rem; }
+  .ach-title { font-size: 0.72rem; color: var(--gold); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+  .ach-name { font-weight: 800; font-size: 0.95rem; }
+
+  /* ANIMATIONS */
+  @keyframes floatIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes bounceIn {
+    0% { opacity: 0; transform: scale(0.5); }
+    70% { transform: scale(1.08); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  @keyframes correctPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  @keyframes popBounce {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes xpFloat {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-80px); opacity: 0; }
+  }
+
+  @keyframes slideInRight {
+    from { transform: translateX(120%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  @keyframes slideOutRight {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(120%); opacity: 0; }
+  }
+
+  .confetti-piece {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    pointer-events: none;
+    z-index: 300;
+    animation: confettiFall linear forwards;
+  }
+
+  @keyframes confettiFall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LEVEL UP POPUP -->
+<div class="levelup-popup" id="levelupPopup">
+  <div class="levelup-inner">
+    <span class="levelup-icon">🌟</span>
+    <div class="levelup-title">LEVEL UP!</div>
+    <div class="levelup-level" id="levelupNumber">2</div>
+    <div class="levelup-sub">Je bent een niveau hoger!</div>
+    <button class="btn-primary" onclick="closeLevelup()" style="width:100%">Doorgaan! 🚀</button>
+  </div>
+</div>
+
+<!-- HOME SCREEN -->
+<div class="screen active" id="home">
+  <div class="logo-area">
+    <div class="game-title">KlasQuest</div>
+    <div class="game-subtitle">Groep 7 Leeravontuur</div>
+  </div>
+
+  <div class="avatar-display" id="homeAvatar">🧙‍♂️</div>
+
+  <div class="name-input-area" id="nameArea">
+    <input type="text" class="name-input" id="nameInput" placeholder="Jouw naam..." maxlength="20">
+    <button class="btn-primary" onclick="saveName()">Start!</button>
+  </div>
+
+  <div class="player-card" id="playerCard" style="display:none">
+    <div class="player-name" id="playerNameDisplay">—</div>
+    <div class="player-level" id="playerLevelDisplay">Level 1 Leerling</div>
+    <div class="xp-bar-wrap">
+      <div class="xp-bar-fill" id="homeXpFill" style="width:0%"></div>
+    </div>
+    <div class="xp-label" id="homeXpLabel">0 / 100 XP</div>
+    <div class="stats-row">
+      <div class="stat-item">
+        <div class="stat-val" id="statTotal">0</div>
+        <div class="stat-lbl">Vragen</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val" id="statCorrect">0</div>
+        <div class="stat-lbl">Goed</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val" id="statStreak">0</div>
+        <div class="stat-lbl">🔥 Streak</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="subjects-label">Kies een vak</div>
+
+  <div class="subjects-grid">
+    <button class="subject-btn nl" onclick="startSubject('nl')">
+      <span class="subj-icon">📖</span>
+      <span class="subj-name">Nederlands</span>
+      <span class="subj-prog" id="prog-nl">0 vragen gedaan</span>
+    </button>
+    <button class="subject-btn rw" onclick="startSubject('rw')">
+      <span class="subj-icon">🔢</span>
+      <span class="subj-name">Rekenen</span>
+      <span class="subj-prog" id="prog-rw">0 vragen gedaan</span>
+    </button>
+    <button class="subject-btn en" onclick="startSubject('en')">
+      <span class="subj-icon">🇬🇧</span>
+      <span class="subj-name">Engels</span>
+      <span class="subj-prog" id="prog-en">0 vragen gedaan</span>
+    </button>
+    <button class="subject-btn ow" onclick="startSubject('ow')">
+      <span class="subj-icon">🌍</span>
+      <span class="subj-name">OJW</span>
+      <span class="subj-prog" id="prog-ow">0 vragen gedaan</span>
+    </button>
+  </div>
+</div>
+
+<!-- QUIZ SCREEN -->
+<div class="screen" id="quiz">
+  <div class="quiz-header">
+    <button class="back-btn" onclick="goHome()">← Terug</button>
+    <div class="quiz-header-info">
+      <div class="quiz-subject-name" id="quizSubjectName">Nederlands</div>
+      <div class="quiz-progress-wrap">
+        <div class="quiz-progress-fill" id="quizProgressFill" style="width:0%"></div>
+      </div>
+      <div class="quiz-question-count" id="quizQuestionCount">Vraag 1 van 10</div>
+    </div>
+    <div class="timer-ring">
+      <svg width="46" height="46" viewBox="0 0 46 46">
+        <circle class="timer-ring-bg" cx="23" cy="23" r="20" fill="none" stroke-width="4"/>
+        <circle class="timer-ring-fill" id="timerRing" cx="23" cy="23" r="20" fill="none" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <div class="timer-text" id="timerText">15</div>
+    </div>
+    <div class="streak-badge" id="streakBadge">🔥 0</div>
+  </div>
+
+  <div class="quiz-body">
+    <div class="question-card">
+      <div class="question-category" id="questionCategory">Begrijpend lezen</div>
+      <div class="question-text" id="questionText">Laadt...</div>
+    </div>
+
+    <div class="answers-grid" id="answersGrid"></div>
+
+    <div class="feedback-bar" id="feedbackBar">
+      <div class="feedback-icon" id="feedbackIcon"></div>
+      <div class="feedback-text">
+        <div class="feedback-title" id="feedbackTitle"></div>
+        <div class="feedback-explain" id="feedbackExplain"></div>
+      </div>
+      <div class="xp-gain" id="feedbackXp"></div>
+    </div>
+
+    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Volgende vraag →</button>
+  </div>
+</div>
+
+<!-- RESULT SCREEN -->
+<div class="screen" id="result">
+  <div class="result-emoji" id="resultEmoji">🏆</div>
+  <div class="result-title" id="resultTitle">Goed gedaan!</div>
+
+  <div class="result-card">
+    <div class="result-stats">
+      <div class="result-stat">
+        <div class="result-stat-val" style="color:var(--green)" id="rCorrect">0</div>
+        <div class="result-stat-lbl">Goed</div>
+      </div>
+      <div class="result-stat">
+        <div class="result-stat-val" style="color:var(--red)" id="rWrong">0</div>
+        <div class="result-stat-lbl">Fout</div>
+      </div>
+      <div class="result-stat">
+        <div class="result-stat-val" style="color:var(--gold)" id="rStreak">0</div>
+        <div class="result-stat-lbl">🔥 Max</div>
+      </div>
+    </div>
+
+    <div class="result-xp-earned">
+      <div class="result-xp-title">XP verdiend</div>
+      <div class="result-xp-val" id="rXp">+0 XP</div>
+    </div>
+
+    <div class="level-up-badge" id="resultLevelup">
+      <div class="level-up-badge-title">🌟 LEVEL UP!</div>
+      <div class="level-up-badge-sub" id="resultLevelupSub">Je bent nu level 2!</div>
+    </div>
+
+    <div class="result-btns">
+      <button class="btn-primary" onclick="playAgain()">Opnieuw spelen 🎮</button>
+      <button class="btn-secondary" onclick="goHome()">Terug naar overzicht</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== UTILS (vroeg nodig) =====
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// ===== QUESTION BANK =====
+// 100 vragen per vak. Per ronde worden er random QUESTIONS_PER_ROUND (=10) gekozen.
+// Alle vragen: correct=0. shuffleAnswers() schudt de antwoorden en herberekent de index.
+const QUESTIONS_PER_ROUND = 10;
+const questions = {
+  nl: [{"cat":"Begrijpend lezen","q":"Wat is het doel van een informatieve tekst?","a":["Informatie geven","Een verhaal vertellen","De lezer entertainen","Een mening geven"],"correct":0,"xp":15,"explain":"Een informatieve tekst geeft kennis en feiten over een onderwerp."},{"cat":"Begrijpend lezen","q":"Welk signaalwoord geeft een tegenstelling aan?","a":["maar","want","omdat","dus"],"correct":0,"xp":15,"explain":"'Maar' geeft een tegenstelling aan: 'Hij is slim, maar lui.'"},{"cat":"Begrijpend lezen","q":"Wat is een betogende tekst?","a":["Een tekst die overtuigt","Een tekst die informeert","Een tekst die vermaakt","Een brief"],"correct":0,"xp":15,"explain":"Een betogende tekst wil de lezer overtuigen van een mening."},{"cat":"Begrijpend lezen","q":"Wat is het 'hoofdidee' van een alinea?","a":["De belangrijkste gedachte","De eerste zin","De laatste zin","Een voorbeeld"],"correct":0,"xp":15,"explain":"Het hoofdidee is de kern — de belangrijkste boodschap van de alinea."},{"cat":"Begrijpend lezen","q":"Welk signaalwoord geeft een oorzaak aan?","a":["omdat","maar","dus","echter"],"correct":0,"xp":15,"explain":"'Omdat' geeft de reden/oorzaak aan."},{"cat":"Begrijpend lezen","q":"Wat is een samenvatting?","a":["Korte weergave van de hoofdpunten","Een exacte kopie van de tekst","Een mening over de tekst","Een inleiding"],"correct":0,"xp":15,"explain":"Een samenvatting beschrijft de hoofdpunten kort en bondig."},{"cat":"Begrijpend lezen","q":"Wat bedoel je met de 'rode draad' van een tekst?","a":["Het centrale thema","De eerste alinea","De conclusie","De titel"],"correct":0,"xp":20,"explain":"De rode draad is het centrale onderwerp dat door de hele tekst loopt."},{"cat":"Begrijpend lezen","q":"Welk signaalwoord geeft een gevolg aan?","a":["daarom","maar","hoewel","ofschoon"],"correct":0,"xp":15,"explain":"'Daarom' geeft aan dat iets een gevolg is van iets anders."},{"cat":"Begrijpend lezen","q":"Wat is een argument?","a":["Een reden die een mening ondersteunt","Een feit","Een voorbeeld","Een definitie"],"correct":0,"xp":15,"explain":"Een argument is een reden waarmee je je mening onderbouwt."},{"cat":"Begrijpend lezen","q":"Wat is het verschil tussen feit en mening?","a":["Een feit is bewijsbaar, een mening niet","Een feit is langer","Een mening is altijd waar","Er is geen verschil"],"correct":0,"xp":20,"explain":"Feiten zijn controleerbaar; meningen zijn persoonlijke opvattingen."},{"cat":"Begrijpend lezen","q":"Wat doet een tussentitel in een tekst?","a":["Geeft aan wat het stuk eronder gaat over","Sluit de tekst af","Geeft de auteur aan","Is decoratief"],"correct":0,"xp":15,"explain":"Tussentitels verdelen de tekst in stukken en geven per stuk het onderwerp aan."},{"cat":"Begrijpend lezen","q":"Wat is een reportage?","a":["Een verslag van een gebeurtenis ter plaatse","Een fictief verhaal","Een gedicht","Een recept"],"correct":0,"xp":15,"explain":"Een reportage is een verslag waarbij de journalist zelf aanwezig was."},{"cat":"Begrijpend lezen","q":"Welk signaalwoord geeft een opsomming aan?","a":["ten eerste","maar","dus","omdat"],"correct":0,"xp":10,"explain":"'Ten eerste' begint een opsomming. Gevolgd door 'ten tweede', 'ten derde', etc."},{"cat":"Begrijpend lezen","q":"Wat is een krantenartikel?","a":["Een actueel nieuwsbericht","Een verhaal","Een gedicht","Een reclame"],"correct":0,"xp":10,"explain":"Een krantenartikel bericht over actuele nieuwsfeiten."},{"cat":"Begrijpend lezen","q":"Wat bedoelt de schrijver met 'aan de andere kant'?","a":["Er is ook een tegengesteld standpunt","Het verhaal gaat verder","Er is een conclusie","Er wordt een opsomming gegeven"],"correct":0,"xp":15,"explain":"'Aan de andere kant' kondigt een tegenstelling of tegenargument aan."},{"cat":"Begrijpend lezen","q":"Wat is een tekst met een chronologische opbouw?","a":["Een tekst in tijdsvolgorde","Een tekst met argumenten","Een tekst van algemeen naar specifiek","Een tekst met een probleem en oplossing"],"correct":0,"xp":20,"explain":"Chronologisch = in de volgorde van hoe het is gebeurd."},{"cat":"Begrijpend lezen","q":"Welk woord geeft een opsomming aan?","a":["bovendien","maar","want","hoewel"],"correct":0,"xp":10,"explain":"'Bovendien' voegt iets toe aan een opsomming."},{"cat":"Begrijpend lezen","q":"Wat is de schrijver zijn standpunt?","a":["De mening die de schrijver heeft","Een feit in de tekst","De samenvatting","De titel"],"correct":0,"xp":15,"explain":"Het standpunt is de persoonlijke mening van de schrijver."},{"cat":"Begrijpend lezen","q":"Wat is een inleiding?","a":["Het begin van een tekst dat het onderwerp introduceert","De conclusie","Een tussenkopje","Een opsomming"],"correct":0,"xp":10,"explain":"De inleiding presenteert het onderwerp en trekt de aandacht van de lezer."},{"cat":"Begrijpend lezen","q":"Hoe herken je een beschrijvende tekst?","a":["Veel details over hoe iets eruitziet of werkt","Veel argumenten","Veel tijdsaanduidingen","Veel dialogen"],"correct":0,"xp":15,"explain":"Een beschrijvende tekst geeft gedetailleerde informatie over uiterlijk of werking."},{"cat":"Spelling","q":"Welk woord is correct gespeld?","a":["schrijven","schijven","schrijffen","schijffen"],"correct":0,"xp":10,"explain":"Schrijven: stam 'schrijf' + uitgang 'en'."},{"cat":"Spelling","q":"Hoe schrijf je de meervoudsvorm van 'foto'?","a":["foto's","fotos","fotoos","fotoen"],"correct":0,"xp":10,"explain":"Woorden op klinker + o krijgen apostrof s: foto's."},{"cat":"Spelling","q":"Welk woord heeft een zachte g?","a":["garage","gaan","groot","geel"],"correct":0,"xp":20,"explain":"Garage is een Frans leenwoord met een zachte g."},{"cat":"Spelling","q":"Welke schrijfwijze is correct?","a":["waarschijnlijk","waarschijnlik","waarchijnlijk","waerschijnlijk"],"correct":0,"xp":20,"explain":"Waarschijnlijk: let op de 'ch' én de uitgang 'lijk'."},{"cat":"Spelling","q":"Welk woord schrijf je met een dubbele klinker?","a":["maan","man","men","min"],"correct":0,"xp":10,"explain":"'Maan' heeft een open lettergreep, vandaar 'aa'."},{"cat":"Spelling","q":"Hoe spel je het meervoud van 'dag'?","a":["dagen","daggen","dags","daagen"],"correct":0,"xp":10,"explain":"Dag → dagen. Open lettergreep = geen verdubbeling."},{"cat":"Spelling","q":"Welk woord heeft een dubbele medeklinker?","a":["kommen","komen","kome","koms"],"correct":0,"xp":10,"explain":"'Kommen' (meervoud van kom) heeft dubbele m: gesloten lettergreep."},{"cat":"Spelling","q":"Hoe schrijf je 'hij loopt' in verleden tijd?","a":["liep","loopte","liept","loopt"],"correct":0,"xp":15,"explain":"Lopen is een sterk werkwoord: lopen → liep."},{"cat":"Spelling","q":"Welk woord is fout gespeld?","a":["reisd","reisde","reizen","reis"],"correct":0,"xp":15,"explain":"Reisd is fout — het moet 'reisde' zijn (verleden tijd, zwak werkwoord)."},{"cat":"Spelling","q":"Hoe schrijf je het verkleinwoord van 'man'?","a":["mannetje","mantje","manje","mannje"],"correct":0,"xp":10,"explain":"Man → mannetje: dubbele n vóór -tje."},{"cat":"Spelling","q":"Welk woord bevat een ij-klank?","a":["rijden","reden","raden","roden"],"correct":0,"xp":10,"explain":"'Rijden' bevat de ij-klank."},{"cat":"Spelling","q":"Welke zin heeft de juiste kommaplaatsing?","a":["Als het regent, blijf ik binnen.","Als het regent blijf, ik binnen.","Als, het regent blijf ik binnen.","Als het, regent blijf ik binnen."],"correct":0,"xp":20,"explain":"Na een bijzin vóór de hoofdzin komt een komma."},{"cat":"Spelling","q":"Hoe schrijf je de bezitsvorm van 'Jan'?","a":["Jans fiets","Jan's fiets","Jans' fiets","Janse fiets"],"correct":0,"xp":15,"explain":"Bij namen zonder apostrof: Jans fiets."},{"cat":"Spelling","q":"Wat is de juiste spelling: 'hij heeft' of 'hij heb'?","a":["hij heeft","hij heb","hij hebt","hij hef"],"correct":0,"xp":10,"explain":"De derde persoon enkelvoud van hebben is 'heeft'."},{"cat":"Spelling","q":"Hoe schrijf je het meervoud van 'ei'?","a":["eieren","eies","eis","eieren"],"correct":0,"xp":10,"explain":"Ei → eieren. Het meervoud van ei is eieren."},{"cat":"Spelling","q":"Welk woord schrijf je met 'dt'?","a":["hij werdt","hij word","hij wordt","hij werdd"],"correct":0,"xp":20,"explain":"Werkwoord 'worden' in 3e persoon enkelvoud: hij wordt (t-regelregel)."},{"cat":"Spelling","q":"Hoe schrijf je de verleden tijd van 'fietsen'?","a":["fietste","fietsde","fietsd","fietsen"],"correct":0,"xp":15,"explain":"Fietsen → fietste (stam eindigt op s, dus zachte uitgang -te)."},{"cat":"Spelling","q":"Welk woord heeft een lange e-klank?","a":["been","ben","ber","bet"],"correct":0,"xp":10,"explain":"'Been' heeft een dubbele e — de lange e-klank."},{"cat":"Spelling","q":"Hoe schrijf je het meervoud van 'museum'?","a":["musea","museums","museems","museen"],"correct":0,"xp":15,"explain":"Woorden op -um vormen meervoud op -a: museum → musea."},{"cat":"Woordenschat","q":"Wat betekent 'argumenteren'?","a":["Redenen geven voor een mening","Een verhaal vertellen","Vragen stellen","Iets beschrijven"],"correct":0,"xp":15,"explain":"Argumenteren = redenen geven om je mening te onderbouwen."},{"cat":"Woordenschat","q":"Wat is een synoniem van 'snel'?","a":["vlug","langzaam","groot","stil"],"correct":0,"xp":10,"explain":"Vlug en snel betekenen hetzelfde."},{"cat":"Woordenschat","q":"Wat is een antoniem?","a":["Een woord met de tegengestelde betekenis","Een woord met dezelfde betekenis","Een werkwoord","Een afkorting"],"correct":0,"xp":15,"explain":"Antoniemen zijn tegengestelden, bijv. groot ↔ klein."},{"cat":"Woordenschat","q":"Wat betekent 'conclusie'?","a":["Eindconclusie / samenvatting","Begin van een tekst","Een vraag","Een opsomming"],"correct":0,"xp":10,"explain":"Een conclusie is wat je aan het einde concludeert."},{"cat":"Woordenschat","q":"Wat is een synoniem van 'groot'?","a":["enorm","klein","smal","licht"],"correct":0,"xp":10,"explain":"Enorm = heel groot."},{"cat":"Woordenschat","q":"Wat betekent 'perspectief'?","a":["Gezichtshoek / standpunt","Een soort tekst","Een type zin","De titel van een boek"],"correct":0,"xp":20,"explain":"Perspectief = het standpunt van waaruit je iets bekijkt."},{"cat":"Woordenschat","q":"Wat is een synoniem van 'verdrietig'?","a":["treurig","blij","woedend","bang"],"correct":0,"xp":10,"explain":"Treurig en verdrietig betekenen hetzelfde."},{"cat":"Woordenschat","q":"Wat betekent 'nuanceren'?","a":["Verfijnen / meer detail geven","Herhalen","Samenvatten","Tegenspreken"],"correct":0,"xp":20,"explain":"Nuanceren = iets verfijnen zodat het preciezer is."},{"cat":"Woordenschat","q":"Wat is een 'hypothese'?","a":["Een aanname die nog bewezen moet worden","Een bewezen feit","Een mening","Een samenvatting"],"correct":0,"xp":20,"explain":"Een hypothese is een veronderstelling die je nog moet toetsen."},{"cat":"Woordenschat","q":"Wat betekent 'chronologisch'?","a":["In volgorde van tijd","In alfabetische volgorde","Van groot naar klein","Willekeurig"],"correct":0,"xp":15,"explain":"Chronologisch = in de volgorde zoals het is gebeurd."},{"cat":"Woordenschat","q":"Wat is een 'metafoor'?","a":["Een beeldspraak zonder 'zoals'","Een rijm","Een herhaling","Een tegenstelling"],"correct":0,"xp":20,"explain":"Bijv. 'Hij is een leeuw' — je vergelijkt zonder 'zoals' of 'als'."},{"cat":"Woordenschat","q":"Wat betekent 'evalueren'?","a":["Beoordelen / beoordeling geven","Beschrijven","Herhalen","Plannen"],"correct":0,"xp":15,"explain":"Evalueren = bekijken hoe iets gegaan is en een oordeel geven."},{"cat":"Woordenschat","q":"Wat betekent 'debatteren'?","a":["Een discussie voeren met voor- en tegenstanders","Samenwerken","Een tekst schrijven","Luisteren"],"correct":0,"xp":15,"explain":"Debatteren = gestructureerd discussiëren waarbij twee kanten tegenover elkaar staan."},{"cat":"Woordenschat","q":"Wat is een 'krantenkop'?","a":["De titel van een krantenartikel","De auteur van een artikel","De datum van een krant","Een foto in de krant"],"correct":0,"xp":10,"explain":"De krantenkop is de pakkende titel boven een artikel."},{"cat":"Woordenschat","q":"Wat betekent 'parafraseren'?","a":["Iets in eigen woorden herschrijven","Iets letterlijk overnemen","Iets samenvatten in één zin","Iets vertalen"],"correct":0,"xp":20,"explain":"Parafraseren = de inhoud in je eigen woorden weergeven."},{"cat":"Woordenschat","q":"Wat is een 'illustratie' bij een tekst?","a":["Een afbeelding die de tekst verduidelijkt","Een samenvatting","Een citaat","Een noot onderaan"],"correct":0,"xp":10,"explain":"Een illustratie ondersteunt de tekst visueel."},{"cat":"Woordenschat","q":"Wat betekent 'objectief'?","a":["Zonder eigen mening, op basis van feiten","Met veel meningen","Altijd positief","Altijd negatief"],"correct":0,"xp":20,"explain":"Objectief = neutraal, zonder persoonlijke mening."},{"cat":"Woordenschat","q":"Wat is een 'slogan'?","a":["Een pakkende zin in reclame","Een lang betoog","Een gedicht","Een brief"],"correct":0,"xp":10,"explain":"Een slogan is een korte, memorabele zin die een merk of idee promoot."},{"cat":"Woordenschat","q":"Wat is een 'leenwoord'?","a":["Een woord uit een andere taal dat we in het Nederlands gebruiken","Een woord dat je leent van iemand","Een oud woord","Een nieuw woord"],"correct":0,"xp":15,"explain":"Bijv. 'computer' en 'garage' zijn leenwoorden (uit Engels/Frans)."},{"cat":"Taalbeschouwing","q":"Wat is een bijvoeglijk naamwoord?","a":["Een woord dat iets beschrijft","Een persoon of ding","Een handeling","Een verbindingswoord"],"correct":0,"xp":10,"explain":"Bijvoeglijk naamwoord beschrijft een zelfstandig naamwoord."},{"cat":"Taalbeschouwing","q":"Welke zin is een vraagzin?","a":["Kom jij morgen?","Hij loopt snel.","Stop hiermee!","De kat slaapt."],"correct":0,"xp":10,"explain":"Een vraagzin eindigt op een vraagteken."},{"cat":"Taalbeschouwing","q":"Welk woordsoort is 'rent' in 'Hij rent snel'?","a":["Werkwoord","Zelfstandig naamwoord","Bijvoeglijk naamwoord","Bijwoord"],"correct":0,"xp":15,"explain":"'Rent' is een werkwoord — het beschrijft een handeling."},{"cat":"Taalbeschouwing","q":"Wat is de persoonsvorm in 'De kinderen spelen buiten'?","a":["spelen","kinderen","buiten","de"],"correct":0,"xp":20,"explain":"De persoonsvorm is het werkwoord dat bij het onderwerp past: 'spelen'."},{"cat":"Taalbeschouwing","q":"Wat is het onderwerp in 'De hond blaft hard'?","a":["De hond","blaft","hard","de"],"correct":0,"xp":15,"explain":"Het onderwerp is wie/wat de handeling doet: 'de hond'."},{"cat":"Taalbeschouwing","q":"Wat is een samengesteld woord?","a":["Een woord van twee of meer delen","Een afkorting","Een synoniem","Een leenwoord"],"correct":0,"xp":10,"explain":"Bijv. 'voetbal' = voet + bal."},{"cat":"Taalbeschouwing","q":"Welke zin is een gebiedende wijs?","a":["Kom hier!","Hij komt hier.","Komt hij hier?","Hij zou komen."],"correct":0,"xp":15,"explain":"Een gebiedende wijs geeft een opdracht: 'Kom hier!'"},{"cat":"Taalbeschouwing","q":"Wat is een meervoud?","a":["Meer dan één van iets","Het tegenovergestelde","Een bijvoeglijk naamwoord","Een werkwoord"],"correct":0,"xp":10,"explain":"Meervoud = meer dan één: hond → honden."},{"cat":"Taalbeschouwing","q":"Welk woord is een bijwoord in 'Hij loopt snel'?","a":["snel","loopt","hij","de"],"correct":0,"xp":15,"explain":"'Snel' beschrijft het werkwoord 'loopt' — dat maakt het een bijwoord."},{"cat":"Taalbeschouwing","q":"Wat is een lidwoord?","a":["De, het of een","Een werkwoord","Een naam","Een getal"],"correct":0,"xp":10,"explain":"Lidwoorden zijn 'de', 'het' (bepaald) en 'een' (onbepaald)."},{"cat":"Taalbeschouwing","q":"Wat is een zelfstandig naamwoord?","a":["Een woord voor een persoon, ding of begrip","Een handeling","Een eigenschap","Een getal"],"correct":0,"xp":10,"explain":"Zelfstandige naamwoorden noem je personen, dingen of begrippen."},{"cat":"Taalbeschouwing","q":"Wat is een voornaamwoord?","a":["Een woord dat een naam vervangt","Een werkwoord","Een bijvoeglijk naamwoord","Een telwoord"],"correct":0,"xp":15,"explain":"Bijv. 'hij' vervangt 'Jan'."},{"cat":"Taalbeschouwing","q":"Wat is een voorzetsel?","a":["Een woord dat een relatie aangeeft (op, in, naast)","Een werkwoord","Een bijvoeglijk naamwoord","Een bijwoord"],"correct":0,"xp":15,"explain":"Voorzetsels geven een ruimtelijke of tijdsrelatie aan: op tafel, in de klas."},{"cat":"Taalbeschouwing","q":"Wat is een werkwoord in de tegenwoordige tijd?","a":["Een werkwoord dat nu plaatsvindt","Een werkwoord in het verleden","Een werkwoord in de toekomst","Een werkwoord in de vraagvorm"],"correct":0,"xp":10,"explain":"Tegenwoordige tijd beschrijft iets wat nu of regelmatig gebeurt."},{"cat":"Taalbeschouwing","q":"Wat is een enkelvoud?","a":["Één van iets","Meer dan één","Het tegengestelde","De eigenschap"],"correct":0,"xp":10,"explain":"Enkelvoud = één: hond (enkelvoud) ↔ honden (meervoud)."},{"cat":"Taalbeschouwing","q":"Hoe herken je de stam van een werkwoord?","a":["Verwijder de uitgang -en van de infinitief","Voeg -en toe","Verander de klinker","Voeg -de toe"],"correct":0,"xp":15,"explain":"Stam van 'lopen' = loop (verwijder -en)."},{"cat":"Taalbeschouwing","q":"Wat is een uitroepzin?","a":["Een zin die een gevoel uitdrukt met !","Een vraag","Een mededeling","Een opdracht"],"correct":0,"xp":10,"explain":"Uitroepzinnen drukken gevoelens uit en eindigen op een uitroepteken."},{"cat":"Taalbeschouwing","q":"Welk woordje is een voegwoord?","a":["en","de","snel","lopen"],"correct":0,"xp":15,"explain":"'En' is een voegwoord — het verbindt twee zinsdelen of zinnen."},{"cat":"Taalbeschouwing","q":"Wat is een naamval?","a":["De rol die een zelfstandig naamwoord speelt in de zin","Een ander woord voor naam","Een soort meervoud","Een werkwoordsvorm"],"correct":0,"xp":20,"explain":"Naamvallen (bijv. onderwerp, lijdend voorwerp) geven de rol aan van een woord in de zin."},{"cat":"Schrijven","q":"Wat hoort bij een goede inleiding?","a":["Onderwerp aankondiging","De conclusie noemen","Alle details geven","Fouten verbeteren"],"correct":0,"xp":15,"explain":"Een inleiding kondigt het onderwerp aan en trekt de aandacht."},{"cat":"Schrijven","q":"Welk onderdeel hoort bij een brief?","a":["Aanhef","Samenvatting","Hoofdstuk","Conclusie"],"correct":0,"xp":10,"explain":"Een brief begint met een aanhef: 'Beste mevrouw...'."},{"cat":"Schrijven","q":"Wat gebruik je om een opsomming te schrijven?","a":["Opsommingsteken of cijfer","Een komma","Een punt","Een uitroepteken"],"correct":0,"xp":10,"explain":"Opsommingen gebruik je met • of cijfers om punten overzichtelijk te maken."},{"cat":"Schrijven","q":"Wat is een 'concept'?","a":["Een eerste ruwe versie van een tekst","De eindversie","Een samenvatting","Een titel"],"correct":0,"xp":15,"explain":"Een concept is een kladversie die je later verbetert."},{"cat":"Schrijven","q":"Wat is het doel van een slot / afsluiting?","a":["Een conclusie trekken","Nieuwe informatie geven","De inleiding herhalen","Een nieuw onderwerp beginnen"],"correct":0,"xp":15,"explain":"Het slot sluit de tekst af en geeft een afronding."},{"cat":"Schrijven","q":"Wat is een 'doelgroep'?","a":["De mensen voor wie je schrijft","Het onderwerp van een tekst","De schrijver","De lengte van een tekst"],"correct":0,"xp":15,"explain":"De doelgroep zijn de lezers voor wie de tekst bedoeld is."},{"cat":"Schrijven","q":"Hoe begin je een nieuwe alinea?","a":["Met een nieuwe gedachte / onderwerp","Met een nieuwe letter","Met een plaatje","Met een punt"],"correct":0,"xp":10,"explain":"Elke nieuwe alinea behandelt een nieuw deelonderwerp."},{"cat":"Schrijven","q":"Wat is een 'instructieve tekst'?","a":["Een tekst die uitlegt hoe je iets doet","Een tekst die overtuigt","Een tekst die informeert","Een verhaal"],"correct":0,"xp":15,"explain":"Een instructieve tekst geeft stap-voor-stap uitleg: bijv. een recept."},{"cat":"Schrijven","q":"Welke tijdsvorm gebruik je voor een dagboek?","a":["Verleden tijd","Toekomende tijd","Tegenwoordige tijd","Voltooid verleden tijd"],"correct":0,"xp":15,"explain":"In een dagboek schrijf je over wat al is gebeurd: verleden tijd."},{"cat":"Schrijven","q":"Wat is een 'tekstdoel'?","a":["Waarom je de tekst schrijft","Hoe lang de tekst is","Wie de tekst schrijft","Wanneer je schrijft"],"correct":0,"xp":15,"explain":"Het tekstdoel is het waarom: informeren, overtuigen, vermaken, etc."},{"cat":"Schrijven","q":"Wat is een krantenartikel schrijven?","a":["Een feitelijk nieuwsbericht schrijven","Een persoonlijk dagboek schrijven","Een gedicht schrijven","Een recept schrijven"],"correct":0,"xp":10,"explain":"Een krantenartikel beschrijft feiten objectief."},{"cat":"Schrijven","q":"Wat schrijf je in een 'middenstuk' van een tekst?","a":["De uitwerking van het onderwerp","De introductie","De conclusie","De bronvermelding"],"correct":0,"xp":15,"explain":"Het middenstuk bevat de inhoud: argumenten, feiten, uitleg."},{"cat":"Schrijven","q":"Waarom gebruik je alinea's?","a":["Om de tekst overzichtelijk te maken","Om meer woorden te gebruiken","Om ruimte te vullen","Om fouten te verbergen"],"correct":0,"xp":10,"explain":"Alinea's groeperen samenhangende gedachten en maken de tekst leesbaar."},{"cat":"Schrijven","q":"Wat is een 'rekwisiet' in een toneelstuk?","a":["Een voorwerp dat gebruikt wordt op het toneel","Een acteur","Een decor","Een tekst"],"correct":0,"xp":20,"explain":"Rekwisieten zijn de voorwerpen die acteurs gebruiken tijdens een voorstelling."},{"cat":"Schrijven","q":"Wat is de functie van een punt aan het einde van een zin?","a":["Aangeven dat de zin klaar is","Een vraag stellen","Een gevoel uitdrukken","Een opsomming beginnen"],"correct":0,"xp":10,"explain":"Een punt geeft het einde van een mededelende zin aan."},{"cat":"Begrijpend lezen","q":"Wat is een 'perspectief' in een verhaal?","a":["Vanuit wiens ogen het verhaal verteld wordt","De plot van het verhaal","De locatie","De tijd"],"correct":0,"xp":20,"explain":"Perspectief = wie het verhaal vertelt (ik-perspectief, alwetende verteller, etc.)."},{"cat":"Spelling","q":"Wat is de juiste schrijfwijze: 'hij vraagd' of 'hij vraagt'?","a":["hij vraagt","hij vraagd","hij vraagdt","hij vraagde"],"correct":0,"xp":15,"explain":"Stam van vragen = vraag. In derde persoon enkelvoud: vraag + t = vraagt."},{"cat":"Woordenschat","q":"Wat is een 'anekdote'?","a":["Een kort, grappig verhaal","Een lang gedicht","Een zakelijke brief","Een samenvatting"],"correct":0,"xp":15,"explain":"Een anekdote is een kort, vermakelijk verhaal over een echte gebeurtenis."},{"cat":"Taalbeschouwing","q":"Wat is een 'infinitief'?","a":["De grondvorm van een werkwoord","Het meervoud","De verleden tijd","Het voltooid deelwoord"],"correct":0,"xp":15,"explain":"De infinitief is de basisvorm: lopen, schrijven, spelen."},{"cat":"Schrijven","q":"Wat is de functie van aanhalingstekens?","a":["Directe rede / citaat aangeven","Een vraag stellen","Een opsomming beginnen","Een zin afsluiten"],"correct":0,"xp":15,"explain":"Aanhalingstekens markeren directe rede of citaten: Hij zei: 'Ik kom morgen.'"},{"cat":"Begrijpend lezen","q":"Wat is een 'probleemoplossingsstructuur'?","a":["Een tekst die een probleem beschrijft en oplossing geeft","Een tekst met alleen argumenten","Een tekst met alleen feiten","Een narratieve tekst"],"correct":0,"xp":20,"explain":"Probleemoplossingsteksten beschrijven eerst een probleem en geven daarna oplossingen."},{"cat":"Spelling","q":"Hoe schrijf je de verleden tijd van 'werken'?","a":["werkte","werkde","gewerkd","werkten"],"correct":0,"xp":15,"explain":"Werken eindigt op k (harde klank), dus verleden tijd: werkte."},{"cat":"Woordenschat","q":"Wat is een 'definitie'?","a":["Een uitleg van de betekenis van een woord","Een opsomming","Een mening","Een vergelijking"],"correct":0,"xp":10,"explain":"Een definitie geeft de exacte betekenis van een begrip."}],
+  rw: [{"cat":"Breuken","q":"Wat is ¾ als decimaal getal?","a":["0,75","0,34","1,75","0,7"],"correct":0,"xp":15,"explain":"¾ = 3 ÷ 4 = 0,75."},{"cat":"Breuken","q":"Hoeveel is ½ + ¼?","a":["¾","2/6","1/3","1"],"correct":0,"xp":15,"explain":"½ = 2/4, dus 2/4 + 1/4 = 3/4."},{"cat":"Breuken","q":"Welke breuk is groter: ⅔ of ¾?","a":["¾","⅔","Ze zijn gelijk","Kan niet vergelijken"],"correct":0,"xp":20,"explain":"⅔ = 8/12, ¾ = 9/12, dus ¾ is groter."},{"cat":"Breuken","q":"Hoeveel is ⅗ van 25?","a":["15","10","20","5"],"correct":0,"xp":20,"explain":"⅕ van 25 = 5. Dus ⅗ = 3 × 5 = 15."},{"cat":"Breuken","q":"Wat is ⅝ als decimaal?","a":["0,625","0,58","0,56","0,65"],"correct":0,"xp":20,"explain":"5 ÷ 8 = 0,625."},{"cat":"Breuken","q":"Vereenvoudig: 6/8","a":["¾","⅔","½","⅙"],"correct":0,"xp":15,"explain":"6/8 ÷ 2 = 3/4."},{"cat":"Breuken","q":"Hoeveel is 1 - ⅓?","a":["⅔","½","¼","⅙"],"correct":0,"xp":15,"explain":"1 = 3/3. 3/3 - 1/3 = 2/3."},{"cat":"Breuken","q":"Wat is 2½ als breuk?","a":["5/2","2/5","3/2","7/2"],"correct":0,"xp":15,"explain":"2½ = 4/2 + 1/2 = 5/2."},{"cat":"Breuken","q":"Hoeveel is ¼ van 60?","a":["15","20","10","30"],"correct":0,"xp":10,"explain":"60 ÷ 4 = 15."},{"cat":"Breuken","q":"Hoeveel is ⅖ + 1/5?","a":["⅗","3/10","½","2/10"],"correct":0,"xp":15,"explain":"2/5 + 1/5 = 3/5."},{"cat":"Breuken","q":"Wat is groter: 3/5 of 4/7?","a":["3/5","4/7","Ze zijn gelijk","Kan niet"],"correct":0,"xp":20,"explain":"3/5 = 21/35 en 4/7 = 20/35. Dus 3/5 > 4/7."},{"cat":"Breuken","q":"Hoeveel is ¾ × 8?","a":["6","8","4","3"],"correct":0,"xp":15,"explain":"¾ × 8 = 24 ÷ 4 = 6."},{"cat":"Breuken","q":"Hoeveel is ½ van 36?","a":["18","12","9","24"],"correct":0,"xp":10,"explain":"36 ÷ 2 = 18."},{"cat":"Breuken","q":"Schrijf 0,3 als breuk.","a":["3/10","3/100","1/3","30/10"],"correct":0,"xp":15,"explain":"0,3 = 3 tienden = 3/10."},{"cat":"Breuken","q":"Hoeveel is ⅔ van 12?","a":["8","6","4","10"],"correct":0,"xp":15,"explain":"⅓ van 12 = 4. Dus ⅔ = 2 × 4 = 8."},{"cat":"Breuken","q":"Vereenvoudig: 10/15","a":["⅔","½","¾","⅖"],"correct":0,"xp":15,"explain":"10/15 ÷ 5 = 2/3."},{"cat":"Breuken","q":"Hoeveel is 3/4 - 1/4?","a":["½","¼","1","2/4"],"correct":0,"xp":10,"explain":"3/4 - 1/4 = 2/4 = ½."},{"cat":"Breuken","q":"Schrijf 1,25 als gemengd getal.","a":["1¼","1½","1⅕","1¾"],"correct":0,"xp":15,"explain":"1,25 = 1 + 0,25 = 1 + ¼ = 1¼."},{"cat":"Procenten","q":"Hoeveel is 25% van 80?","a":["20","25","15","40"],"correct":0,"xp":15,"explain":"25% van 80 = 0,25 × 80 = 20."},{"cat":"Procenten","q":"Een trui kost €40. Hij is 10% goedkoper. Wat betaal je?","a":["€36","€38","€30","€34"],"correct":0,"xp":20,"explain":"10% van 40 = 4. 40 − 4 = €36."},{"cat":"Procenten","q":"Hoeveel is 10% van 350?","a":["35","30","50","3,5"],"correct":0,"xp":10,"explain":"350 ÷ 10 = 35."},{"cat":"Procenten","q":"Wat is 50% van 200?","a":["100","50","150","200"],"correct":0,"xp":10,"explain":"50% = de helft. 200 ÷ 2 = 100."},{"cat":"Procenten","q":"Hoeveel is 75% van 40?","a":["30","35","25","20"],"correct":0,"xp":15,"explain":"75% van 40 = 0,75 × 40 = 30."},{"cat":"Procenten","q":"Een boek kost €20. Er is 15% korting. Wat betaal je?","a":["€17","€16","€18","€15"],"correct":0,"xp":20,"explain":"15% van 20 = 3. 20 − 3 = €17."},{"cat":"Procenten","q":"Hoe schrijf je 0,45 als percentage?","a":["45%","4,5%","450%","0,45%"],"correct":0,"xp":15,"explain":"0,45 × 100 = 45%."},{"cat":"Procenten","q":"Hoeveel is 1% van 500?","a":["5","50","0,5","500"],"correct":0,"xp":10,"explain":"500 ÷ 100 = 5."},{"cat":"Procenten","q":"Van 30 leerlingen zijn er 6 ziek. Welk percentage is ziek?","a":["20%","6%","25%","30%"],"correct":0,"xp":20,"explain":"6 ÷ 30 × 100 = 20%."},{"cat":"Procenten","q":"Hoeveel is 5% van 80?","a":["4","8","5","40"],"correct":0,"xp":15,"explain":"1% van 80 = 0,8. 5 × 0,8 = 4."},{"cat":"Procenten","q":"Hoeveel is 100% van 250?","a":["250","25","2500","125"],"correct":0,"xp":10,"explain":"100% van een getal = het getal zelf."},{"cat":"Procenten","q":"Een jas kost €60. Er is 20% korting. Wat betaal je?","a":["€48","€40","€50","€52"],"correct":0,"xp":20,"explain":"20% van 60 = 12. 60 − 12 = €48."},{"cat":"Procenten","q":"Schrijf ¼ als percentage.","a":["25%","20%","40%","15%"],"correct":0,"xp":15,"explain":"¼ = 0,25 = 25%."},{"cat":"Procenten","q":"Hoeveel is 30% van 90?","a":["27","30","9","18"],"correct":0,"xp":15,"explain":"10% van 90 = 9. 30% = 3 × 9 = 27."},{"cat":"Procenten","q":"Schrijf 3/4 als percentage.","a":["75%","60%","70%","80%"],"correct":0,"xp":15,"explain":"¾ = 0,75 = 75%."},{"cat":"Vermenigvuldigen","q":"Wat is 23 × 14?","a":["322","282","312","342"],"correct":0,"xp":20,"explain":"23 × 14 = 230 + 92 = 322."},{"cat":"Vermenigvuldigen","q":"Wat is 36 × 5?","a":["180","160","200","150"],"correct":0,"xp":10,"explain":"36 × 5 = 36 × 10 ÷ 2 = 180."},{"cat":"Vermenigvuldigen","q":"Wat is 17 × 6?","a":["102","96","108","112"],"correct":0,"xp":15,"explain":"17 × 6 = 60 + 42 = 102."},{"cat":"Vermenigvuldigen","q":"Wat is 45 × 4?","a":["180","160","200","140"],"correct":0,"xp":15,"explain":"45 × 4 = 40 × 4 + 5 × 4 = 160 + 20 = 180."},{"cat":"Vermenigvuldigen","q":"Wat is 12 × 12?","a":["144","132","122","154"],"correct":0,"xp":15,"explain":"12 × 12 = 144 (tafel van 12)."},{"cat":"Handig rekenen","q":"Bereken 99 × 4 handig.","a":["396","400","394","388"],"correct":0,"xp":20,"explain":"100 × 4 − 4 = 396."},{"cat":"Handig rekenen","q":"Bereken 25 × 8 handig.","a":["200","180","220","160"],"correct":0,"xp":15,"explain":"25 × 4 × 2 = 100 × 2 = 200."},{"cat":"Handig rekenen","q":"Wat is 48 + 97?","a":["145","135","155","140"],"correct":0,"xp":10,"explain":"48 + 100 − 3 = 145."},{"cat":"Handig rekenen","q":"Bereken 998 + 467.","a":["1465","1455","1475","1460"],"correct":0,"xp":20,"explain":"1000 + 467 − 2 = 1465."},{"cat":"Handig rekenen","q":"Bereken 201 × 3 handig.","a":["603","600","606","609"],"correct":0,"xp":15,"explain":"200 × 3 + 1 × 3 = 600 + 3 = 603."},{"cat":"Handig rekenen","q":"Bereken 500 − 167.","a":["333","333","323","343"],"correct":0,"xp":15,"explain":"500 − 167 = 333."},{"cat":"Handig rekenen","q":"Bereken 4 × 125 handig.","a":["500","400","450","600"],"correct":0,"xp":15,"explain":"4 × 125 = 4 × 100 + 4 × 25 = 400 + 100 = 500."},{"cat":"Delen","q":"Hoeveel is 144 ÷ 12?","a":["12","11","13","14"],"correct":0,"xp":15,"explain":"12 × 12 = 144."},{"cat":"Delen","q":"Hoeveel is 156 ÷ 4?","a":["39","40","38","41"],"correct":0,"xp":15,"explain":"4 × 39 = 156."},{"cat":"Delen","q":"Wat is de rest bij 47 ÷ 5?","a":["2","1","3","0"],"correct":0,"xp":15,"explain":"5 × 9 = 45. 47 − 45 = 2 rest."},{"cat":"Delen","q":"Hoeveel is 180 ÷ 9?","a":["20","18","22","15"],"correct":0,"xp":10,"explain":"9 × 20 = 180."},{"cat":"Delen","q":"Hoeveel is 225 ÷ 15?","a":["15","14","16","20"],"correct":0,"xp":20,"explain":"15 × 15 = 225."},{"cat":"Getalbegrip","q":"Welk getal ligt tussen 3,4 en 3,6?","a":["3,5","3,3","3,7","3,8"],"correct":0,"xp":10,"explain":"3,5 ligt precies tussen 3,4 en 3,6."},{"cat":"Getalbegrip","q":"Wat is de waarde van het cijfer 4 in 3.482?","a":["400","4","40","4000"],"correct":0,"xp":20,"explain":"De 4 staat op de honderdtallenpositie: waarde = 400."},{"cat":"Getalbegrip","q":"Welk getal is het grootst?","a":["0,9","0,09","0,099","0,009"],"correct":0,"xp":15,"explain":"0,9 = 9/10 is het grootst."},{"cat":"Getalbegrip","q":"Hoeveel is −3 + 7?","a":["4","−4","10","−10"],"correct":0,"xp":15,"explain":"−3 + 7 = 4."},{"cat":"Getalbegrip","q":"Welk getal is negatief?","a":["−5","0","5","0,5"],"correct":0,"xp":10,"explain":"−5 is negatief — het ligt links van nul op de getallenlijn."},{"cat":"Meten","q":"Hoeveel centimeter is 1,5 meter?","a":["150 cm","15 cm","105 cm","1500 cm"],"correct":0,"xp":10,"explain":"1 m = 100 cm. 1,5 × 100 = 150 cm."},{"cat":"Meten","q":"Hoeveel ml zit er in 2,5 liter?","a":["2500 ml","250 ml","25000 ml","2050 ml"],"correct":0,"xp":15,"explain":"1 liter = 1000 ml. 2,5 × 1000 = 2500 ml."},{"cat":"Meten","q":"Hoeveel gram is 1,5 kilogram?","a":["1500 g","150 g","15000 g","1050 g"],"correct":0,"xp":10,"explain":"1 kg = 1000 g. 1,5 × 1000 = 1500 g."},{"cat":"Meten","q":"Hoeveel minuten zijn er in 2,5 uur?","a":["150 min","120 min","130 min","250 min"],"correct":0,"xp":15,"explain":"1 uur = 60 min. 2,5 × 60 = 150 minuten."},{"cat":"Meten","q":"Hoeveel seconden zijn er in 3 minuten?","a":["180 sec","300 sec","60 sec","360 sec"],"correct":0,"xp":10,"explain":"1 min = 60 sec. 3 × 60 = 180 sec."},{"cat":"Meten","q":"Hoeveel km is 3500 meter?","a":["3,5 km","35 km","0,35 km","350 km"],"correct":0,"xp":10,"explain":"1 km = 1000 m. 3500 ÷ 1000 = 3,5 km."},{"cat":"Meetkunde","q":"Hoeveel graden heeft een rechte hoek?","a":["90°","45°","180°","360°"],"correct":0,"xp":10,"explain":"Een rechte hoek = precies 90 graden."},{"cat":"Meetkunde","q":"Hoeveel zijden heeft een zeshoek?","a":["6","5","7","8"],"correct":0,"xp":10,"explain":"Een zeshoek heeft 6 zijden."},{"cat":"Meetkunde","q":"Hoeveel graden zitten er in een cirkel?","a":["360°","180°","90°","270°"],"correct":0,"xp":10,"explain":"Een cirkel = 360 graden."},{"cat":"Meetkunde","q":"Wat is de omtrek van een vierkant met zijde 5 cm?","a":["20 cm","25 cm","10 cm","15 cm"],"correct":0,"xp":15,"explain":"Omtrek = 4 × zijde = 4 × 5 = 20 cm."},{"cat":"Meetkunde","q":"Wat is de oppervlakte van een rechthoek van 6 bij 4 cm?","a":["24 cm²","20 cm²","10 cm²","12 cm²"],"correct":0,"xp":15,"explain":"Oppervlakte = lengte × breedte = 6 × 4 = 24 cm²."},{"cat":"Verhoudingen","q":"Op een kaart is 1 cm = 5 km. Hoe ver is 3 cm in werkelijkheid?","a":["15 km","5 km","8 km","3 km"],"correct":0,"xp":20,"explain":"3 cm × 5 km = 15 km."},{"cat":"Verhoudingen","q":"Verhouding 2:3. Als het eerste deel 8 is, hoe groot is het tweede?","a":["12","6","9","15"],"correct":0,"xp":20,"explain":"8 ÷ 2 × 3 = 12."},{"cat":"Verhoudingen","q":"In een klas zitten 15 meisjes en 10 jongens. Wat is de verhouding meisjes:jongens?","a":["3:2","2:3","1:2","2:1"],"correct":0,"xp":20,"explain":"15:10 vereenvoudigen = 3:2."},{"cat":"Vermenigvuldigen","q":"Wat is 8 × 8?","a":["64","56","72","48"],"correct":0,"xp":10,"explain":"8 × 8 = 64 (tafel van 8)."},{"cat":"Vermenigvuldigen","q":"Wat is 13 × 7?","a":["91","84","98","77"],"correct":0,"xp":15,"explain":"13 × 7 = 91."},{"cat":"Vermenigvuldigen","q":"Wat is 25 × 12?","a":["300","250","275","325"],"correct":0,"xp":20,"explain":"25 × 12 = 25 × 10 + 25 × 2 = 250 + 50 = 300."},{"cat":"Delen","q":"Hoeveel is 240 ÷ 8?","a":["30","28","32","24"],"correct":0,"xp":15,"explain":"8 × 30 = 240."},{"cat":"Delen","q":"Hoeveel is 91 ÷ 7?","a":["13","12","14","11"],"correct":0,"xp":15,"explain":"7 × 13 = 91."},{"cat":"Handig rekenen","q":"Bereken 75 + 49 handig.","a":["124","114","134","120"],"correct":0,"xp":15,"explain":"75 + 49 = 75 + 50 - 1 = 124."},{"cat":"Getalbegrip","q":"Schrijf 2,5 miljoen in cijfers.","a":["2.500.000","250.000","25.000.000","2.050.000"],"correct":0,"xp":20,"explain":"2,5 miljoen = 2 miljoen + 500.000 = 2.500.000."},{"cat":"Getalbegrip","q":"Welk getal is het kleinst?","a":["-10","-5","0","5"],"correct":0,"xp":15,"explain":"-10 is het kleinst: hoe negatiever, hoe kleiner."},{"cat":"Meten","q":"Hoeveel uur is 180 minuten?","a":["3 uur","2 uur","4 uur","2,5 uur"],"correct":0,"xp":10,"explain":"180 ÷ 60 = 3 uur."},{"cat":"Meten","q":"Hoeveel dm is 250 cm?","a":["25 dm","2,5 dm","250 dm","2500 dm"],"correct":0,"xp":10,"explain":"1 dm = 10 cm. 250 ÷ 10 = 25 dm."},{"cat":"Meetkunde","q":"Hoeveel graden heeft een driehoek in totaal?","a":["180°","90°","270°","360°"],"correct":0,"xp":15,"explain":"De hoeken van een driehoek tellen altijd op tot 180°."},{"cat":"Meetkunde","q":"Hoe heet een vierhoek met 4 gelijke zijden en 4 rechte hoeken?","a":["Vierkant","Rechthoek","Ruit","Parallellogram"],"correct":0,"xp":10,"explain":"Een vierkant heeft 4 gelijke zijden én 4 rechte hoeken."},{"cat":"Verhoudingen","q":"Hoeveel is 2:5 als 2 = 14?","a":["35","25","30","20"],"correct":0,"xp":20,"explain":"14 ÷ 2 × 5 = 35."},{"cat":"Breuken","q":"Hoeveel is ¾ + ¼?","a":["1","½","⅔","¾"],"correct":0,"xp":10,"explain":"¾ + ¼ = 4/4 = 1."},{"cat":"Procenten","q":"Schrijf 0,8 als percentage.","a":["80%","8%","800%","0,8%"],"correct":0,"xp":10,"explain":"0,8 × 100 = 80%."},{"cat":"Getalbegrip","q":"Wat is het kwadraat van 7?","a":["49","14","42","56"],"correct":0,"xp":15,"explain":"7² = 7 × 7 = 49."},{"cat":"Handig rekenen","q":"Hoeveel is 1000 - 347?","a":["653","643","663","753"],"correct":0,"xp":15,"explain":"1000 - 347 = 653."},{"cat":"Meten","q":"Hoe laat is het kwart over twee 's middags in 24-uurstijd?","a":["14:15","2:15","14:45","2:45"],"correct":0,"xp":15,"explain":"Kwart over twee 's middags = 14:15 in 24-uursnotatie."},{"cat":"Meetkunde","q":"Wat is de omtrek van een cirkel met straal 5 cm? (gebruik π ≈ 3,14)","a":["31,4 cm","15,7 cm","78,5 cm","10 cm"],"correct":0,"xp":20,"explain":"Omtrek = 2 × π × r = 2 × 3,14 × 5 = 31,4 cm."},{"cat":"Verhoudingen","q":"Een recept voor 4 personen gebruikt 200 g bloem. Hoeveel voor 6 personen?","a":["300 g","250 g","400 g","350 g"],"correct":0,"xp":20,"explain":"200 ÷ 4 × 6 = 300 g."},{"cat":"Breuken","q":"Hoeveel is 5/6 - 1/6?","a":["⅔","½","¾","⅙"],"correct":0,"xp":10,"explain":"5/6 - 1/6 = 4/6 = ⅔."},{"cat":"Getalbegrip","q":"Welke wortel is 9?","a":["√81","√9","√3","√27"],"correct":0,"xp":20,"explain":"√81 = 9, want 9 × 9 = 81."},{"cat":"Meten","q":"Hoeveel liter is 3500 ml?","a":["3,5 l","35 l","0,35 l","350 l"],"correct":0,"xp":10,"explain":"3500 ml ÷ 1000 = 3,5 liter."},{"cat":"Handig rekenen","q":"Bereken 6 × 15 handig.","a":["90","80","85","95"],"correct":0,"xp":10,"explain":"6 × 15 = 6 × 10 + 6 × 5 = 60 + 30 = 90."},{"cat":"Meetkunde","q":"Wat is de oppervlakte van een driehoek met basis 8 cm en hoogte 6 cm?","a":["24 cm²","48 cm²","14 cm²","30 cm²"],"correct":0,"xp":20,"explain":"Opp. driehoek = ½ × basis × hoogte = ½ × 8 × 6 = 24 cm²."},{"cat":"Breuken","q":"Schrijf 40% als breuk in laagste termen.","a":["⅖","2/5","4/10","40/100"],"correct":0,"xp":15,"explain":"40% = 40/100 = 2/5."},{"cat":"Procenten","q":"Van 200 kinderen sporten er 150. Welk % sport er?","a":["75%","70%","80%","60%"],"correct":0,"xp":20,"explain":"150 ÷ 200 × 100 = 75%."},{"cat":"Getalbegrip","q":"Welk getal is een priemgetal?","a":["17","15","21","9"],"correct":0,"xp":20,"explain":"17 is een priemgetal: deelbaar door 1 en 17 zelf."},{"cat":"Verhoudingen","q":"De verhouding jongens:meisjes is 2:3. Er zijn 10 jongens. Hoeveel meisjes?","a":["15","12","20","10"],"correct":0,"xp":20,"explain":"10 ÷ 2 × 3 = 15 meisjes."},{"cat":"Meten","q":"Hoeveel weken zijn er in een jaar?","a":["52","50","48","54"],"correct":0,"xp":10,"explain":"Een jaar heeft 52 weken (en 1 of 2 dagen)."},{"cat":"Handig rekenen","q":"Bereken 11 × 11.","a":["121","111","131","101"],"correct":0,"xp":10,"explain":"11 × 11 = 121."}],
+  en: [{"cat":"Vocabulary","q":"What does 'enormous' mean?","a":["heel groot","heel klein","heel snel","heel mooi"],"correct":0,"xp":15,"explain":"Enormous = heel groot, enorm."},{"cat":"Grammar","q":"Fill in: She ___ to school every day.","a":["goes","go","going","gone"],"correct":0,"xp":15,"explain":"Bij 'she/he/it' gebruik je 'goes' (derde persoon enkelvoud)."},{"cat":"Vocabulary","q":"What is the English word for 'vliegtuig'?","a":["airplane","train","boat","helicopter"],"correct":0,"xp":10,"explain":"Airplane = vliegtuig."},{"cat":"Grammar","q":"Which sentence is correct?","a":["I am 12 years old.","I have 12 years.","I be 12 years old.","My age is 12 years."],"correct":0,"xp":15,"explain":"In het Engels: 'I am 12 years old', niet 'I have 12 years'."},{"cat":"Vocabulary","q":"What does 'delicious' mean?","a":["lekker","moeilijk","gevaarlijk","saai"],"correct":0,"xp":10,"explain":"Delicious = heerlijk, erg lekker."},{"cat":"Reading","q":"What does 'ancient' mean?","a":["heel oud","heel nieuw","heel groot","heel ver"],"correct":0,"xp":20,"explain":"Ancient = heel oud, uit de oudheid."},{"cat":"Grammar","q":"Make the plural: one child → many ___","a":["children","childs","childes","childrens"],"correct":0,"xp":20,"explain":"Child heeft een onregelmatig meervoud: children."},{"cat":"Vocabulary","q":"What is the opposite of 'noisy'?","a":["quiet","loud","busy","fast"],"correct":0,"xp":15,"explain":"The opposite of noisy (lawaaiig) is quiet (stil)."},{"cat":"Grammar","q":"Which is the past tense of 'run'?","a":["ran","runned","running","runs"],"correct":0,"xp":20,"explain":"Run is onregelmatig: run → ran."},{"cat":"Vocabulary","q":"What does 'exhausted' mean?","a":["uitgeput","opgewonden","boos","blij"],"correct":0,"xp":15,"explain":"Exhausted = heel erg moe."},{"cat":"Vocabulary","q":"What does 'curious' mean?","a":["nieuwsgierig","bang","boos","verdrietig"],"correct":0,"xp":10,"explain":"Curious = nieuwsgierig."},{"cat":"Grammar","q":"Fill in: They ___ football yesterday.","a":["played","play","plays","playing"],"correct":0,"xp":15,"explain":"Yesterday = verleden tijd. Play → played."},{"cat":"Vocabulary","q":"What is the English word for 'bibliotheek'?","a":["library","bookstore","school","museum"],"correct":0,"xp":10,"explain":"Library = bibliotheek."},{"cat":"Grammar","q":"Which question word asks about a place?","a":["Where","When","Who","Why"],"correct":0,"xp":10,"explain":"'Where' vraagt naar een plaats."},{"cat":"Vocabulary","q":"What does 'unfortunately' mean?","a":["helaas","gelukkig","misschien","natuurlijk"],"correct":0,"xp":20,"explain":"Unfortunately = helaas."},{"cat":"Grammar","q":"Fill in: There ___ many people at the party.","a":["were","was","is","are"],"correct":0,"xp":20,"explain":"'Many people' is meervoud, verleden tijd = were."},{"cat":"Vocabulary","q":"What does 'ingredients' mean?","a":["ingrediënten","instructies","gereedschap","stappen"],"correct":0,"xp":15,"explain":"Ingredients = ingrediënten."},{"cat":"Reading","q":"What does 'predict' mean?","a":["voorspellen","beschrijven","uitleggen","vergelijken"],"correct":0,"xp":20,"explain":"To predict = voorspellen."},{"cat":"Grammar","q":"Fill in: She has ___ her homework.","a":["done","did","do","doing"],"correct":0,"xp":20,"explain":"Present perfect: has + voltooid deelwoord. Do → done."},{"cat":"Vocabulary","q":"What is the English word for 'klimaat'?","a":["climate","weather","cloud","storm"],"correct":0,"xp":10,"explain":"Climate = klimaat."},{"cat":"Vocabulary","q":"What does 'brilliant' mean?","a":["schitterend / briljant","saai","lelijk","moeilijk"],"correct":0,"xp":15,"explain":"Brilliant = schitterend, heel knap of slim."},{"cat":"Grammar","q":"Fill in: He ___ been to France before.","a":["has","have","had","is"],"correct":0,"xp":20,"explain":"He + present perfect = 'has'. He has been to France."},{"cat":"Vocabulary","q":"What is the English word for 'fiets'?","a":["bicycle","motorcycle","scooter","tricycle"],"correct":0,"xp":10,"explain":"Bicycle = fiets."},{"cat":"Grammar","q":"Which sentence uses the future tense?","a":["I will go to the park tomorrow.","I went to the park.","I go to the park.","I am going to the park now."],"correct":0,"xp":20,"explain":"'Will + infinitief' = toekomende tijd."},{"cat":"Vocabulary","q":"What does 'generous' mean?","a":["vrijgevig","gierig","vriendelijk","eerlijk"],"correct":0,"xp":20,"explain":"Generous = vrijgevig, royaal."},{"cat":"Reading","q":"What does 'summarise' mean?","a":["samenvatten","uitleggen","beschrijven","herhalen"],"correct":0,"xp":15,"explain":"To summarise = samenvatten."},{"cat":"Grammar","q":"Make the negative: 'She likes cats.'","a":["She doesn't like cats.","She don't like cats.","She not like cats.","She isn't like cats."],"correct":0,"xp":20,"explain":"Derde persoon enkelvoud verleden: doesn't + infinitief."},{"cat":"Vocabulary","q":"What does 'agriculture' mean?","a":["landbouw","industrie","handel","visserij"],"correct":0,"xp":20,"explain":"Agriculture = landbouw."},{"cat":"Grammar","q":"Which word is an adjective?","a":["beautiful","run","quickly","she"],"correct":0,"xp":15,"explain":"Beautiful is een bijvoeglijk naamwoord (adjective)."},{"cat":"Vocabulary","q":"What is the English word for 'aardrijkskunde'?","a":["geography","history","science","maths"],"correct":0,"xp":10,"explain":"Geography = aardrijkskunde."},{"cat":"Vocabulary","q":"What does 'disaster' mean?","a":["ramp","toeval","gevaar","probleem"],"correct":0,"xp":15,"explain":"Disaster = ramp, catastrofe."},{"cat":"Grammar","q":"Fill in: If it rains, we ___ inside.","a":["will stay","stay","stayed","are staying"],"correct":0,"xp":20,"explain":"Eerste conditoneel: if + tegenwoordige tijd, will + infinitief."},{"cat":"Vocabulary","q":"What does 'environment' mean?","a":["milieu / omgeving","natuur","klimaat","wereld"],"correct":0,"xp":15,"explain":"Environment = milieu of omgeving."},{"cat":"Grammar","q":"Which is the comparative of 'good'?","a":["better","gooder","more good","best"],"correct":0,"xp":20,"explain":"Good → better → best (onregelmatig)."},{"cat":"Vocabulary","q":"What does 'ancient' mean? (synonym)","a":["very old","very new","very big","very small"],"correct":0,"xp":15,"explain":"Ancient = very old, thousands of years old."},{"cat":"Vocabulary","q":"What is the English word for 'zonsopgang'?","a":["sunrise","sunset","moonrise","dawn"],"correct":0,"xp":15,"explain":"Sunrise = zonsopgang. Sunset = zonsondergang."},{"cat":"Grammar","q":"Fill in: She ___ her teeth every morning.","a":["brushes","brush","brushed","brushing"],"correct":0,"xp":15,"explain":"Derde persoon enkelvoud + gewoontehandeling = brushes."},{"cat":"Vocabulary","q":"What does 'population' mean?","a":["bevolking","oppervlakte","gebied","stad"],"correct":0,"xp":15,"explain":"Population = bevolking, het aantal inwoners."},{"cat":"Reading","q":"What does 'evidence' mean?","a":["bewijs","mening","argument","voorbeeld"],"correct":0,"xp":20,"explain":"Evidence = bewijs."},{"cat":"Grammar","q":"Which word is a conjunction?","a":["because","quickly","beautiful","she"],"correct":0,"xp":15,"explain":"Because is een voegwoord (conjunction) — het verbindt zinnen."},{"cat":"Vocabulary","q":"What does 'temperature' mean?","a":["temperatuur","neerslag","wind","druk"],"correct":0,"xp":10,"explain":"Temperature = temperatuur."},{"cat":"Grammar","q":"Fill in: ___ you help me, please?","a":["Could","Should","Would","Can"],"correct":0,"xp":20,"explain":"'Could you help me?' is de beleefde vraagvorm."},{"cat":"Vocabulary","q":"What does 'responsibility' mean?","a":["verantwoordelijkheid","vrijheid","gelijkheid","plicht"],"correct":0,"xp":20,"explain":"Responsibility = verantwoordelijkheid."},{"cat":"Grammar","q":"Fill in: The book ___ written in 1984.","a":["was","were","is","has"],"correct":0,"xp":20,"explain":"Passieve zin, verleden tijd: was + voltooid deelwoord."},{"cat":"Vocabulary","q":"What does 'harvest' mean?","a":["oogst","zaad","grond","groei"],"correct":0,"xp":15,"explain":"Harvest = oogst, het binnenhalen van gewassen."},{"cat":"Vocabulary","q":"What does 'communicate' mean?","a":["communiceren / contact maken","werken","reizen","bestuderen"],"correct":0,"xp":10,"explain":"To communicate = communiceren."},{"cat":"Grammar","q":"Fill in: It's the ___ book I've ever read. (good)","a":["best","better","most good","goodest"],"correct":0,"xp":20,"explain":"Overtreffende trap van good = best."},{"cat":"Vocabulary","q":"What does 'century' mean?","a":["eeuw (100 jaar)","decennium (10 jaar)","millennium (1000 jaar)","jaar"],"correct":0,"xp":15,"explain":"A century = een eeuw = 100 jaar."},{"cat":"Reading","q":"What does 'furthermore' signal in a text?","a":["There is more information to add","A contrast is coming","A conclusion is coming","An example follows"],"correct":0,"xp":20,"explain":"Furthermore = bovendien — het voegt informatie toe."},{"cat":"Vocabulary","q":"What does 'independence' mean?","a":["onafhankelijkheid","vrijheid","gelijkheid","samenwerking"],"correct":0,"xp":20,"explain":"Independence = onafhankelijkheid."},{"cat":"Grammar","q":"Fill in: She ___ reading when I called.","a":["was","is","were","has"],"correct":0,"xp":20,"explain":"Past continuous: was + werkwoord + -ing."},{"cat":"Vocabulary","q":"What does 'achievement' mean?","a":["prestatie","probleem","doel","poging"],"correct":0,"xp":15,"explain":"Achievement = prestatie, iets wat je hebt bereikt."},{"cat":"Grammar","q":"Fill in: By the time we arrived, the film ___ already started.","a":["had","has","have","was"],"correct":0,"xp":20,"explain":"Past perfect: had + voltooid deelwoord. De film was al begonnen vóór onze aankomst."},{"cat":"Vocabulary","q":"What does 'reliable' mean?","a":["betrouwbaar","gevaarlijk","snel","moeilijk"],"correct":0,"xp":15,"explain":"Reliable = betrouwbaar, te vertrouwen."},{"cat":"Grammar","q":"Which is the superlative of 'bad'?","a":["worst","worse","most bad","baddest"],"correct":0,"xp":20,"explain":"Bad → worse → worst (onregelmatig)."},{"cat":"Vocabulary","q":"What does 'preserve' mean?","a":["bewaren / beschermen","vernietigen","bouwen","ontdekken"],"correct":0,"xp":15,"explain":"To preserve = bewaren of beschermen."},{"cat":"Grammar","q":"Fill in: I ___ to the gym three times a week.","a":["go","goes","went","going"],"correct":0,"xp":10,"explain":"Eerste persoon enkelvoud, gewoontehandeling: I go."},{"cat":"Vocabulary","q":"What does 'catastrophe' mean?","a":["ramp","wonder","toeval","avontuur"],"correct":0,"xp":15,"explain":"Catastrophe = ramp, catastrofale gebeurtenis."},{"cat":"Grammar","q":"Fill in: She ___ her keys at home this morning.","a":["left","leave","leaves","leaving"],"correct":0,"xp":15,"explain":"Verleden tijd van leave = left (onregelmatig)."},{"cat":"Vocabulary","q":"What does 'tradition' mean?","a":["traditie","innovatie","technologie","cultuur"],"correct":0,"xp":10,"explain":"Tradition = traditie."},{"cat":"Grammar","q":"What does 'however' signal?","a":["Een tegenstelling","Een opsomming","Een conclusie","Een oorzaak"],"correct":0,"xp":15,"explain":"However = echter — signaleert een tegenstelling."},{"cat":"Vocabulary","q":"What does 'efficient' mean?","a":["efficiënt / doeltreffend","langzaam","duur","ingewikkeld"],"correct":0,"xp":15,"explain":"Efficient = efficiënt, met zo min mogelijk verspilling."},{"cat":"Grammar","q":"Fill in: ___ you like to come to my party?","a":["Would","Should","Could","Must"],"correct":0,"xp":15,"explain":"Would you like...? is een beleefde uitnodiging."},{"cat":"Vocabulary","q":"What does 'myth' mean?","a":["mythe / overlevering","feit","definitie","argument"],"correct":0,"xp":15,"explain":"A myth = een mythe, een traditioneel verhaal of legende."},{"cat":"Grammar","q":"Which word is a preposition?","a":["under","quickly","beautiful","run"],"correct":0,"xp":15,"explain":"Under is een voorzetsel (preposition)."},{"cat":"Vocabulary","q":"What does 'transform' mean?","a":["veranderen / omvormen","groeien","bouwen","beschrijven"],"correct":0,"xp":15,"explain":"To transform = omvormen, drastisch veranderen."},{"cat":"Grammar","q":"Make the passive: 'The chef cooks the meal.'","a":["The meal is cooked by the chef.","The meal cooks by the chef.","The chef is cooked the meal.","The meal was cook by the chef."],"correct":0,"xp":20,"explain":"Passief: onderwerp + is/are + voltooid deelwoord (+ by + agent)."},{"cat":"Vocabulary","q":"What does 'negotiate' mean?","a":["onderhandelen","beslissen","plannen","weigeren"],"correct":0,"xp":20,"explain":"To negotiate = onderhandelen om tot een overeenkomst te komen."},{"cat":"Grammar","q":"Fill in: I wish I ___ fly!","a":["could","can","will","would"],"correct":0,"xp":20,"explain":"Wensen over iets wat niet mogelijk is: I wish + could."},{"cat":"Vocabulary","q":"What does 'significant' mean?","a":["belangrijk / betekenisvol","klein","gewoon","moeilijk"],"correct":0,"xp":15,"explain":"Significant = significant, van groot belang."},{"cat":"Grammar","q":"Which sentence is in the present perfect?","a":["She has lived here for years.","She lived here for years.","She lives here for years.","She is living here for years."],"correct":0,"xp":20,"explain":"Present perfect: has/have + voltooid deelwoord."},{"cat":"Vocabulary","q":"What does 'legislation' mean?","a":["wetgeving","rechtspraak","politiek","bestuur"],"correct":0,"xp":20,"explain":"Legislation = wetgeving, het geheel van wetten."},{"cat":"Grammar","q":"Fill in: The faster you run, ___ you will get tired.","a":["the sooner","sooner","more sooner","the more soon"],"correct":0,"xp":20,"explain":"Dubbele vergelijkende trap: the faster ... the sooner."},{"cat":"Vocabulary","q":"What does 'impact' mean?","a":["impact / effect","probleem","oorzaak","oplossing"],"correct":0,"xp":10,"explain":"Impact = impact, het effect van iets."},{"cat":"Grammar","q":"Which word is an adverb?","a":["quickly","quick","quicker","quickest"],"correct":0,"xp":15,"explain":"Quickly is een bijwoord (adverb) — het beschrijft hoe iets wordt gedaan."},{"cat":"Vocabulary","q":"What does 'democracy' mean?","a":["democratie","dictatuur","monarchie","anarchie"],"correct":0,"xp":15,"explain":"Democracy = democratie, bestuur door het volk."},{"cat":"Grammar","q":"Fill in: He suggested ___ to the cinema.","a":["going","go","to go","went"],"correct":0,"xp":20,"explain":"Na 'suggest' gebruik je het gerund (werkwoord + -ing)."},{"cat":"Vocabulary","q":"What does 'conflict' mean?","a":["conflict / strijd","samenwerking","overeenkomst","vrede"],"correct":0,"xp":10,"explain":"Conflict = conflict, een geschil of strijd."},{"cat":"Grammar","q":"Fill in: ___ it snows, school will be cancelled.","a":["If","When","Although","Because"],"correct":0,"xp":20,"explain":"If = als (conditoneel). 'If it snows' = als het sneeuwt."},{"cat":"Vocabulary","q":"What does 'exploration' mean?","a":["verkenning / ontdekking","uitvinding","wetenschap","reis"],"correct":0,"xp":15,"explain":"Exploration = verkenning, het ontdekken van nieuwe gebieden."},{"cat":"Reading","q":"What does 'in contrast' signal?","a":["Er is een tegenstelling","Er is extra informatie","Er is een conclusie","Er is een opsomming"],"correct":0,"xp":15,"explain":"'In contrast' signaleert dat er een tegengesteld standpunt of situatie volgt."},{"cat":"Vocabulary","q":"What does 'benefit' mean?","a":["voordeel / baat","nadeel","risico","keuze"],"correct":0,"xp":10,"explain":"Benefit = voordeel of baat."},{"cat":"Grammar","q":"Fill in: They ___ their homework by the time dinner was ready.","a":["had finished","finished","have finished","finish"],"correct":0,"xp":20,"explain":"Past perfect: had + voltooid deelwoord — actie voltooid vóór een ander verleden moment."},{"cat":"Vocabulary","q":"What does 'recycle' mean?","a":["hergebruiken / recyclen","weggooien","kopen","repareren"],"correct":0,"xp":10,"explain":"To recycle = recyclen, materialen opnieuw gebruiken."},{"cat":"Grammar","q":"What is a 'clause'?","a":["Een zinsdeel met een werkwoord","Een zelfstandig naamwoord","Een bijvoeglijk naamwoord","Een bijwoord"],"correct":0,"xp":20,"explain":"A clause = een zinsdeel (hoofd- of bijzin) dat een onderwerp en werkwoord bevat."},{"cat":"Vocabulary","q":"What does 'consequences' mean?","a":["gevolgen","oorzaken","redenen","doelen"],"correct":0,"xp":15,"explain":"Consequences = gevolgen, wat er door iets anders is veroorzaakt."},{"cat":"Grammar","q":"Fill in: She ___ to have known better.","a":["ought","must","should","might"],"correct":0,"xp":20,"explain":"Ought to = zou moeten (morele verplichting)."},{"cat":"Vocabulary","q":"What does 'sustainable' mean?","a":["duurzaam","moderns","goedkoop","efficiënt"],"correct":0,"xp":15,"explain":"Sustainable = duurzaam — iets wat kan voortbestaan zonder de aarde te schaden."},{"cat":"Grammar","q":"Fill in: I don't know ___ he's coming.","a":["whether","that","what","who"],"correct":0,"xp":20,"explain":"Whether = of (bij onzekerheid): 'I don't know whether he's coming.'"},{"cat":"Vocabulary","q":"What does 'decade' mean?","a":["decennium (10 jaar)","eeuw (100 jaar)","jaar","kwartaal"],"correct":0,"xp":15,"explain":"A decade = een decennium = 10 jaar."},{"cat":"Grammar","q":"Which is correct: 'fewer' or 'less' for countable nouns?","a":["fewer","less","more fewer","lesser"],"correct":0,"xp":20,"explain":"Telbare zelfstandige naamwoorden: fewer. Niet-telbaar: less. Bijv. fewer people, less water."},{"cat":"Vocabulary","q":"What does 'hypothesis' mean?","a":["hypothese / aanname","conclusie","bewijs","argument"],"correct":0,"xp":20,"explain":"Hypothesis = hypothese, een aanname die nog bewezen moet worden."},{"cat":"Grammar","q":"Fill in: The book ___ I told you about is excellent.","a":["that","who","which","what"],"correct":0,"xp":20,"explain":"'That' of 'which' verwijst naar een zaak: The book that I told you about."},{"cat":"Vocabulary","q":"What does 'estimate' mean?","a":["schatten / ramen","meten","berekenen","tellen"],"correct":0,"xp":10,"explain":"To estimate = schatten, een ruwe berekening maken."},{"cat":"Grammar","q":"Fill in: He ___ have told me earlier! (kritiek op het verleden)","a":["should","shall","will","can"],"correct":0,"xp":20,"explain":"Should have + voltooid deelwoord = kritiek op iets wat in het verleden anders had moeten gaan."},{"cat":"Vocabulary","q":"What does 'alliance' mean?","a":["alliantie / bondgenootschap","vijandschap","neutraliteit","conflict"],"correct":0,"xp":20,"explain":"Alliance = alliantie, een verbond of samenwerking tussen partijen."},{"cat":"Grammar","q":"Fill in: Neither Tom ___ Jerry was at home.","a":["nor","or","and","but"],"correct":0,"xp":20,"explain":"Neither ... nor = noch ... noch."},{"cat":"Vocabulary","q":"What does 'perspective' mean?","a":["perspectief / gezichtshoek","idee","mening","plan"],"correct":0,"xp":15,"explain":"Perspective = perspectief, het gezichtspunt van waaruit je iets bekijkt."},{"cat":"Grammar","q":"Fill in: ___ you finish, please hand in your test.","a":["Once","After","When","All of these"],"correct":0,"xp":20,"explain":"Once / When / After you finish = zodra / nadat je klaar bent."},{"cat":"Vocabulary","q":"What does 'poverty' mean?","a":["armoede","rijkdom","gelijkheid","kansen"],"correct":0,"xp":15,"explain":"Poverty = armoede."},{"cat":"Grammar","q":"Choose the correct form: 'I am used to ___ early.'","a":["waking","wake","woke","waken"],"correct":0,"xp":20,"explain":"'Be used to' + gerund (-ing vorm): I am used to waking early."}],
+  ow: [{"cat":"Aardrijkskunde","q":"Wat is de hoofdstad van Duitsland?","a":["Berlijn","München","Hamburg","Frankfurt"],"correct":0,"xp":10,"explain":"Berlijn is de hoofdstad en grootste stad van Duitsland."},{"cat":"Geschiedenis","q":"In welk jaar begon de Tweede Wereldoorlog?","a":["1939","1940","1914","1945"],"correct":0,"xp":15,"explain":"WO II begon op 1 september 1939 met de inval in Polen."},{"cat":"Natuur","q":"Hoe heet het proces waarbij planten voedsel maken met zonlicht?","a":["Fotosynthese","Ademhaling","Verdamping","Kieming"],"correct":0,"xp":15,"explain":"Fotosynthese: zonlicht + water + CO₂ → suiker + zuurstof."},{"cat":"Aardrijkskunde","q":"Welke rivier stroomt door Parijs?","a":["De Seine","De Rijn","De Theems","De Loire"],"correct":0,"xp":10,"explain":"De Seine stroomt door Parijs."},{"cat":"Burgerschap","q":"Hoe heet het Nederlandse parlement?","a":["Staten-Generaal","Tweede Kamer","Senaat","Raad van State"],"correct":0,"xp":20,"explain":"Het parlement heet de Staten-Generaal (Eerste + Tweede Kamer)."},{"cat":"Natuur","q":"Wat ademen planten overdag uit?","a":["Zuurstof","Koolstofdioxide","Stikstof","Waterdamp"],"correct":0,"xp":15,"explain":"Bij fotosynthese nemen planten CO₂ op en geven zuurstof af."},{"cat":"Geschiedenis","q":"Welk tijdvak hoort bij de Middeleeuwen?","a":["500–1500 na Chr.","3000–500 v. Chr.","1500–1800","0–500 na Chr."],"correct":0,"xp":20,"explain":"De Middeleeuwen: circa 500 tot 1500 na Christus."},{"cat":"Aardrijkskunde","q":"Welk land is het grootste ter wereld?","a":["Rusland","Canada","China","Amerika"],"correct":0,"xp":10,"explain":"Rusland is met 17 miljoen km² het grootste land."},{"cat":"Techniek","q":"Wat is een stroomkring?","a":["Een gesloten pad voor elektriciteit","Een soort magneet","Een waterleiding","Een computerchip"],"correct":0,"xp":15,"explain":"Een stroomkring is een gesloten circuit voor elektriciteit."},{"cat":"Burgerschap","q":"Hoe oud moet je zijn om in Nederland te stemmen?","a":["18 jaar","16 jaar","21 jaar","20 jaar"],"correct":0,"xp":10,"explain":"In Nederland mag je stemmen vanaf 18 jaar."},{"cat":"Natuur","q":"Hoe noemen we dieren die alleen planten eten?","a":["Herbivoren","Carnivoren","Omnivoren","Insectivoren"],"correct":0,"xp":10,"explain":"Herbivoren eten alleen planten."},{"cat":"Aardrijkskunde","q":"In welk werelddeel ligt Brazilië?","a":["Zuid-Amerika","Afrika","Azië","Noord-Amerika"],"correct":0,"xp":10,"explain":"Brazilië ligt in Zuid-Amerika."},{"cat":"Geschiedenis","q":"Wie was de eerste man op de maan?","a":["Neil Armstrong","Buzz Aldrin","Yuri Gagarin","Alan Shepard"],"correct":0,"xp":15,"explain":"Neil Armstrong zette op 20 juli 1969 als eerste mens voet op de maan."},{"cat":"Natuur","q":"Wat is de functie van wortels van een plant?","a":["Water opnemen en ankeren","Fotosynthese uitvoeren","Zaden produceren","Bloemen vormen"],"correct":0,"xp":15,"explain":"Wortels nemen water op en verankeren de plant."},{"cat":"Burgerschap","q":"Wat is de taak van een burgemeester?","a":["Gemeente besturen","Wetten maken","Rechtspreken","Belasting innen"],"correct":0,"xp":15,"explain":"De burgemeester leidt het gemeentebestuur."},{"cat":"Geschiedenis","q":"Welk land stuurde als eerste een mens de ruimte in?","a":["Sovjet-Unie","Amerika","China","Duitsland"],"correct":0,"xp":20,"explain":"Yuri Gagarin (Sovjet-Unie) was in 1961 de eerste mens in de ruimte."},{"cat":"Aardrijkskunde","q":"Welke oceaan ligt tussen Europa en Amerika?","a":["Atlantische Oceaan","Stille Oceaan","Indische Oceaan","Noordelijke IJszee"],"correct":0,"xp":10,"explain":"De Atlantische Oceaan scheidt Europa van Amerika."},{"cat":"Techniek","q":"Wat doet een zonnepaneel?","a":["Zonlicht omzetten in elektriciteit","Water verwarmen","Wind omzetten in stroom","Warmte opslaan"],"correct":0,"xp":15,"explain":"Zonnepanelen zetten zonlicht om in elektriciteit."},{"cat":"Natuur","q":"Wat is de buitenste laag van de aarde?","a":["De aardkorst","De mantel","De kern","De atmosfeer"],"correct":0,"xp":15,"explain":"De aardkorst is de dunne buitenste laag waarop wij leven."},{"cat":"Burgerschap","q":"Wat is democratie?","a":["Bestuur door het volk","Bestuur door één persoon","Bestuur door het leger","Bestuur door rechters"],"correct":0,"xp":20,"explain":"Democratie = volksbestuur. Burgers kiezen hun vertegenwoordigers."},{"cat":"Aardrijkskunde","q":"Wat is de hoofdstad van Frankrijk?","a":["Parijs","Lyon","Marseille","Bordeaux"],"correct":0,"xp":10,"explain":"Parijs is de hoofdstad van Frankrijk."},{"cat":"Aardrijkskunde","q":"Welke berg is de hoogste ter wereld?","a":["Mount Everest","Mont Blanc","Kilimanjaro","Denali"],"correct":0,"xp":10,"explain":"De Mount Everest (8848 m) is de hoogste berg ter wereld."},{"cat":"Aardrijkskunde","q":"Welk land heeft de meeste inwoners ter wereld?","a":["India","China","Amerika","Indonesië"],"correct":0,"xp":15,"explain":"India heeft sinds 2023 de meeste inwoners (meer dan 1,4 miljard)."},{"cat":"Aardrijkskunde","q":"In welk werelddeel ligt Egypte?","a":["Afrika","Azië","Europa","Zuid-Amerika"],"correct":0,"xp":10,"explain":"Egypte ligt in het noordoosten van Afrika."},{"cat":"Aardrijkskunde","q":"Welke rivier is de langste ter wereld?","a":["De Nijl","De Amazone","De Mississippi","De Yangtze"],"correct":0,"xp":15,"explain":"De Nijl (Afrika) wordt officieel beschouwd als de langste rivier."},{"cat":"Aardrijkskunde","q":"Welk continent is het koudste?","a":["Antarctica","Arctisch gebied","Noord-Amerika","Azië"],"correct":0,"xp":10,"explain":"Antarctica is het koudste, droogste en winderigste continent."},{"cat":"Aardrijkskunde","q":"Welk land heeft de hoofdstad Madrid?","a":["Spanje","Portugal","Italië","Mexico"],"correct":0,"xp":10,"explain":"Madrid is de hoofdstad van Spanje."},{"cat":"Aardrijkskunde","q":"Hoeveel continenten zijn er?","a":["7","5","6","8"],"correct":0,"xp":10,"explain":"Er zijn 7 continenten: Afrika, Antarctica, Azië, Australië, Europa, Noord-Amerika, Zuid-Amerika."},{"cat":"Aardrijkskunde","q":"Welke oceaan is de grootste?","a":["Stille Oceaan","Atlantische Oceaan","Indische Oceaan","Arctische Oceaan"],"correct":0,"xp":10,"explain":"De Stille Oceaan (Pacific) is de grootste en diepste oceaan."},{"cat":"Aardrijkskunde","q":"Welk land heeft als bijzonderheid dat het geheel omringd is door een ander land?","a":["Vaticaanstad","Monaco","San Marino","Liechtenstein"],"correct":0,"xp":20,"explain":"Vaticaanstad ligt volledig binnen Rome, Italië."},{"cat":"Geschiedenis","q":"Wanneer vond de Franse Revolutie plaats?","a":["1789","1815","1776","1848"],"correct":0,"xp":20,"explain":"De Franse Revolutie begon in 1789 met de bestorming van de Bastille."},{"cat":"Geschiedenis","q":"Wie was de eerste president van de VS?","a":["George Washington","Abraham Lincoln","Thomas Jefferson","Benjamin Franklin"],"correct":0,"xp":15,"explain":"George Washington werd in 1789 de eerste president van de VS."},{"cat":"Geschiedenis","q":"In welk jaar eindigde de Tweede Wereldoorlog?","a":["1945","1944","1918","1950"],"correct":0,"xp":10,"explain":"WO II eindigde in 1945: mei in Europa, september in Azië."},{"cat":"Geschiedenis","q":"Welk tijdvak wordt ook wel de 'Gouden Eeuw' van Nederland genoemd?","a":["17e eeuw (1600s)","16e eeuw (1500s)","18e eeuw (1700s)","15e eeuw (1400s)"],"correct":0,"xp":20,"explain":"De Nederlandse Gouden Eeuw was in de 17e eeuw, een tijd van welvaart en kunst."},{"cat":"Geschiedenis","q":"Wie was de Egyptische god van de zon?","a":["Ra","Osiris","Anubis","Horus"],"correct":0,"xp":15,"explain":"Ra (of Re) was de belangrijkste zonnegod in het oude Egypte."},{"cat":"Geschiedenis","q":"Wat was de Berlijnse Muur?","a":["Een muur die Oost- en West-Berlijn scheidde","Een verdedigingsmuur tegen Rusland","Een monument","Een grens tussen Duitsland en Polen"],"correct":0,"xp":20,"explain":"De Berlijnse Muur (1961-1989) scheidde de twee delen van Berlijn tijdens de Koude Oorlog."},{"cat":"Geschiedenis","q":"In welk jaar ontdekte Columbus Amerika?","a":["1492","1488","1500","1510"],"correct":0,"xp":15,"explain":"In 1492 bereikte Columbus de Bahama's en 'ontdekte' zo Amerika."},{"cat":"Geschiedenis","q":"Welk volk bouwde de piramides van Gizeh?","a":["Oude Egyptenaren","Grieken","Romeinen","Mesopotamiërs"],"correct":0,"xp":10,"explain":"De piramides werden gebouwd door de oude Egyptenaren als grafmonumenten voor farao's."},{"cat":"Natuur","q":"Wat is de grootste planeet in ons zonnestelsel?","a":["Jupiter","Saturnus","Neptunus","Uranus"],"correct":0,"xp":10,"explain":"Jupiter is de grootste planeet in ons zonnestelsel."},{"cat":"Natuur","q":"Hoeveel planeten heeft ons zonnestelsel?","a":["8","9","7","10"],"correct":0,"xp":10,"explain":"Ons zonnestelsel heeft 8 planeten (Pluto werd in 2006 herklassificeerd als dwergplaneet)."},{"cat":"Natuur","q":"Wat is het hardste natuurlijke materiaal ter wereld?","a":["Diamant","Goud","Ijzer","Graniet"],"correct":0,"xp":10,"explain":"Diamant is het hardste bekende natuurlijke materiaal."},{"cat":"Natuur","q":"Hoe noemen we dieren die zowel planten als vlees eten?","a":["Omnivoren","Herbivoren","Carnivoren","Insectivoren"],"correct":0,"xp":10,"explain":"Omnivoren eten zowel planten als dieren. Bijv. mensen en beren."},{"cat":"Natuur","q":"Wat is de dichtstbijzijnde ster bij de aarde (na de zon)?","a":["Proxima Centauri","Sirius","Betelgeuze","Vega"],"correct":0,"xp":20,"explain":"Proxima Centauri staat op 4,2 lichtjaar afstand van de aarde."},{"cat":"Natuur","q":"Wat is het watercyclus-proces waarbij water verdampt?","a":["Verdamping","Condensatie","Neerslag","Infiltratie"],"correct":0,"xp":15,"explain":"Verdamping: vloeibaar water wordt omgezet in waterdamp door warmte."},{"cat":"Natuur","q":"Welke laag beschermt de aarde tegen UV-stralen?","a":["De ozonlaag","De troposfeer","De ionosfeer","De mantel"],"correct":0,"xp":15,"explain":"De ozonlaag in de stratosfeer filtert schadelijke UV-stralen van de zon."},{"cat":"Natuur","q":"Wat is een ecosysteem?","a":["Alle levende en niet-levende dingen in een gebied samen","Alleen de planten in een gebied","Alleen de dieren in een gebied","Het klimaat van een regio"],"correct":0,"xp":20,"explain":"Een ecosysteem omvat alle organismen én hun omgeving in een bepaald gebied."},{"cat":"Natuur","q":"Hoe noemen we een dier dat zijn eigen warmte niet kan regelen?","a":["Koudbloedig dier","Warmbloedig dier","Reptiel","Zoogdier"],"correct":0,"xp":15,"explain":"Koudbloedige dieren (bijv. reptielen) zijn afhankelijk van externe warmtebronnen."},{"cat":"Natuur","q":"Wat is de atmosfeer?","a":["De luchtlaag rondom de aarde","De oceaan","De grondlaag","Het magnetisch veld"],"correct":0,"xp":10,"explain":"De atmosfeer is de laag lucht die de aarde omhult."},{"cat":"Natuur","q":"Wat is erosie?","a":["Slijtage van gesteente door water, wind of ijs","Groei van gesteente","Verplaatsing van dieren","Verdamping van water"],"correct":0,"xp":20,"explain":"Erosie is het wegslijten van de bodem of gesteenten door water, wind of ijs."},{"cat":"Techniek","q":"Wat is een hefboom?","a":["Een eenvoudige machine die krachten vergroot","Een soort motor","Een meetinstrument","Een elektrisch apparaat"],"correct":0,"xp":15,"explain":"Een hefboom is een eenvoudige machine: een stijve lat om een steunpunt."},{"cat":"Techniek","q":"Wat doet een windmolen?","a":["Windenergie omzetten in mechanische of elektrische energie","Water oppompen uit de grond","Graan malen","Lucht verkoelen"],"correct":0,"xp":15,"explain":"Windmolens zetten windkracht om in energie. Moderne windmolens wekken elektriciteit op."},{"cat":"Techniek","q":"Wat is een geleider in de elektriciteit?","a":["Een materiaal dat stroom doorlaat","Een materiaal dat stroom tegenhoudt","Een soort schakelaar","Een accu"],"correct":0,"xp":15,"explain":"Geleiders (zoals koper) laten elektronen vrij door. Isolatoren (rubber) niet."},{"cat":"Techniek","q":"Wat is het doel van een filter?","a":["Ongewenste stoffen verwijderen","Energie opwekken","Warmte overbrengen","Druk verhogen"],"correct":0,"xp":10,"explain":"Een filter scheidt stoffen: bijv. koffiefilter houdt koffiedrab tegen."},{"cat":"Burgerschap","q":"Wat doet de Tweede Kamer?","a":["Wetten maken en de regering controleren","Rechtspreken","De koning adviseren","Belasting innen"],"correct":0,"xp":20,"explain":"De Tweede Kamer maakt wetten en controleert de regering."},{"cat":"Burgerschap","q":"Wat is een mensenrecht?","a":["Een basisrecht dat ieder mens heeft","Een recht dat je moet verdienen","Een recht voor alleen Nederlanders","Een recht dat de overheid geeft"],"correct":0,"xp":15,"explain":"Mensenrechten zijn universele rechten voor ieder mens, zoals vrijheid en gelijkheid."},{"cat":"Burgerschap","q":"Hoe heet de baas van de Nederlandse regering?","a":["Minister-president","President","Burgemeester","Koning"],"correct":0,"xp":10,"explain":"De minister-president (premier) leidt de Nederlandse regering."},{"cat":"Burgerschap","q":"Wat is duurzaamheid?","a":["Zorgvuldig omgaan met de aarde voor toekomstige generaties","Zo veel mogelijk produceren","Zo weinig mogelijk werken","Technologie gebruiken"],"correct":0,"xp":15,"explain":"Duurzaamheid betekent dat we de aarde leefbaar houden voor toekomstige generaties."},{"cat":"Burgerschap","q":"Wat is de taak van de rechter?","a":["Oordelen of iemand de wet heeft overtreden","Wetten maken","Beleid bepalen","Belasting innen"],"correct":0,"xp":15,"explain":"Een rechter beslist of iemand schuldig is en welke straf er geldt."},{"cat":"Burgerschap","q":"Wat is de Grondwet?","a":["De belangrijkste wet van een land","Een lokale verordening","Een Europese wet","Een internationaal verdrag"],"correct":0,"xp":20,"explain":"De Grondwet is de fundamentele wet waarop alle andere wetten zijn gebaseerd."},{"cat":"Burgerschap","q":"Wat is vrijheid van meningsuiting?","a":["Het recht om je mening te uiten zonder straf","Het recht om te stemmen","Het recht op onderwijs","Het recht op werk"],"correct":0,"xp":15,"explain":"Vrijheid van meningsuiting is een grondrecht: je mag je mening uiten zonder vervolging."},{"cat":"Burgerschap","q":"Wie maakt de wetten in Nederland?","a":["De Staten-Generaal (parlement)","De koning","De rechters","De ministers"],"correct":0,"xp":15,"explain":"Wetten worden gemaakt door het parlement (Staten-Generaal) samen met de regering."},{"cat":"Burgerschap","q":"Wat is een gemeente?","a":["De kleinste bestuurseenheid in Nederland","Een provincie","Een waterschap","Een ministerie"],"correct":0,"xp":10,"explain":"Een gemeente is de kleinste bestuurlijke eenheid. Nederland heeft ruim 300 gemeenten."},{"cat":"Burgerschap","q":"Wat is migratie?","a":["Het verhuizen van mensen van het ene naar het andere land","Het uitwisselen van goederen","Het reizen voor vakantie","Het studeren in het buitenland"],"correct":0,"xp":15,"explain":"Migratie = mensen die permanent verhuizen naar een ander land of regio."},{"cat":"Aardrijkskunde","q":"Welke zee ligt ten noorden van Nederland?","a":["Noordzee","Middellandse Zee","Oostzee","Waddenzee"],"correct":0,"xp":10,"explain":"De Noordzee grenst aan de westkust van Nederland."},{"cat":"Aardrijkskunde","q":"In welk land ligt de Eiffeltoren?","a":["Frankrijk","België","Duitsland","Zwitserland"],"correct":0,"xp":10,"explain":"De Eiffeltoren staat in Parijs, hoofdstad van Frankrijk."},{"cat":"Aardrijkskunde","q":"Wat is een delta?","a":["Een mondingsgebied van een rivier","Een bergketen","Een vlakte","Een woestijn"],"correct":0,"xp":15,"explain":"Een delta is het gebied waar een rivier zich in meerdere armen naar zee vertakt."},{"cat":"Aardrijkskunde","q":"Welke drie grote rivieren stromen door Nederland?","a":["Rijn, Maas en Schelde","Elbe, Wezer en Rijn","Seine, Loire en Rijn","Rijn, Donau en Schelde"],"correct":0,"xp":20,"explain":"De Rijn, Maas en Schelde zijn de drie grote rivieren die door of langs Nederland stromen."},{"cat":"Aardrijkskunde","q":"Wat is een klimaatzone?","a":["Een gebied met een kenmerkend klimaat","Een windrichting","Een oceanische stroom","Een geografische grenslijn"],"correct":0,"xp":15,"explain":"Klimaatzones zijn gebieden met vergelijkbare temperaturen en neerslag."},{"cat":"Aardrijkskunde","q":"Welke stad is de grootste haven van Europa?","a":["Rotterdam","Hamburg","Antwerpen","Amsterdam"],"correct":0,"xp":15,"explain":"Rotterdam heeft de grootste haven van Europa."},{"cat":"Aardrijkskunde","q":"Welke provincie ligt het verst naar het noorden in Nederland?","a":["Groningen","Friesland","Drenthe","Flevoland"],"correct":0,"xp":10,"explain":"Groningen is de meest noordoostelijke provincie van Nederland."},{"cat":"Aardrijkskunde","q":"Wat is topografie?","a":["Het bestuderen en tekenen van de ligging van plaatsen","Het meten van hoogte","Het voorspellen van het weer","Het berekenen van afstanden"],"correct":0,"xp":10,"explain":"Topografie = de kennis van de ligging van landen, steden, rivieren etc."},{"cat":"Aardrijkskunde","q":"Wat is een waterval?","a":["Een plek waar water van een hoogte naar beneden valt","Een brug over een rivier","Een meer in de bergen","Een kunstmatig kanaal"],"correct":0,"xp":10,"explain":"Een waterval is een plek waar een rivier van een hoogte naar beneden valt."},{"cat":"Aardrijkskunde","q":"Welke werelddeel heeft de meeste landen?","a":["Afrika","Azië","Europa","Amerika"],"correct":0,"xp":15,"explain":"Afrika heeft de meeste landen: 54 erkende landen."},{"cat":"Geschiedenis","q":"Wat is de Renaissance?","a":["Een culturele hergeboorte in Europa (14e-17e eeuw)","Een oorlog","Een politiek systeem","Een religieuze beweging"],"correct":0,"xp":20,"explain":"De Renaissance was een culturele bloeiperiode met aandacht voor wetenschap, kunst en de klassieke oudheid."},{"cat":"Geschiedenis","q":"Wie schreef de theorie van evolutie?","a":["Charles Darwin","Isaac Newton","Albert Einstein","Galileo Galilei"],"correct":0,"xp":15,"explain":"Charles Darwin beschreef de evolutietheorie in 'On the Origin of Species' (1859)."},{"cat":"Geschiedenis","q":"Wat is de Industriële Revolutie?","a":["De overgang van handwerk naar machinale productie (18e-19e eeuw)","Een politieke revolutie","Een wetenschappelijke ontdekking","Een religieuze beweging"],"correct":0,"xp":20,"explain":"De Industriële Revolutie begon in de 18e eeuw in Engeland met de uitvinding van stoommachines."},{"cat":"Geschiedenis","q":"In welk jaar werd de Berlijnse Muur neergehaald?","a":["1989","1979","1991","1985"],"correct":0,"xp":15,"explain":"De Berlijnse Muur viel op 9 november 1989."},{"cat":"Geschiedenis","q":"Wat is de Holocaust?","a":["De systematische moord op Joden door de nazi's tijdens WO II","Een Griekse mythe","Een historische ramp","Een religieuze beweging"],"correct":0,"xp":20,"explain":"De Holocaust was de genocide waarbij de nazi's tijdens WO II circa 6 miljoen Joden vermoordden."},{"cat":"Geschiedenis","q":"Wanneer begon de Eerste Wereldoorlog?","a":["1914","1918","1912","1939"],"correct":0,"xp":10,"explain":"WO I begon in 1914 na de moord op aartshertog Franz Ferdinand."},{"cat":"Natuur","q":"Wat is een vulkaan?","a":["Een opening in de aardkorst waaruit magma ontgloeit","Een bergmeer","Een hete bron","Een soort aardbeving"],"correct":0,"xp":10,"explain":"Een vulkaan is een opening in de aardkorst waaruit magma, gassen en as kunnen ontsnappen."},{"cat":"Natuur","q":"Wat is een aardbeving?","a":["Het trillen van de aardkorst door bewegende tektonische platen","Een vloed","Een vulkaanuitbarsting","Een storm"],"correct":0,"xp":10,"explain":"Aardbevingen worden veroorzaakt door bewegingen van tektonische platen."},{"cat":"Natuur","q":"Wat is het verschil tussen klimaat en weer?","a":["Klimaat is het gemiddelde over jaren, weer is van dag tot dag","Klimaat is warmer dan weer","Er is geen verschil","Weer is een voorspelling, klimaat is een meting"],"correct":0,"xp":20,"explain":"Klimaat = langdurig gemiddeld patroon. Weer = toestand op een specifiek moment."},{"cat":"Natuur","q":"Wat is biodiversiteit?","a":["De verscheidenheid aan levensvormen op aarde","De hoeveelheid bomen op aarde","Het aantal ecosystemen","De kwaliteit van water"],"correct":0,"xp":20,"explain":"Biodiversiteit = de verscheidenheid aan soorten, ecosystemen en genen op aarde."},{"cat":"Natuur","q":"Wat is de voedselketen?","a":["De volgorde waarin energie via eten overgaat van soort tot soort","Een soort ecosysteem","Een type landschap","Een weersysteem"],"correct":0,"xp":15,"explain":"In een voedselketen eet elke schakel de vorige: gras → konijn → vos → adelaar."},{"cat":"Natuur","q":"Wat is condensatie?","a":["Waterdamp dat vloeibaar water wordt","Vloeibaar water dat waterdamp wordt","Regen die bevriest","Ijs dat smelt"],"correct":0,"xp":15,"explain":"Condensatie is het tegenovergestelde van verdamping: waterdamp koelt af en wordt weer vloeibaar."},{"cat":"Techniek","q":"Wat is een algoritme?","a":["Een stap-voor-stap instructie om een probleem op te lossen","Een programmeertaal","Een soort computer","Een wiskundige formule"],"correct":0,"xp":20,"explain":"Een algoritme is een reeks stappen om een probleem op te lossen, bijv. een recept of een rekenregel."},{"cat":"Techniek","q":"Wat is de functie van een wiel en as?","a":["Rotatie eenvoudiger maken en kracht overbrengen","Gewicht dragen","Energie opwekken","Licht produceren"],"correct":0,"xp":15,"explain":"Het wiel en de as zijn een eenvoudige machine die rotatie en beweging mogelijk maakt."},{"cat":"Techniek","q":"Wat is een robot?","a":["Een machine die taken automatisch kan uitvoeren","Een soort computer","Een elektrisch apparaat","Een programma"],"correct":0,"xp":10,"explain":"Een robot is een machine die geprogrammeerd is om taken zelfstandig uit te voeren."},{"cat":"Techniek","q":"Wat doet een magneet?","a":["Metalen voorwerpen aantrekken of afstoten","Elektriciteit opwekken","Warmte produceren","Licht produceren"],"correct":0,"xp":10,"explain":"Magneten oefenen een kracht uit op ijzer en andere magnetische materialen."},{"cat":"Techniek","q":"Wat is duurzame energie?","a":["Energie uit bronnen die niet opraken (zon, wind, water)","Energie uit kolen","Energie uit olie","Energie uit gas"],"correct":0,"xp":10,"explain":"Duurzame energie komt uit hernieuwbare bronnen die de natuur niet uitputten."},{"cat":"Burgerschap","q":"Wat is de VN?","a":["De Verenigde Naties, een internationale organisatie voor vrede","Een Europese organisatie","Een handelsblok","Een militair bondgenootschap"],"correct":0,"xp":15,"explain":"De VN (Verenigde Naties) is een internationale organisatie voor vrede en samenwerking."},{"cat":"Burgerschap","q":"Wat is de Europese Unie?","a":["Een politiek en economisch samenwerkingsverband van Europese landen","Een militair bondgenootschap","Een handelsverdrag","Een culturele organisatie"],"correct":0,"xp":15,"explain":"De EU is een samenwerking van Europese landen op politiek, economisch en sociaal vlak."},{"cat":"Burgerschap","q":"Wat is corruptie?","a":["Misbruik van macht voor persoonlijk gewin","Eerlijke concurrentie","Transparant bestuur","Democratisch beleid"],"correct":0,"xp":20,"explain":"Corruptie = misbruik van macht, bijv. omkoopbaarheid van ambtenaren."},{"cat":"Burgerschap","q":"Wat is een rechtsstaat?","a":["Een staat waarin wetten voor iedereen gelden, ook voor de overheid","Een staat met een monarch","Een staat zonder wetten","Een democratie"],"correct":0,"xp":20,"explain":"In een rechtsstaat is de overheid ook gebonden aan de wet."},{"cat":"Burgerschap","q":"Wat zijn belastingen?","a":["Verplichte bijdragen die burgers aan de overheid betalen","Vrijwillige donaties","Leningen van de overheid","Inkomsten van bedrijven"],"correct":0,"xp":10,"explain":"Belastingen zijn verplichte betalingen waarmee de overheid publieke voorzieningen financiert."},{"cat":"Burgerschap","q":"Wat is een referendum?","a":["Een stemming waarbij burgers direct over een onderwerp beslissen","Een verkiezing voor een parlement","Een advies van de regering","Een rechterlijke uitspraak"],"correct":0,"xp":20,"explain":"Bij een referendum stemmen burgers direct over een specifieke kwestie of wet."},{"cat":"Burgerschap","q":"Wat is klimaatverandering?","a":["De verandering van het aardse klimaat door menselijke uitstoot van broeikasgassen","Normale weersverandering","De afwisseling van seizoenen","Verandering van oceaanstromen"],"correct":0,"xp":15,"explain":"Klimaatverandering = opwarming van de aarde door broeikasgassen, voornamelijk CO₂ uit fossiele brandstoffen."},{"cat":"Natuur","q":"Hoeveel procent van de aarde is bedekt met water?","a":["71%","50%","85%","60%"],"correct":0,"xp":15,"explain":"Ongeveer 71% van het aardoppervlak is bedekt met water."},{"cat":"Techniek","q":"Wat is het internet?","a":["Een wereldwijd netwerk van computers","Een soort software","Een draadloze verbinding","Een satelliet"],"correct":0,"xp":10,"explain":"Het internet is een wereldwijd netwerk van miljoenen onderling verbonden computers."},{"cat":"Aardrijkskunde","q":"Wat is een vulkaan?","a":["Een openingsplaats in de aardkorst voor magma","Een bergmeer","Een hete woestijn","Een aardbeving"],"correct":0,"xp":10,"explain":"Een vulkaan is een opening in de aardkorst waar magma naar buiten kan komen."}],
+};
+function shuffleAnswers(q) {
+  const correctText = q.a[q.correct];
+  const shuffled = shuffle([...q.a]);
+  return { ...q, a: shuffled, correct: shuffled.indexOf(correctText) };
+}
+
+const subjectMeta = {
+  nl: { name: "Nederlands", icon: "📖", color: "var(--accent)" },
+  rw: { name: "Rekenen", icon: "🔢", color: "var(--blue)" },
+  en: { name: "Engels", icon: "🇬🇧", color: "var(--green)" },
+  ow: { name: "OJW", icon: "🌍", color: "var(--gold)" }
+};
+
+const levelTitles = [
+  "", "Leerling", "Ontdekker", "Denker", "Kenner", "Expert",
+  "Meester", "Tovenaar", "Geleerde", "Wizzkid", "Klaslegende"
+];
+
+const achievements = [
+  { id: "first_correct", name: "Eerste Goed!", icon: "⭐", condition: s => s.totalCorrect >= 1 },
+  { id: "streak5", name: "5 op rij!", icon: "🔥", condition: s => s.streak >= 5 },
+  { id: "level3", name: "Level 3!", icon: "🌟", condition: s => s.level >= 3 },
+  { id: "q50", name: "50 vragen!", icon: "📚", condition: s => s.totalAnswered >= 50 },
+  { id: "allsubjects", name: "Alleskunner!", icon: "🎯", condition: s => Object.values(s.subjectProgress).every(v => v > 0) },
+];
+
+// ===== STATE =====
+let state = {
+  name: "", level: 1, xp: 0, xpToNext: 100,
+  totalAnswered: 0, totalCorrect: 0, streak: 0, maxStreak: 0,
+  subjectProgress: { nl: 0, rw: 0, en: 0, ow: 0 },
+  unlockedAchievements: [],
+};
+
+let session = {
+  subject: null, questions: [], currentIdx: 0,
+  correct: 0, wrong: 0, maxStreak: 0, xpEarned: 0,
+  streak: 0, answered: false, timer: null, timerVal: 0
+};
+
+// ===== SAVE / LOAD =====
+function saveState() {
+  try { localStorage.setItem("klasquest_state", JSON.stringify(state)); } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const s = localStorage.getItem("klasquest_state");
+    if (s) { state = { ...state, ...JSON.parse(s) }; }
+  } catch(e) {}
+}
+
+// ===== INIT =====
+loadState();
+updateHomeUI();
+
+function updateHomeUI() {
+  if (state.name) {
+    document.getElementById("nameArea").style.display = "none";
+    document.getElementById("playerCard").style.display = "block";
+    document.getElementById("playerNameDisplay").textContent = state.name;
+    document.getElementById("playerLevelDisplay").textContent = `Level ${state.level} · ${levelTitles[Math.min(state.level, levelTitles.length-1)]}`;
+    const pct = (state.xp / state.xpToNext) * 100;
+    document.getElementById("homeXpFill").style.width = pct + "%";
+    document.getElementById("homeXpLabel").textContent = `${state.xp} / ${state.xpToNext} XP`;
+    document.getElementById("statTotal").textContent = state.totalAnswered;
+    document.getElementById("statCorrect").textContent = state.totalCorrect;
+    document.getElementById("statStreak").textContent = state.maxStreak;
+  }
+  Object.keys(state.subjectProgress).forEach(k => {
+    document.getElementById("prog-" + k).textContent = state.subjectProgress[k] + " vragen gedaan";
+  });
+}
+
+function saveName() {
+  const n = document.getElementById("nameInput").value.trim();
+  if (!n) return;
+  state.name = n;
+  saveState();
+  document.getElementById("nameArea").style.display = "none";
+  document.getElementById("playerCard").style.display = "block";
+  updateHomeUI();
+}
+
+// ===== SUBJECT START =====
+function startSubject(subj) {
+  if (!state.name) {
+    document.getElementById("nameInput").focus();
+    return;
+  }
+  session = {
+    subject: subj,
+    questions: shuffle([...questions[subj]]).slice(0, QUESTIONS_PER_ROUND).map(shuffleAnswers),
+    currentIdx: 0, correct: 0, wrong: 0,
+    maxStreak: 0, xpEarned: 0, streak: state.streak,
+    answered: false, timer: null, timerVal: 0
+  };
+
+  const meta = subjectMeta[subj];
+  document.getElementById("quizSubjectName").textContent = meta.icon + " " + meta.name;
+  document.getElementById("quizSubjectName").style.color = meta.color;
+
+  showScreen("quiz");
+  loadQuestion();
+}
+
+function loadQuestion() {
+  const q = session.questions[session.currentIdx];
+  const total = session.questions.length;
+  const idx = session.currentIdx;
+
+  document.getElementById("questionCategory").textContent = q.cat;
+  document.getElementById("questionText").textContent = q.q;
+  document.getElementById("quizProgressFill").style.width = (idx / total * 100) + "%";
+  document.getElementById("quizQuestionCount").textContent = `Vraag ${idx + 1} van ${total}`;
+  document.getElementById("streakBadge").textContent = "🔥 " + session.streak;
+
+  // Answers
+  const grid = document.getElementById("answersGrid");
+  grid.innerHTML = "";
+  q.a.forEach((ans, i) => {
+    const btn = document.createElement("button");
+    btn.className = "answer-btn";
+    btn.textContent = ans;
+    btn.onclick = () => selectAnswer(i);
+    grid.appendChild(btn);
+  });
+
+  // Feedback + next
+  const fb = document.getElementById("feedbackBar");
+  fb.className = "feedback-bar";
+  document.getElementById("nextBtn").className = "next-btn";
+
+  session.answered = false;
+  startTimer();
+}
+
+function startTimer() {
+  clearInterval(session.timer);
+  const MAX = 15;
+  session.timerVal = MAX;
+  updateTimerUI(MAX, MAX);
+
+  session.timer = setInterval(() => {
+    session.timerVal--;
+    updateTimerUI(session.timerVal, MAX);
+    if (session.timerVal <= 0) {
+      clearInterval(session.timer);
+      if (!session.answered) timeOut();
+    }
+  }, 1000);
+}
+
+function updateTimerUI(val, max) {
+  const circ = 126;
+  const offset = circ - (val / max) * circ;
+  const ring = document.getElementById("timerRing");
+  ring.style.strokeDashoffset = offset;
+  ring.style.stroke = val <= 5 ? "var(--red)" : val <= 8 ? "var(--orange)" : "var(--accent)";
+  document.getElementById("timerText").textContent = val;
+}
+
+function timeOut() {
+  if (session.answered) return;
+  session.answered = true;
+  const q = session.questions[session.currentIdx];
+  const btns = document.querySelectorAll(".answer-btn");
+  btns.forEach(b => b.disabled = true);
+  btns[q.correct].classList.add("correct");
+  showFeedback(false, q, 0, true);
+  session.streak = 0;
+  document.getElementById("streakBadge").textContent = "🔥 0";
+  session.wrong++;
+  state.totalAnswered++;
+  saveState();
+}
+
+function selectAnswer(idx) {
+  if (session.answered) return;
+  clearInterval(session.timer);
+  session.answered = true;
+
+  const q = session.questions[session.currentIdx];
+  const btns = document.querySelectorAll(".answer-btn");
+  btns.forEach(b => b.disabled = true);
+
+  const isCorrect = idx === q.correct;
+  btns[idx].classList.add(isCorrect ? "correct" : "wrong");
+  if (!isCorrect) btns[q.correct].classList.add("correct");
+
+  let xpGain = 0;
+  if (isCorrect) {
+    xpGain = q.xp + (session.streak >= 3 ? 5 : 0) + (session.timerVal >= 10 ? 5 : 0);
+    session.correct++;
+    session.streak++;
+    session.xpEarned += xpGain;
+    if (session.streak > session.maxStreak) session.maxStreak = session.streak;
+    state.totalCorrect++;
+    addXp(xpGain);
+
+    const badge = document.getElementById("streakBadge");
+    badge.textContent = "🔥 " + session.streak;
+    badge.classList.remove("pop");
+    void badge.offsetWidth;
+    badge.classList.add("pop");
+
+    spawnXpFloat(xpGain);
+  } else {
+    session.wrong++;
+    session.streak = 0;
+    document.getElementById("streakBadge").textContent = "🔥 0";
+  }
+
+  state.streak = session.streak;
+  if (state.maxStreak < session.maxStreak) state.maxStreak = session.maxStreak;
+  state.totalAnswered++;
+  state.subjectProgress[session.subject]++;
+  saveState();
+  checkAchievements();
+  showFeedback(isCorrect, q, xpGain, false);
+}
+
+function showFeedback(correct, q, xpGain, timedOut) {
+  const fb = document.getElementById("feedbackBar");
+  fb.className = "feedback-bar show " + (correct ? "correct" : "wrong");
+  document.getElementById("feedbackIcon").textContent = timedOut ? "⏰" : correct ? "✅" : "❌";
+  document.getElementById("feedbackTitle").textContent = timedOut ? "Tijd is op!" : correct ? "Correct! 🎉" : "Helaas!";
+  document.getElementById("feedbackExplain").textContent = q.explain;
+  document.getElementById("feedbackXp").textContent = correct ? "+" + xpGain + " XP" : "";
+  document.getElementById("nextBtn").className = "next-btn show";
+}
+
+function nextQuestion() {
+  session.currentIdx++;
+  if (session.currentIdx >= session.questions.length) {
+    showResult();
+  } else {
+    loadQuestion();
+  }
+}
+
+// ===== XP + LEVEL =====
+function addXp(amount) {
+  const prevLevel = state.level;
+  state.xp += amount;
+  while (state.xp >= state.xpToNext) {
+    state.xp -= state.xpToNext;
+    state.level++;
+    state.xpToNext = Math.floor(100 * Math.pow(1.4, state.level - 1));
+  }
+  if (state.level > prevLevel) {
+    showLevelUp(state.level);
+  }
+}
+
+function showLevelUp(lvl) {
+  document.getElementById("levelupNumber").textContent = lvl;
+  document.getElementById("levelupPopup").classList.add("show");
+  spawnConfetti();
+}
+
+function closeLevelup() {
+  document.getElementById("levelupPopup").classList.remove("show");
+}
+
+// ===== RESULT =====
+function showResult() {
+  const acc = session.correct / session.questions.length;
+  let emoji = "🏆", title = "Uitstekend!";
+  if (acc < 0.4) { emoji = "📚"; title = "Blijven oefenen!"; }
+  else if (acc < 0.7) { emoji = "💪"; title = "Goed bezig!"; }
+  else if (acc < 0.9) { emoji = "🌟"; title = "Super gedaan!"; }
+
+  document.getElementById("resultEmoji").textContent = emoji;
+  document.getElementById("resultTitle").textContent = title;
+  document.getElementById("rCorrect").textContent = session.correct;
+  document.getElementById("rWrong").textContent = session.wrong;
+  document.getElementById("rStreak").textContent = session.maxStreak;
+  document.getElementById("rXp").textContent = "+" + session.xpEarned + " XP";
+
+  updateHomeUI();
+  showScreen("result");
+  if (acc >= 0.8) spawnConfetti();
+}
+
+function playAgain() {
+  startSubject(session.subject);
+}
+
+// ===== ACHIEVEMENTS =====
+function checkAchievements() {
+  achievements.forEach(ach => {
+    if (!state.unlockedAchievements.includes(ach.id) && ach.condition(state)) {
+      state.unlockedAchievements.push(ach.id);
+      saveState();
+      showAchievementToast(ach);
+    }
+  });
+}
+
+function showAchievementToast(ach) {
+  const el = document.createElement("div");
+  el.className = "achievement-toast";
+  el.innerHTML = `<div class="ach-icon">${ach.icon}</div><div><div class="ach-title">Prestatie behaald!</div><div class="ach-name">${ach.name}</div></div>`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+// ===== UTILS =====
+function spawnXpFloat(amount) {
+  const el = document.createElement("div");
+  el.className = "xp-float";
+  el.textContent = "+" + amount + " XP";
+  el.style.left = (Math.random() * 60 + 20) + "%";
+  el.style.top = "40%";
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1300);
+}
+
+function spawnConfetti() {
+  const colors = ["#c084fc","#fbbf24","#4ade80","#60a5fa","#f87171","#e879f9"];
+  for (let i = 0; i < 40; i++) {
+    const el = document.createElement("div");
+    el.className = "confetti-piece";
+    el.style.left = Math.random() * 100 + "vw";
+    el.style.top = "-20px";
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    el.style.borderRadius = Math.random() > 0.5 ? "50%" : "2px";
+    el.style.animationDuration = (1.5 + Math.random() * 2) + "s";
+    el.style.animationDelay = Math.random() * 0.8 + "s";
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 4000);
+  }
+}
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo(0, 0);
+}
+
+function goHome() {
+  clearInterval(session.timer);
+  updateHomeUI();
+  showScreen("home");
+}
+</script>
+</body>
+</html>
