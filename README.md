@@ -1,2 +1,2 @@
-# Html-s
+# Games
 Html for kids
