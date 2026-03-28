@@ -1,0 +1,2228 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#ff6b35">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FamilyHub">
+<title>FamilyHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent: #ff6b35;
+    --accent-dark: #e85a26;
+    --accent2: #4ecdc4;
+    --accent3: #ffe66d;
+    --bg: #faf9f7;
+    --surface: #ffffff;
+    --surface2: #f3f1ee;
+    --surface3: #ebe8e3;
+    --text: #1c1917;
+    --text2: #78716c;
+    --text3: #a8a29e;
+    --border: #e7e5e4;
+    --green: #22c55e;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+    --radius: 18px;
+    --radius-sm: 12px;
+    --shadow: 0 2px 16px rgba(0,0,0,0.06);
+    --shadow-md: 0 8px 32px rgba(0,0,0,0.1);
+    --nav-h: 72px;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  body {
+    font-family: 'Lato', sans-serif;
+    color: var(--text);
+    max-width: 430px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  /* ── APP SHELL ── */
+  #app {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+  }
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .app-logo-sm {
+    width: 34px;
+    height: 34px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+  }
+  .topbar-title {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 1.25rem;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+  .topbar-title span { color: var(--accent); }
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--surface2);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: background 0.15s;
+  }
+  .icon-btn:active { background: var(--surface3); }
+  .notif-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: 2px solid white;
+    position: absolute;
+    top: -2px;
+    right: -2px;
+  }
+
+  /* ── SCREENS ── */
+  .screens {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+  .screen {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    padding: 0 0 calc(var(--nav-h) + var(--safe-bottom) + 8px);
+    display: none;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    animation: fadeIn 0.2s ease;
+  }
+  .screen::-webkit-scrollbar { display: none; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* ── BOTTOM NAV ── */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 430px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0 calc(8px + var(--safe-bottom));
+    z-index: 100;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.04);
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 4px 16px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    transition: transform 0.15s;
+  }
+  .nav-item:active { transform: scale(0.92); }
+  .nav-icon {
+    font-size: 1.3rem;
+    line-height: 1;
+    transition: transform 0.2s;
+  }
+  .nav-label {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.6rem;
+    color: var(--text3);
+    transition: color 0.2s;
+  }
+  .nav-item.active .nav-icon { transform: translateY(-2px); }
+  .nav-item.active .nav-label { color: var(--accent); }
+
+  /* ── SECTION ── */
+  .section-pad { padding: 16px 16px 0; }
+  .section-label {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.72rem;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 10px;
+    margin-top: 4px;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .card + .card { margin-top: 10px; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    border: none;
+    border-radius: 100px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    padding: 13px 24px;
+    font-size: 0.9rem;
+    width: 100%;
+    box-shadow: 0 4px 14px rgba(255,107,53,0.25);
+  }
+  .btn-sm {
+    padding: 7px 14px;
+    font-size: 0.72rem;
+    background: var(--surface2);
+    color: var(--text);
+    border-radius: 100px;
+  }
+  .btn-accent-sm {
+    padding: 7px 14px;
+    font-size: 0.72rem;
+    background: var(--accent);
+    color: white;
+    border-radius: 100px;
+  }
+
+  /* ════════════════════════════════
+     HOME SCREEN
+  ════════════════════════════════ */
+  .home-hero {
+    background: linear-gradient(135deg, #fff8f5 0%, #fff 100%);
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .home-greeting {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 1.5rem;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .home-date {
+    font-size: 0.78rem;
+    color: var(--text2);
+    margin-bottom: 14px;
+  }
+  .member-strip {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .member-strip::-webkit-scrollbar { display: none; }
+  .member-pill {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 5px 12px 5px 5px;
+    cursor: pointer;
+  }
+  .member-av {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+  }
+  .member-name {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.72rem;
+  }
+  .member-online {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+  }
+
+  .module-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 16px;
+  }
+  .mod-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .mod-card:active { transform: scale(0.97); }
+  .mod-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+  }
+  .mod-card.orange::before { background: var(--accent); }
+  .mod-card.teal::before { background: var(--accent2); }
+  .mod-card.yellow::before { background: var(--yellow); }
+  .mod-card.purple::before { background: var(--purple); }
+  .mod-card.green::before { background: var(--green); }
+  .mod-card.blue::before { background: var(--blue); }
+  .mod-card.red::before { background: var(--red); }
+  .mod-card.pink::before { background: #ec4899; }
+
+  .mod-icon { font-size: 1.6rem; margin-bottom: 8px; }
+  .mod-name {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.85rem;
+    margin-bottom: 2px;
+  }
+  .mod-count {
+    font-size: 0.68rem;
+    color: var(--text2);
+  }
+  .mod-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--accent);
+    color: white;
+    border-radius: 100px;
+    padding: 2px 7px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.6rem;
+  }
+
+  .activity-card { margin: 0 16px 10px; }
+  .activity-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .activity-row:last-child { border-bottom: none; }
+  .activity-row:active { background: var(--surface2); }
+  .act-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .act-body { flex: 1; }
+  .act-title { font-weight: 700; font-size: 0.82rem; }
+  .act-sub { font-size: 0.68rem; color: var(--text2); margin-top: 1px; }
+  .act-time { font-size: 0.62rem; color: var(--text3); }
+
+  /* ════════════════════════════════
+     AGENDA SCREEN
+  ════════════════════════════════ */
+  .agenda-top {
+    padding: 16px 16px 0;
+  }
+  .month-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .month-title {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 1.1rem;
+  }
+  .nav-arr {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: var(--surface2);
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+  }
+  .nav-arr:active { background: var(--surface3); }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+    margin-bottom: 16px;
+  }
+  .cal-dn {
+    text-align: center;
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: var(--text3);
+    padding: 4px 0;
+    font-family: 'Nunito', sans-serif;
+  }
+  .cal-d {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 600;
+    transition: background 0.1s;
+    position: relative;
+    gap: 2px;
+  }
+  .cal-d:hover { background: var(--surface2); }
+  .cal-d.today {
+    background: var(--accent);
+    color: white;
+    font-weight: 800;
+  }
+  .cal-d.selected:not(.today) {
+    background: #fff2ed;
+    color: var(--accent);
+    font-weight: 800;
+  }
+  .cal-d.other-month { color: var(--text3); }
+  .event-dots {
+    display: flex;
+    gap: 2px;
+    position: absolute;
+    bottom: 3px;
+  }
+  .event-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+  }
+  .cal-d.today .event-dot { background: rgba(255,255,255,0.7); }
+
+  .events-list { padding: 0 16px; }
+  .event-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-left: 4px solid var(--accent);
+  }
+  .event-row:active { transform: scale(0.99); }
+  .event-time-col {
+    min-width: 36px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--text2);
+    text-align: center;
+  }
+  .event-info .ev-title { font-weight: 700; font-size: 0.83rem; }
+  .event-info .ev-who { font-size: 0.67rem; color: var(--text2); margin-top: 2px; }
+  .event-row .ev-emoji { font-size: 1.2rem; margin-left: auto; }
+
+  .add-btn-wrap { padding: 0 16px 8px; }
+
+  /* ════════════════════════════════
+     TAKEN SCREEN
+  ════════════════════════════════ */
+  .pts-hero {
+    margin: 16px 16px 0;
+    background: linear-gradient(135deg, var(--accent) 0%, #ff8c42 100%);
+    border-radius: var(--radius);
+    padding: 16px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .pts-left .pts-num {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 2.2rem;
+    line-height: 1;
+  }
+  .pts-left .pts-label { font-size: 0.72rem; opacity: 0.85; margin-top: 2px; }
+  .pts-right {
+    text-align: right;
+  }
+  .reward-chip {
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-align: center;
+  }
+  .reward-chip .rw-emoji { font-size: 1.4rem; display: block; margin-bottom: 2px; }
+
+  .filter-strip {
+    display: flex;
+    gap: 8px;
+    padding: 14px 16px 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .filter-strip::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.72rem;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text2);
+  }
+  .filter-chip.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+
+  .taak-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .taak-row:last-child { border-bottom: none; }
+  .taak-row:active { background: var(--surface2); }
+  .taak-check {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .taak-check.done {
+    background: var(--green);
+    border-color: var(--green);
+    color: white;
+  }
+  .taak-body { flex: 1; }
+  .taak-name { font-weight: 700; font-size: 0.83rem; }
+  .taak-name.done { text-decoration: line-through; color: var(--text3); }
+  .taak-who { font-size: 0.67rem; color: var(--text2); margin-top: 1px; }
+  .taak-pts {
+    background: #fef9c3;
+    color: #92400e;
+    border-radius: 100px;
+    padding: 4px 10px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.65rem;
+  }
+
+  /* ════════════════════════════════
+     CHAT SCREEN
+  ════════════════════════════════ */
+  .chat-wrap {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .prikbord-section {
+    padding: 12px 16px;
+    background: #fffbeb;
+    border-bottom: 1px solid #fde68a;
+    flex-shrink: 0;
+  }
+  .pb-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .pb-title-row {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.8rem;
+    color: #92400e;
+  }
+  .pb-item {
+    background: white;
+    border: 1px solid #fde68a;
+    border-left: 4px solid var(--yellow);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    margin-bottom: 6px;
+  }
+  .pb-item:last-child { margin-bottom: 0; }
+  .pb-msg { font-size: 0.78rem; font-weight: 600; color: #78350f; }
+  .pb-from { font-size: 0.62rem; color: #b45309; margin-top: 3px; }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    scrollbar-width: none;
+  }
+  .chat-messages::-webkit-scrollbar { display: none; }
+
+  .msg-group { display: flex; gap: 8px; align-items: flex-end; }
+  .msg-group.me { flex-direction: row-reverse; }
+  .msg-av {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    margin-bottom: 2px;
+  }
+  .msg-col { display: flex; flex-direction: column; gap: 2px; max-width: 72%; }
+  .msg-name { font-size: 0.62rem; color: var(--text3); font-weight: 700; margin-bottom: 2px; }
+  .msg-group.me .msg-name { text-align: right; }
+  .bubble {
+    padding: 9px 13px;
+    border-radius: 16px;
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+  .bubble.other {
+    background: var(--surface2);
+    border-bottom-left-radius: 4px;
+    color: var(--text);
+  }
+  .bubble.me {
+    background: var(--accent);
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+
+  .chat-input-area {
+    padding: 10px 16px calc(10px + var(--safe-bottom));
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+  .chat-field {
+    flex: 1;
+    background: var(--surface2);
+    border: none;
+    border-radius: 22px;
+    padding: 10px 16px;
+    font-size: 0.82rem;
+    font-family: 'Lato', sans-serif;
+    color: var(--text);
+    outline: none;
+  }
+  .send-btn {
+    width: 40px;
+    height: 40px;
+    background: var(--accent);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: transform 0.15s;
+    flex-shrink: 0;
+  }
+  .send-btn:active { transform: scale(0.9); }
+
+  /* ════════════════════════════════
+     MORE SCREEN (locatie, fotos, budget)
+  ════════════════════════════════ */
+  .more-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 16px;
+  }
+  .more-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .more-card:active { transform: scale(0.97); background: var(--surface2); }
+  .more-icon { font-size: 1.8rem; }
+  .more-name {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.88rem;
+  }
+  .more-desc { font-size: 0.68rem; color: var(--text2); line-height: 1.4; }
+
+  /* ── LOCATIE SUB-SCREEN ── */
+  .sub-screen {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 200;
+    flex-direction: column;
+    max-width: 430px;
+    margin: 0 auto;
+    animation: slideUp 0.25s ease;
+  }
+  .sub-screen.open { display: flex; }
+  @keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .sub-topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .back-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: var(--surface2);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+  }
+  .sub-title {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 1.05rem;
+  }
+  .sub-body { flex: 1; overflow-y: auto; padding: 16px; scrollbar-width: none; }
+
+  /* ── LOCATIE ── */
+  .map-placeholder {
+    background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+    border-radius: var(--radius);
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+    border: 1px solid #7dd3fc;
+    position: relative;
+    overflow: hidden;
+  }
+  .map-placeholder::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 30px, rgba(125,211,252,0.3) 30px, rgba(125,211,252,0.3) 31px
+    ),
+    repeating-linear-gradient(
+      90deg, transparent, transparent 30px, rgba(125,211,252,0.3) 30px, rgba(125,211,252,0.3) 31px
+    );
+  }
+  .map-center-pin {
+    font-size: 2.5rem;
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+  }
+  .map-status {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.82rem;
+    color: #0369a1;
+    position: relative;
+    z-index: 1;
+  }
+  .loc-member-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    margin-bottom: 8px;
+  }
+  .loc-av {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+  }
+  .loc-info { flex: 1; }
+  .loc-name { font-weight: 700; font-size: 0.85rem; }
+  .loc-place { font-size: 0.68rem; color: var(--text2); margin-top: 2px; }
+  .loc-time { font-size: 0.62rem; color: var(--text3); }
+  .loc-status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 0 3px rgba(34,197,94,0.2);
+  }
+  .loc-coords {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    margin-top: 10px;
+  }
+  .loc-coords .coord-title {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.78rem;
+    color: #15803d;
+    margin-bottom: 4px;
+  }
+  .loc-coords .coord-val { font-size: 0.72rem; color: #166534; font-family: monospace; }
+
+  /* ── BOODSCHAPPEN ── */
+  .bood-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .bood-row:last-child { border-bottom: none; }
+  .bood-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .bood-check.checked {
+    background: var(--accent2);
+    border-color: var(--accent2);
+    color: white;
+  }
+  .bood-item { font-size: 0.83rem; font-weight: 600; flex: 1; }
+  .bood-item.checked { text-decoration: line-through; color: var(--text3); }
+  .bood-qty { font-size: 0.68rem; color: var(--text2); }
+
+  /* ── INSTELLINGEN / PROFIEL ── */
+  .profile-hero {
+    background: linear-gradient(135deg, #fff8f5, #fff);
+    padding: 24px 20px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .profile-av-big {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: #fef2f2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    margin: 0 auto 10px;
+    border: 3px solid var(--accent);
+  }
+  .profile-name-big {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 1.2rem;
+  }
+  .profile-plan {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    border-radius: 100px;
+    padding: 3px 12px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.68rem;
+    margin-top: 6px;
+  }
+  .settings-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .settings-row:active { background: var(--surface2); }
+  .settings-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .settings-label { font-weight: 600; font-size: 0.85rem; flex: 1; }
+  .settings-arrow { color: var(--text3); font-size: 0.8rem; }
+  .settings-val { font-size: 0.72rem; color: var(--text2); margin-right: 6px; }
+
+  /* ── PREMIUM BANNER ── */
+  .premium-banner {
+    margin: 0 16px 10px;
+    background: linear-gradient(135deg, #1c1917, #292524);
+    border-radius: var(--radius);
+    padding: 16px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .premium-banner:active { transform: scale(0.98); }
+  .prem-left .prem-title {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 0.95rem;
+  }
+  .prem-left .prem-sub { font-size: 0.7rem; opacity: 0.7; margin-top: 2px; }
+  .prem-price {
+    background: var(--accent3);
+    color: #78350f;
+    border-radius: 10px;
+    padding: 8px 12px;
+    text-align: center;
+  }
+  .prem-price .price { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1rem; }
+  .prem-price .per { font-size: 0.6rem; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: calc(var(--nav-h) + 16px);
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1c1917;
+    color: white;
+    border-radius: 100px;
+    padding: 10px 20px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 300;
+    display: none;
+    align-items: flex-end;
+    max-width: 430px;
+    margin: 0 auto;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-sheet {
+    background: var(--surface);
+    border-radius: 24px 24px 0 0;
+    padding: 20px 20px calc(20px + var(--safe-bottom));
+    width: 100%;
+    animation: sheetUp 0.25s ease;
+  }
+  @keyframes sheetUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .modal-handle {
+    width: 36px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 16px;
+  }
+  .modal-title {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 1.05rem;
+    margin-bottom: 14px;
+  }
+  .modal-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-size: 0.85rem;
+    font-family: 'Lato', sans-serif;
+    color: var(--text);
+    outline: none;
+    margin-bottom: 10px;
+  }
+  .modal-input:focus { border-color: var(--accent); }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+  }
+  .btn-cancel {
+    flex: 1;
+    padding: 13px;
+    border-radius: 100px;
+    border: 1.5px solid var(--border);
+    background: none;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.88rem;
+    cursor: pointer;
+    color: var(--text2);
+  }
+  .btn-confirm {
+    flex: 2;
+    padding: 13px;
+    border-radius: 100px;
+    background: var(--accent);
+    border: none;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.88rem;
+    color: white;
+    cursor: pointer;
+  }
+  /* ── LOGIN SCREEN ── */
+  .login-overlay {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(160deg, #fff8f5 0%, #faf9f7 100%);
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+    max-width: 430px;
+    margin: 0 auto;
+    left: 0; right: 0;
+  }
+  .login-logo {
+    width: 80px; height: 80px;
+    background: var(--accent);
+    border-radius: 24px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.4rem;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 28px rgba(255,107,53,0.28);
+  }
+  .login-title { font-family:'Nunito',sans-serif; font-weight:900; font-size:2rem; color:var(--text); letter-spacing:-0.5px; margin-bottom:4px; }
+  .login-title span { color: var(--accent); }
+  .login-sub { font-size:0.85rem; color:var(--text2); margin-bottom:36px; text-align:center; }
+  .login-label { font-family:'Nunito',sans-serif; font-weight:800; font-size:0.8rem; color:var(--text2); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px; align-self:flex-start; width:100%; }
+  .member-select-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; margin-bottom:16px; }
+  .member-select-btn { background:var(--surface); border:2px solid var(--border); border-radius:var(--radius); padding:16px 12px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:8px; transition:all 0.15s; }
+  .member-select-btn:active { transform:scale(0.97); }
+  .member-select-btn.selected { border-color:var(--accent); background:#fff5f0; }
+  .member-select-btn .ms-emoji { font-size:2rem; }
+  .member-select-btn .ms-name { font-family:'Nunito',sans-serif; font-weight:800; font-size:0.88rem; color:var(--text); }
+  .member-select-btn .ms-role { font-size:0.65rem; color:var(--text3); font-weight:600; }
+  .login-enter-btn { width:100%; padding:14px; background:var(--accent); color:white; border:none; border-radius:100px; font-family:'Nunito',sans-serif; font-weight:800; font-size:1rem; cursor:pointer; box-shadow:0 4px 16px rgba(255,107,53,0.28); transition:all 0.15s; margin-top:8px; opacity:0.4; pointer-events:none; }
+  .login-enter-btn.ready { opacity:1; pointer-events:all; }
+  .login-enter-btn:active { transform:scale(0.98); }
+</style>
+</head>
+<body>
+
+<!-- LOGIN OVERLAY -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-logo">🏠</div>
+  <div class="login-title">Family<span>Hub</span></div>
+  <div class="login-sub">Wie ben jij vandaag?</div>
+  <div class="login-label">Kies jouw profiel</div>
+  <div class="member-select-grid" id="login-member-grid">
+    <!-- dynamisch ingevuld -->
+  </div>
+  <button class="login-enter-btn" id="login-enter-btn" onclick="doLogin()">Ga naar FamilyHub →</button>
+</div>
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="app-logo-sm">🏠</div>
+      <div class="topbar-title">Family<span>Hub</span></div>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" style="position:relative" onclick="showToast('Geen nieuwe meldingen')">
+        🔔
+        <div class="notif-dot"></div>
+      </button>
+      <button class="icon-btn" onclick="openScreen('profiel')">⚙️</button>
+    </div>
+  </div>
+
+  <!-- SCREENS -->
+  <div class="screens">
+
+    <!-- ══ HOME ══ -->
+    <div class="screen active" id="screen-home">
+      <div class="home-hero">
+        <div class="home-greeting">Goedemorgen, <span id="home-greeting-name">...</span></div>
+        <div class="home-date" id="home-date">Vrijdag 28 maart 2026</div>
+        <div class="member-strip">
+          <div class="member-pill">
+            <div class="member-av" style="background:#fef2f2">👨</div>
+            <div class="member-name" id="home-name-0">Lid 1</div>
+            <div class="member-online"></div>
+          </div>
+          <div class="member-pill">
+            <div class="member-av" style="background:#eff6ff">👩</div>
+            <div class="member-name" id="home-name-1">Lid 2</div>
+            <div class="member-online"></div>
+          </div>
+          <div class="member-pill">
+            <div class="member-av" style="background:#f0fdf4">👧</div>
+            <div class="member-name" id="home-name-2">Lid 3</div>
+            <div class="member-online" style="background:#d1d5db"></div>
+          </div>
+          <div class="member-pill">
+            <div class="member-av" style="background:#fdf4ff">👦</div>
+            <div class="member-name" id="home-name-3">Lid 4</div>
+            <div class="member-online"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="module-grid">
+        <div class="mod-card orange" onclick="switchTab('agenda')">
+          <div class="mod-badge" id="badge-agenda" style="display:none">0</div>
+          <div class="mod-icon">📅</div>
+          <div class="mod-name">Agenda</div>
+          <div class="mod-count" id="count-agenda">Laden...</div>
+        </div>
+        <div class="mod-card teal" onclick="switchTab('taken')">
+          <div class="mod-badge" id="badge-taken" style="display:none">0</div>
+          <div class="mod-icon">✅</div>
+          <div class="mod-name">Taken</div>
+          <div class="mod-count" id="count-taken">Laden...</div>
+        </div>
+        <div class="mod-card yellow" onclick="switchTab('chat')">
+          <div class="mod-badge" id="badge-chat" style="display:none">0</div>
+          <div class="mod-icon">💬</div>
+          <div class="mod-name">Chat</div>
+          <div class="mod-count" id="count-chat">Laden...</div>
+        </div>
+        <div class="mod-card purple" onclick="openSubScreen('locatie')">
+          <div class="mod-icon">📍</div>
+          <div class="mod-name">Locatie</div>
+          <div class="mod-count">GPS delen</div>
+        </div>
+        <div class="mod-card green" onclick="openSubScreen('boodschappen')">
+          <div class="mod-badge" id="badge-bood" style="display:none">0</div>
+          <div class="mod-icon">🛒</div>
+          <div class="mod-name">Boodschappen</div>
+          <div class="mod-count" id="count-bood">Laden...</div>
+        </div>
+        <div class="mod-card blue" onclick="openSubScreen('budget')">
+          <div class="mod-icon">💰</div>
+          <div class="mod-name">Budget</div>
+          <div class="mod-count">Overzicht</div>
+        </div>
+        <div class="mod-card pink" onclick="openSubScreen('maaltijden')">
+          <div class="mod-icon">🍽️</div>
+          <div class="mod-name">Maaltijden</div>
+          <div class="mod-count">Weekmenu</div>
+        </div>
+
+      </div>
+
+      <div class="section-pad">
+        <div class="section-label">Recente activiteit</div>
+      </div>
+      <div class="activity-card card" id="activity-feed">
+        <div class="activity-row">
+          <div class="act-icon" style="background:#f3f1ee">⏳</div>
+          <div class="act-body">
+            <div class="act-title">Laden...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ AGENDA ══ -->
+    <div class="screen" id="screen-agenda">
+      <div class="agenda-top">
+        <div class="month-nav">
+          <button class="nav-arr" onclick="changeMonth(-1)">‹</button>
+          <div class="month-title" id="month-label">Maart 2026</div>
+          <button class="nav-arr" onclick="changeMonth(1)">›</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+      <div class="events-list" id="events-list"></div>
+      <div class="add-btn-wrap" style="padding: 8px 16px;">
+        <button class="btn btn-primary" onclick="openModal('event')">+ Event toevoegen</button>
+      </div>
+    </div>
+
+    <!-- ══ TAKEN ══ -->
+    <div class="screen" id="screen-taken">
+      <div class="pts-hero">
+        <div class="pts-left">
+          <div class="pts-label">Tim's punten</div>
+          <div class="pts-num">🏆 85</div>
+        </div>
+        <div class="pts-right">
+          <div class="reward-chip">
+            <span class="rw-emoji">🎮</span>
+            Nog 15 voor speeltijd!
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-strip">
+        <div class="filter-chip active" onclick="filterTaken(this,'alle')">Alle</div>
+        <div class="filter-chip" onclick="filterTaken(this,'open')">Open</div>
+        <div class="filter-chip" onclick="filterTaken(this,'gedaan')">Gedaan</div>
+        <div class="filter-chip" onclick="filterTaken(this,'papa')">👨 Papa</div>
+        <div class="filter-chip" onclick="filterTaken(this,'mama')">👩 Mama</div>
+        <div class="filter-chip" onclick="filterTaken(this,'lisa')">👧 Lisa</div>
+        <div class="filter-chip" onclick="filterTaken(this,'tim')">👦 Tim</div>
+      </div>
+
+      <div style="padding: 14px 16px 0;">
+        <div class="section-label">Open klusjes</div>
+        <div class="card" id="taken-open-list">
+          <div class="taak-row" onclick="toggleTaak(this)">
+            <div class="taak-check">○</div>
+            <div class="taak-body">
+              <div class="taak-name">Kamer opruimen</div>
+              <div class="taak-who">👦 Tim</div>
+            </div>
+            <div class="taak-pts">+15 pts</div>
+          </div>
+          <div class="taak-row" onclick="toggleTaak(this)">
+            <div class="taak-check">○</div>
+            <div class="taak-body">
+              <div class="taak-name">Tafel dekken</div>
+              <div class="taak-who">👧 Lisa</div>
+            </div>
+            <div class="taak-pts">+10 pts</div>
+          </div>
+          <div class="taak-row" onclick="toggleTaak(this)">
+            <div class="taak-check">○</div>
+            <div class="taak-body">
+              <div class="taak-name">Boodschappen halen</div>
+              <div class="taak-who">👨 Papa</div>
+            </div>
+            <div class="taak-pts">+5 pts</div>
+          </div>
+        </div>
+
+        <div class="section-label" style="margin-top:14px">Vandaag gedaan ✓</div>
+        <div class="card" id="taken-done-section"></div>
+        <div style="height:12px;"></div>
+        <button class="btn btn-primary" onclick="openModal('taak')">+ Klusje toevoegen</button>
+        <div style="height:16px;"></div>
+      </div>
+    </div>
+
+    <!-- ══ CHAT ══ -->
+    <div class="screen" id="screen-chat" style="padding-bottom:0; overflow:hidden;">
+      <div style="display:flex; flex-direction:column; height:100%;">
+        <div class="prikbord-section">
+          <div class="pb-header">
+            <div class="pb-title-row">📌 Prikbord</div>
+            <button class="btn btn-sm" onclick="openModal('prikbord')">+ Plaatsen</button>
+          </div>
+          <div id="prikbord-items">
+            <div style="font-size:0.72rem; color:#b45309; padding:4px 0">Geen berichten op het prikbord</div>
+          </div>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+          <div style="text-align:center; color:var(--text3); font-size:0.8rem; padding:20px">Berichten laden...</div>
+        </div>
+
+        <div class="chat-input-area">
+          <input class="chat-field" id="chat-input" placeholder="Bericht sturen..." />
+          <button class="send-btn" onclick="sendMessage()">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ MEER ══ -->
+    <div class="screen" id="screen-meer">
+      <div class="section-pad" style="padding-bottom:0">
+        <div class="section-label">Meer modules</div>
+      </div>
+      <div class="more-grid">
+        <div class="more-card" onclick="openSubScreen('locatie')">
+          <div class="more-icon">📍</div>
+          <div class="more-name">Locatie</div>
+          <div class="more-desc">Live GPS van gezinsleden</div>
+        </div>
+
+        <div class="more-card" onclick="openSubScreen('boodschappen')">
+          <div class="more-icon">🛒</div>
+          <div class="more-name">Boodschappen</div>
+          <div class="more-desc">Gedeelde lijst</div>
+        </div>
+        <div class="more-card" onclick="openSubScreen('budget')">
+          <div class="more-icon">💰</div>
+          <div class="more-name">Budget</div>
+          <div class="more-desc">Uitgaven bijhouden</div>
+        </div>
+        <div class="more-card" onclick="openSubScreen('maaltijden')">
+          <div class="more-icon">🍽️</div>
+          <div class="more-name">Maaltijden</div>
+          <div class="more-desc">Weekmenu plannen</div>
+        </div>
+        <div class="more-card" onclick="showToast('Binnenkort beschikbaar!')">
+          <div class="more-icon">🎂</div>
+          <div class="more-name">Verjaardagen</div>
+          <div class="more-desc">Automatische herinneringen</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ PROFIEL ══ -->
+    <div class="screen" id="screen-profiel">
+      <div class="profile-hero">
+        <div class="profile-av-big">🏠</div>
+        <div class="profile-name-big" id="family-name-display" onclick="editFamilyName()" style="cursor:pointer" title="Klik om te bewerken">Mijn Familie ✏️</div>
+      </div>
+
+      <div style="padding: 16px 16px 0;">
+        <div class="section-label">Gezinsleden</div>
+        <div class="card" style="margin-bottom:14px;" id="members-list">
+          <div class="settings-row" onclick="editMember(this,'👨','#fef2f2','Ouder')" style="cursor:pointer">
+            <div class="settings-icon" style="background:#fef2f2; font-size:1.2rem">👨</div>
+            <div class="settings-label member-label">Lid 1</div>
+            <div class="settings-val" style="color:var(--accent); font-weight:700">Ouder</div>
+            <div class="settings-arrow">✏️</div>
+          </div>
+          <div class="settings-row" onclick="editMember(this,'👩','#eff6ff','Ouder')" style="cursor:pointer">
+            <div class="settings-icon" style="background:#eff6ff; font-size:1.2rem">👩</div>
+            <div class="settings-label member-label">Lid 2</div>
+            <div class="settings-val" style="color:var(--accent); font-weight:700">Ouder</div>
+            <div class="settings-arrow">✏️</div>
+          </div>
+          <div class="settings-row" onclick="editMember(this,'👧','#f0fdf4','Kind')" style="cursor:pointer">
+            <div class="settings-icon" style="background:#f0fdf4; font-size:1.2rem">👧</div>
+            <div class="settings-label member-label">Lid 3</div>
+            <div class="settings-val" style="color:var(--green); font-weight:700">Kind</div>
+            <div class="settings-arrow">✏️</div>
+          </div>
+          <div class="settings-row" onclick="editMember(this,'👦','#fdf4ff','Kind')" style="cursor:pointer" style="border-bottom:none">
+            <div class="settings-icon" style="background:#fdf4ff; font-size:1.2rem">👦</div>
+            <div class="settings-label member-label">Lid 4</div>
+            <div class="settings-val" style="color:var(--green); font-weight:700">Kind</div>
+            <div class="settings-arrow">✏️</div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addMember()" style="margin-bottom:16px; background:var(--surface2); color:var(--text); box-shadow:none; border:1.5px solid var(--border);">+ Gezinslid toevoegen</button>
+
+        <div class="section-label">Cloud opslag</div>
+        <div class="card" style="margin-bottom:14px;">
+          <div class="settings-row" style="border-bottom:none" onclick="showToast('Google Drive koppelen — binnenkort beschikbaar')">
+            <div class="settings-icon" style="background:#f0fdf4">🟢</div>
+            <div class="settings-label">Google Drive</div>
+            <div class="settings-val" style="color:var(--text2)">Koppelen</div>
+            <div class="settings-arrow">›</div>
+          </div>
+        </div>
+
+        <div class="section-label">Instellingen</div>
+        <div class="card" style="margin-bottom:20px;">
+          <div class="settings-row" onclick="showToast('Notificaties ingesteld')">
+            <div class="settings-icon" style="background:#fff8f0">🔔</div>
+            <div class="settings-label">Notificaties</div>
+            <div class="settings-val">Aan</div>
+            <div class="settings-arrow">›</div>
+          </div>
+          <div class="settings-row" onclick="showToast('Taal: Nederlands')">
+            <div class="settings-icon" style="background:#f0f9ff">🌍</div>
+            <div class="settings-label">Taal</div>
+            <div class="settings-val">Nederlands</div>
+            <div class="settings-arrow">›</div>
+          </div>
+          <div class="settings-row" style="border-bottom:none" onclick="showToast('FamilyHub v1.0.0')">
+            <div class="settings-icon" style="background:#f5f3ff">ℹ️</div>
+            <div class="settings-label">Over FamilyHub</div>
+            <div class="settings-val">v1.0.0</div>
+            <div class="settings-arrow">›</div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:20px;">
+          <div class="settings-row" style="border-bottom:none" onclick="logout()">
+            <div class="settings-icon" style="background:#fef2f2">🚪</div>
+            <div class="settings-label" style="color:var(--red)">Wissel van profiel</div>
+            <div class="settings-arrow" style="color:var(--red)">›</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" id="nav-home" onclick="switchTab('home')">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-item" id="nav-agenda" onclick="switchTab('agenda')">
+      <span class="nav-icon">📅</span>
+      <span class="nav-label">Agenda</span>
+    </button>
+    <button class="nav-item" id="nav-taken" onclick="switchTab('taken')">
+      <span class="nav-icon">✅</span>
+      <span class="nav-label">Taken</span>
+    </button>
+    <button class="nav-item" id="nav-chat" onclick="switchTab('chat')">
+      <span class="nav-icon">💬</span>
+      <span class="nav-label">Chat</span>
+    </button>
+    <button class="nav-item" id="nav-meer" onclick="switchTab('meer')">
+      <span class="nav-icon">⋯</span>
+      <span class="nav-label">Meer</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ═════ SUB-SCREENS ═════ -->
+
+<!-- LOCATIE -->
+<div class="sub-screen" id="sub-locatie">
+  <div class="sub-topbar">
+    <button class="back-btn" onclick="closeSubScreen('locatie')">←</button>
+    <div class="sub-title">📍 Locatie delen</div>
+  </div>
+  <div class="sub-body">
+    <div class="map-placeholder" id="map-box">
+      <div class="map-center-pin">📍</div>
+      <div class="map-status" id="map-status">Klik op "Mijn locatie" om te starten</div>
+    </div>
+    <button class="btn btn-primary" onclick="getLocation()" style="margin-bottom:14px">
+      📡 Mijn locatie ophalen
+    </button>
+    <div id="loc-coords-box" style="display:none">
+      <div class="loc-coords">
+        <div class="coord-title">✅ Jouw locatie gevonden</div>
+        <div class="coord-val" id="coord-display">Laden...</div>
+      </div>
+    </div>
+    <div style="margin-top:14px;">
+      <div class="section-label">Gezinsleden</div>
+      <div id="loc-members-list">
+        <div class="loc-member-row">
+          <div class="loc-av" style="background:#f3f1ee">👤</div>
+          <div class="loc-info">
+            <div class="loc-name">Jij</div>
+            <div class="loc-place">Gebruik knop hierboven</div>
+          </div>
+          <div><div class="loc-status-dot" style="background:#d1d5db; box-shadow:none"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOODSCHAPPEN -->
+<div class="sub-screen" id="sub-boodschappen">
+  <div class="sub-topbar">
+    <button class="back-btn" onclick="closeSubScreen('boodschappen')">←</button>
+    <div class="sub-title">🛒 Boodschappenlijst</div>
+    <button class="btn btn-accent-sm" style="margin-left:auto" onclick="openModal('boodschap')">+ Item</button>
+  </div>
+  <div class="sub-body" style="padding:0;">
+    <div class="card" style="margin:16px; border-radius:var(--radius);" id="bood-list">
+      <div style="padding:20px;text-align:center;color:var(--text3);font-size:0.8rem">Laden...</div>
+    </div>
+  </div>
+</div>
+
+<!-- FOTOS -->
+
+<!-- BUDGET -->
+<div class="sub-screen" id="sub-budget">
+  <div class="sub-topbar">
+    <button class="back-btn" onclick="closeSubScreen('budget')">←</button>
+    <div class="sub-title">💰 Gezinsbudget</div>
+  </div>
+  <div class="sub-body">
+    <div style="background:linear-gradient(135deg,#1c1917,#292524); border-radius:var(--radius); padding:20px; color:white; margin-bottom:14px; text-align:center;">
+      <div style="font-size:0.72rem; opacity:0.7; margin-bottom:4px;">Uitgegeven deze maand</div>
+      <div style="font-family:'Nunito',sans-serif; font-weight:900; font-size:2.4rem;">€ 340,00</div>
+      <div style="font-size:0.7rem; opacity:0.6; margin-top:4px;">Budget: € 1.200,00 · Resterend: € 860,00</div>
+      <div style="background:rgba(255,255,255,0.1); border-radius:100px; height:6px; margin-top:12px; overflow:hidden;">
+        <div style="background:var(--accent3); height:100%; width:28%; border-radius:100px;"></div>
+      </div>
+    </div>
+    <div class="section-label">Categorieën</div>
+    <div class="card" style="margin-bottom:14px;">
+      <div class="settings-row"><div class="settings-icon" style="background:#fef2f2">🛒</div><div class="settings-label">Boodschappen</div><div class="settings-val">€ 180</div></div>
+      <div class="settings-row"><div class="settings-icon" style="background:#eff6ff">⛽</div><div class="settings-label">Benzine</div><div class="settings-val">€ 80</div></div>
+      <div class="settings-row"><div class="settings-icon" style="background:#f0fdf4">🎓</div><div class="settings-label">School</div><div class="settings-val">€ 45</div></div>
+      <div class="settings-row" style="border-bottom:none"><div class="settings-icon" style="background:#fdf4ff">🎮</div><div class="settings-label">Vrije tijd</div><div class="settings-val">€ 35</div></div>
+    </div>
+    <div class="section-label">Zakgeld</div>
+    <div class="card">
+      <div class="settings-row"><div class="settings-icon" style="background:#f0fdf4">👧</div><div class="settings-label">Lisa</div><div class="settings-val" style="color:var(--green)">€ 10 / week</div></div>
+      <div class="settings-row" style="border-bottom:none"><div class="settings-icon" style="background:#fdf4ff">👦</div><div class="settings-label">Tim</div><div class="settings-val" style="color:var(--green)">€ 7 / week</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MAALTIJDEN -->
+<div class="sub-screen" id="sub-maaltijden">
+  <div class="sub-topbar">
+    <button class="back-btn" onclick="closeSubScreen('maaltijden')">←</button>
+    <div class="sub-title">🍽️ Maaltijdplanning</div>
+  </div>
+  <div class="sub-body">
+    <div class="section-label">Deze week</div>
+    <div class="card">
+      <div class="settings-row"><div class="settings-icon" style="background:#fef2f2">Ma</div><div class="settings-label">Spaghetti Bolognese</div><div class="settings-val">👨‍👩‍👧‍👦</div></div>
+      <div class="settings-row"><div class="settings-icon" style="background:#eff6ff">Di</div><div class="settings-label">Kippensoep</div><div class="settings-val">👨‍👩‍👧‍👦</div></div>
+      <div class="settings-row"><div class="settings-icon" style="background:#f0fdf4">Wo</div><div class="settings-label">Stamppot</div><div class="settings-val">👨‍👩‍👧‍👦</div></div>
+      <div class="settings-row"><div class="settings-icon" style="background:#fdf4ff">Do</div><div class="settings-label">Pizza zelfgemaakt</div><div class="settings-val">👨‍👩‍👧‍👦</div></div>
+      <div class="settings-row"><div class="settings-icon" style="background:#fef9c3">Vr</div><div class="settings-label">Vis met aardappelen</div><div class="settings-val">👨‍👩‍👧‍👦</div></div>
+      <div class="settings-row"><div class="settings-icon" style="background:#fff2ed">Za</div><div class="settings-label">BBQ 🔥</div><div class="settings-val">👨‍👩‍👧‍👦</div></div>
+      <div class="settings-row" style="border-bottom:none"><div class="settings-icon" style="background:#f0fdf4">Zo</div><div class="settings-label">Pannenkoeken 🥞</div><div class="settings-val">👨‍👩‍👧‍👦</div></div>
+    </div>
+    <div style="height:12px;"></div>
+    <button class="btn btn-primary" onclick="showToast('Menu bewerken')">✏️ Menu bewerken</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-title">Toevoegen</div>
+    <input class="modal-input" id="modal-input1" placeholder="Naam..." />
+    <input class="modal-input" id="modal-input2" placeholder="Wie? (bijv. Tim)" />
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Annuleer</button>
+      <button class="btn-confirm" onclick="confirmModal()">Toevoegen ✓</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── SUPABASE ──
+const SUPABASE_URL = 'https://wqcgmoghvqiyfptzpwzt.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndxY2dtb2dodnFpeWZzdHpwd3p0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2ODA3MzYsImV4cCI6MjA5MDI1NjczNn0.2645nuZ8sQculCOm4grzZ4ylc8Ks2j2uskLUTuHN1mA';
+
+const sb = {
+  async get(table, order = 'created_at') {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?order=${order}.asc`, {
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+    });
+    return res.ok ? res.json() : [];
+  },
+  async insert(table, data) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+      method: 'POST',
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+      body: JSON.stringify(data)
+    });
+    return res.ok ? res.json() : null;
+  },
+  async update(table, id, data) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return res.ok;
+  },
+  async delete(table, id) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+      method: 'DELETE',
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+    });
+    return res.ok;
+  },
+  realtime(table, cb) {
+    const es = new EventSource(
+      `${SUPABASE_URL}/realtime/v1/api/realtime?apikey=${SUPABASE_KEY}`
+    );
+    // Polling fallback elke 3 seconden (realtime via REST polling)
+    return setInterval(cb, 3000);
+  }
+};
+
+// ── DATE ──
+const days = ['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'];
+const months = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+const now = new Date();
+document.getElementById('home-date').textContent =
+  days[now.getDay()].charAt(0).toUpperCase() + days[now.getDay()].slice(1) + ' ' +
+  now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+
+// ── NAVIGATION ──
+function switchTab(tab) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('screen-' + tab)?.classList.add('active');
+  document.getElementById('nav-' + tab)?.classList.add('active');
+}
+
+function openScreen(tab) {
+  switchTab(tab);
+}
+
+// ── SUB SCREENS ──
+function openSubScreen(name) {
+  document.getElementById('sub-' + name)?.classList.add('open');
+}
+function closeSubScreen(name) {
+  document.getElementById('sub-' + name)?.classList.remove('open');
+}
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ── AGENDA CALENDAR ──
+let curYear = now.getFullYear();
+let curMonth = now.getMonth();
+let selectedDay = now.getDate();
+
+// ── AGENDA ──
+let allEvents = [];
+
+async function loadEvents() {
+  allEvents = await sb.get('events', 'date');
+  renderCalendar();
+}
+
+function changeMonth(dir) {
+  curMonth += dir;
+  if (curMonth > 11) { curMonth = 0; curYear++; }
+  if (curMonth < 0) { curMonth = 11; curYear--; }
+  renderCalendar();
+}
+
+function renderCalendar() {
+  document.getElementById('month-label').textContent =
+    months[curMonth].charAt(0).toUpperCase() + months[curMonth].slice(1) + ' ' + curYear;
+  const grid = document.getElementById('cal-grid');
+  const dayNames = ['zo','ma','di','wo','do','vr','za'];
+  let html = dayNames.map(d => `<div class="cal-dn">${d}</div>`).join('');
+  const first = new Date(curYear, curMonth, 1).getDay();
+  const daysInMonth = new Date(curYear, curMonth + 1, 0).getDate();
+  const prevDays = new Date(curYear, curMonth, 0).getDate();
+  for (let i = 0; i < first; i++) {
+    html += `<div class="cal-d other-month">${prevDays - first + i + 1}</div>`;
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isToday = d === now.getDate() && curMonth === now.getMonth() && curYear === now.getFullYear();
+    const isSel = d === selectedDay;
+    const dateStr = `${curYear}-${String(curMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayEvs = allEvents.filter(e => e.date === dateStr);
+    const dots = dayEvs.length ? `<div class="event-dots">${dayEvs.slice(0,3).map(e=>`<div class="event-dot" style="background:${e.color||'#ff6b35'}"></div>`).join('')}</div>` : '';
+    html += `<div class="cal-d ${isToday?'today':''} ${isSel&&!isToday?'selected':''}" onclick="selectDay(${d})">${d}${dots}</div>`;
+  }
+  const rem = (first + daysInMonth) % 7;
+  if (rem > 0) for (let i = 1; i <= 7-rem; i++) html += `<div class="cal-d other-month">${i}</div>`;
+  grid.innerHTML = html;
+  renderEvents(selectedDay);
+}
+
+function selectDay(d) {
+  selectedDay = d;
+  renderCalendar();
+}
+
+function renderEvents(d) {
+  const list = document.getElementById('events-list');
+  const dateStr = `${curYear}-${String(curMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  const evs = allEvents.filter(e => e.date === dateStr);
+  if (evs.length === 0) {
+    list.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text3);font-size:0.82rem;">Geen events op ${d} ${months[curMonth]}</div>`;
+  } else {
+    list.innerHTML = evs.map(e => `
+      <div class="event-row" style="border-left-color:${e.color||'#ff6b35'}">
+        <div class="event-time-col">${e.time||''}</div>
+        <div class="event-info">
+          <div class="ev-title">${e.title}</div>
+          <div class="ev-who">${e.who||''}</div>
+        </div>
+        <div class="ev-emoji">${e.emoji||'📅'}</div>
+      </div>`).join('');
+  }
+}
+
+loadEvents();
+setInterval(loadEvents, 10000);
+
+// ── TAKEN ──
+async function loadTaken() {
+  const taken = await sb.get('taken');
+  const openList = document.getElementById('taken-open-list');
+  const doneSection = document.getElementById('taken-done-section');
+  const open = taken.filter(t => !t.done);
+  const done = taken.filter(t => t.done);
+
+  openList.innerHTML = open.length ? open.map(t => `
+    <div class="taak-row" data-id="${t.id}" onclick="toggleTaak(this)">
+      <div class="taak-check">○</div>
+      <div class="taak-body">
+        <div class="taak-name">${t.name}</div>
+        <div class="taak-who">${t.who||''}</div>
+      </div>
+      <div class="taak-pts">+${t.points||10} pts</div>
+    </div>`).join('') :
+    `<div style="padding:14px;text-align:center;color:var(--text3);font-size:0.8rem">Geen open klusjes 🎉</div>`;
+
+  if (doneSection) {
+    doneSection.innerHTML = done.length ? done.map(t => `
+      <div class="taak-row" data-id="${t.id}" onclick="toggleTaak(this)">
+        <div class="taak-check done">✓</div>
+        <div class="taak-body">
+          <div class="taak-name done">${t.name}</div>
+          <div class="taak-who">${t.who||''}</div>
+        </div>
+        <div class="taak-pts">+${t.points||10} pts</div>
+      </div>`).join('') : '';
+  }
+}
+
+async function toggleTaak(row) {
+  const id = row.dataset.id;
+  const check = row.querySelector('.taak-check');
+  const isDone = check.classList.contains('done');
+  await sb.update('taken', id, { done: !isDone });
+  showToast(!isDone ? 'Klusje voltooid! 🎉' : 'Klusje heropend');
+  loadTaken();
+}
+
+function filterTaken(el, filter) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  showToast('Filter: ' + el.textContent);
+}
+
+loadTaken();
+setInterval(loadTaken, 8000);
+
+// ── BOODSCHAPPEN ──
+async function loadBoodschappen() {
+  const items = await sb.get('boodschappen');
+  const list = document.getElementById('bood-list');
+  if (!list) return;
+  list.innerHTML = items.length ? items.map(b => `
+    <div class="bood-row" data-id="${b.id}" onclick="toggleBood(this)">
+      <div class="bood-check ${b.checked?'checked':''}">${b.checked?'✓':'○'}</div>
+      <div class="bood-item ${b.checked?'checked':''}">${b.name}</div>
+      <div class="bood-qty">${b.qty||''}</div>
+    </div>`).join('') :
+    `<div style="padding:20px;text-align:center;color:var(--text3);font-size:0.8rem">Lijst is leeg</div>`;
+}
+
+async function toggleBood(row) {
+  const id = row.dataset.id;
+  const check = row.querySelector('.bood-check');
+  const item = row.querySelector('.bood-item');
+  const isChecked = check.classList.contains('checked');
+  await sb.update('boodschappen', id, { checked: !isChecked });
+  if (!isChecked) showToast(item.textContent.trim() + ' afgevinkt ✓');
+  loadBoodschappen();
+}
+
+loadBoodschappen();
+setInterval(loadBoodschappen, 8000);
+
+// ── CHAT ──
+let lastMsgId = null;
+// ── LOGIN ──
+let myName = localStorage.getItem('fh_myname') || '';
+let selectedLoginMember = null;
+
+const defaultMembers = [
+  { name:'Lid 1', emoji:'👨', bg:'#fef2f2', role:'Ouder' },
+  { name:'Lid 2', emoji:'👩', bg:'#eff6ff', role:'Ouder' },
+  { name:'Lid 3', emoji:'👧', bg:'#f0fdf4', role:'Kind' },
+  { name:'Lid 4', emoji:'👦', bg:'#fdf4ff', role:'Kind' },
+];
+
+function buildLoginScreen() {
+  const saved = localStorage.getItem('fh_members');
+  const names = saved ? JSON.parse(saved) : null;
+  const grid = document.getElementById('login-member-grid');
+  if (!grid) return;
+  grid.innerHTML = defaultMembers.map((m, i) => {
+    const name = (names && names[i]) ? names[i] : m.name;
+    return `
+      <button class="member-select-btn" onclick="selectLoginMember(this, '${name}', '${m.emoji}')">
+        <div class="ms-emoji">${m.emoji}</div>
+        <div class="ms-name">${name}</div>
+        <div class="ms-role">${m.role}</div>
+      </button>`;
+  }).join('');
+}
+
+function selectLoginMember(btn, name, emoji) {
+  document.querySelectorAll('.member-select-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedLoginMember = { name, emoji };
+  document.getElementById('login-enter-btn').classList.add('ready');
+}
+
+function doLogin() {
+  if (!selectedLoginMember) return;
+  myName = selectedLoginMember.name;
+  localStorage.setItem('fh_myname', myName);
+  document.getElementById('login-overlay').style.display = 'none';
+  // Update greeting
+  const greet = document.getElementById('home-greeting-name');
+  if (greet) greet.textContent = myName + ' 👋';
+  showToast('Welkom, ' + myName + '! 👋');
+}
+
+function checkLogin() {
+  buildLoginScreen();
+  if (myName) {
+    document.getElementById('login-overlay').style.display = 'none';
+    const greet = document.getElementById('home-greeting-name');
+    if (greet) greet.textContent = myName + ' 👋';
+  }
+}
+
+function logout() {
+  localStorage.removeItem('fh_myname');
+  myName = '';
+  selectedLoginMember = null;
+  document.querySelectorAll('.member-select-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('login-enter-btn').classList.remove('ready');
+  document.getElementById('login-overlay').style.display = 'flex';
+  showToast('Uitgelogd');
+}
+
+checkLogin();
+
+async function loadMessages() {
+  const msgs = await sb.get('berichten');
+  if (!msgs.length) return;
+  const last = msgs[msgs.length-1];
+  if (last.id === lastMsgId) return;
+  lastMsgId = last.id;
+  const container = document.getElementById('chat-messages');
+  container.innerHTML = msgs.map(m => {
+    const isMe = m.sender === myName;
+    return `
+      <div class="msg-group ${isMe?'me':''}">
+        <div class="msg-av" style="background:${avatarBg(m.sender)}">${avatarEmoji(m.sender)}</div>
+        <div class="msg-col">
+          <div class="msg-name" style="${isMe?'text-align:right':''}">${m.sender}</div>
+          <div class="bubble ${isMe?'me':'other'}">${m.message}</div>
+        </div>
+      </div>`;
+  }).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+function avatarEmoji(name) {
+  const map = { 'Papa':'👨','Mama':'👩','Lisa':'👧','Tim':'👦' };
+  return map[name] || '👤';
+}
+function avatarBg(name) {
+  const map = { 'Papa':'#fef2f2','Mama':'#eff6ff','Lisa':'#f0fdf4','Tim':'#fdf4ff' };
+  return map[name] || '#f3f1ee';
+}
+
+async function sendMessage() {
+  const inp = document.getElementById('chat-input');
+  const txt = inp.value.trim();
+  if (!txt) return;
+  inp.value = '';
+  await sb.insert('berichten', { sender: myName, message: txt });
+  loadMessages();
+}
+
+document.getElementById('chat-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendMessage();
+});
+
+// ── PRIKBORD ──
+async function loadPrikbord() {
+  const items = await sb.get('prikbord');
+  const container = document.getElementById('prikbord-items');
+  if (!container) return;
+  if (!items.length) {
+    container.innerHTML = `<div style="font-size:0.72rem; color:#b45309; padding:4px 0">Geen berichten op het prikbord</div>`;
+    return;
+  }
+  container.innerHTML = items.slice(-3).map(p => `
+    <div class="pb-item">
+      <div class="pb-msg">${p.title}: ${p.message}</div>
+      <div class="pb-from">${p.sender}</div>
+    </div>`).join('');
+}
+
+// ── DASHBOARD COUNTS ──
+async function loadDashboard() {
+  const today = new Date().toISOString().split('T')[0];
+  const [events, taken, berichten, bood] = await Promise.all([
+    sb.get('events'), sb.get('taken'), sb.get('berichten'), sb.get('boodschappen')
+  ]);
+
+  const todayEvents = events.filter(e => e.date === today);
+  const openTaken = taken.filter(t => !t.done);
+  const openBood = bood.filter(b => !b.checked);
+
+  // Counts
+  const ce = document.getElementById('count-agenda');
+  const ct = document.getElementById('count-taken');
+  const cc = document.getElementById('count-chat');
+  const cb = document.getElementById('count-bood');
+  const be = document.getElementById('badge-agenda');
+  const bt = document.getElementById('badge-taken');
+  const bc = document.getElementById('badge-chat');
+  const bb = document.getElementById('badge-bood');
+
+  if (ce) ce.textContent = todayEvents.length ? `${todayEvents.length} events vandaag` : 'Geen events vandaag';
+  if (ct) ct.textContent = openTaken.length ? `${openTaken.length} open klusjes` : 'Alles gedaan 🎉';
+  if (cc) cc.textContent = berichten.length ? `${berichten.length} berichten` : 'Nog geen berichten';
+  if (cb) cb.textContent = openBood.length ? `${openBood.length} items op lijst` : 'Lijst is leeg';
+  if (be) { be.textContent = todayEvents.length; be.style.display = todayEvents.length ? '' : 'none'; }
+  if (bt) { bt.textContent = openTaken.length; bt.style.display = openTaken.length ? '' : 'none'; }
+  if (bc) { bc.textContent = berichten.length; bc.style.display = berichten.length ? '' : 'none'; }
+  if (bb) { bb.textContent = openBood.length; bb.style.display = openBood.length ? '' : 'none'; }
+
+  // Activity feed — laatste 4 acties gecombineerd
+  const feed = document.getElementById('activity-feed');
+  if (!feed) return;
+  const activities = [
+    ...events.map(e => ({ icon:'📅', bg:'#fff2ed', title: e.title, sub: `Agenda · ${e.who||''}`, ts: e.created_at })),
+    ...taken.filter(t=>t.done).map(t => ({ icon:'✅', bg:'#f0fdf4', title: `${t.name} gedaan`, sub: `+${t.points||10} punten 🏆`, ts: t.created_at })),
+    ...bood.map(b => ({ icon:'🛒', bg:'#fefce8', title: b.name, sub: `Boodschappenlijst`, ts: b.created_at })),
+    ...berichten.map(m => ({ icon:'💬', bg:'#eff6ff', title: `${m.sender}: ${m.message.slice(0,30)}${m.message.length>30?'…':''}`, sub: 'Chat', ts: m.created_at })),
+  ].sort((a,b) => new Date(b.ts) - new Date(a.ts)).slice(0,5);
+
+  if (!activities.length) {
+    feed.innerHTML = `<div class="activity-row"><div class="act-body"><div class="act-title" style="color:var(--text3)">Nog geen activiteit</div></div></div>`;
+    return;
+  }
+  feed.innerHTML = activities.map(a => `
+    <div class="activity-row">
+      <div class="act-icon" style="background:${a.bg}">${a.icon}</div>
+      <div class="act-body">
+        <div class="act-title">${a.title}</div>
+        <div class="act-sub">${a.sub}</div>
+      </div>
+      <div class="act-time">${timeAgo(a.ts)}</div>
+    </div>`).join('');
+}
+
+function timeAgo(ts) {
+  const diff = Math.floor((Date.now() - new Date(ts)) / 1000);
+  if (diff < 60) return 'nu';
+  if (diff < 3600) return Math.floor(diff/60) + 'm';
+  if (diff < 86400) return Math.floor(diff/3600) + 'u';
+  return Math.floor(diff/86400) + 'd';
+}
+
+loadMessages();
+loadPrikbord();
+setInterval(loadMessages, 3000);
+setInterval(loadPrikbord, 10000);
+
+// ── LOCATIE ──
+function getLocation() {
+  document.getElementById('map-status').textContent = 'Locatie ophalen...';
+  if (!navigator.geolocation) {
+    showToast('Geolocation niet beschikbaar');
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const lat = pos.coords.latitude.toFixed(5);
+      const lon = pos.coords.longitude.toFixed(5);
+      document.getElementById('map-status').textContent = `📍 ${lat}, ${lon}`;
+      document.getElementById('coord-display').textContent = `Lat: ${lat}  ·  Lon: ${lon}\nNauwkeurigheid: ±${Math.round(pos.coords.accuracy)}m`;
+      document.getElementById('loc-coords-box').style.display = 'block';
+      showToast('Locatie gevonden! 📍');
+    },
+    err => {
+      document.getElementById('map-status').textContent = 'Toestemming geweigerd';
+      showToast('Locatie toegang geweigerd');
+    },
+    { enableHighAccuracy: true }
+  );
+}
+
+// ── NAAM BEWERKEN ──
+const memberNames = ['Lid 1', 'Lid 2', 'Lid 3', 'Lid 4'];
+
+function loadNames() {
+  const saved = localStorage.getItem('fh_members');
+  if (saved) {
+    const data = JSON.parse(saved);
+    data.forEach((n, i) => { memberNames[i] = n; });
+  }
+  const savedFamily = localStorage.getItem('fh_family');
+  if (savedFamily) document.getElementById('family-name-display').textContent = savedFamily + ' ✏️';
+  syncNames();
+}
+
+function syncNames() {
+  // Home strip
+  memberNames.forEach((n, i) => {
+    const el = document.getElementById('home-name-' + i);
+    if (el) el.textContent = n;
+  });
+  // Profiel list
+  const rows = document.querySelectorAll('#members-list .member-label');
+  rows.forEach((el, i) => { if (memberNames[i]) el.textContent = memberNames[i]; });
+  localStorage.setItem('fh_members', JSON.stringify(memberNames));
+}
+
+function editFamilyName() {
+  openEditModal('Gezinsnaam aanpassen', document.getElementById('family-name-display').textContent.replace(' ✏️',''), (val) => {
+    document.getElementById('family-name-display').textContent = val + ' ✏️';
+    localStorage.setItem('fh_family', val);
+    showToast('Naam opgeslagen! ✓');
+  });
+}
+
+function editMember(row, emoji, bg, role) {
+  const label = row.querySelector('.member-label');
+  const idx = Array.from(document.querySelectorAll('#members-list .member-label')).indexOf(label);
+  openEditModal('Naam aanpassen', label.textContent, (val) => {
+    memberNames[idx] = val;
+    syncNames();
+    showToast(val + ' opgeslagen! ✓');
+  });
+}
+
+function addMember() {
+  openEditModal('Gezinslid toevoegen', '', (val) => {
+    memberNames.push(val);
+    const list = document.getElementById('members-list');
+    const colors = ['#fef2f2','#eff6ff','#f0fdf4','#fdf4ff','#fefce8','#f0f9ff'];
+    const emojis = ['👤','👤','👤','👤','👤','👤'];
+    const idx = memberNames.length - 1;
+    const row = document.createElement('div');
+    row.className = 'settings-row';
+    row.style.cursor = 'pointer';
+    row.innerHTML = `
+      <div class="settings-icon" style="background:${colors[idx % colors.length]}; font-size:1.2rem">👤</div>
+      <div class="settings-label member-label">${val}</div>
+      <div class="settings-val" style="color:var(--green); font-weight:700">Kind</div>
+      <div class="settings-arrow">✏️</div>`;
+    row.onclick = () => editMember(row, '👤', colors[idx % colors.length], 'Kind');
+    list.appendChild(row);
+
+    // Add to home strip
+    const strip = document.querySelector('.member-strip');
+    const pill = document.createElement('div');
+    pill.className = 'member-pill';
+    pill.innerHTML = `<div class="member-av" style="background:${colors[idx%colors.length]}">👤</div><div class="member-name" id="home-name-${idx}">${val}</div><div class="member-online"></div>`;
+    strip.appendChild(pill);
+    localStorage.setItem('fh_members', JSON.stringify(memberNames));
+    showToast(val + ' toegevoegd! 👤');
+  });
+}
+
+// ── MODAL ──
+let modalType = '';
+function openModal(type) {
+  editCallback = null;
+  modalType = type;
+  const titles = { event:'📅 Event toevoegen', taak:'✅ Klusje toevoegen', boodschap:'🛒 Item toevoegen', prikbord:'📌 Prikbord bericht' };
+  const ph1 = { event:'Naam event...', taak:'Naam klusje...', boodschap:'Naam product...', prikbord:'Titel...' };
+  const ph2 = { event:'Wie? (bijv. naam)', taak:'Wie? (bijv. naam)', boodschap:'Hoeveelheid (bijv. 2 liter)', prikbord:'Bericht...' };
+  document.getElementById('modal-title').textContent = titles[type] || 'Toevoegen';
+  document.getElementById('modal-input1').placeholder = ph1[type] || 'Naam...';
+  document.getElementById('modal-input2').placeholder = ph2[type] || '';
+  document.getElementById('modal-input2').style.display = '';
+  document.getElementById('modal-input1').value = '';
+  document.getElementById('modal-input2').value = '';
+  document.getElementById('modal').classList.add('open');
+  setTimeout(() => document.getElementById('modal-input1').focus(), 300);
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal')) {
+    editCallback = null;
+    document.getElementById('modal-input2').style.display = '';
+    document.getElementById('modal').classList.remove('open');
+  }
+}
+
+// ── EDIT MODAL ──
+let editCallback = null;
+function openEditModal(title, current, cb) {
+  editCallback = cb;
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-input1').placeholder = 'Naam invoeren...';
+  document.getElementById('modal-input1').value = current || '';
+  document.getElementById('modal-input2').style.display = 'none';
+  document.getElementById('modal').classList.add('open');
+  setTimeout(() => {
+    document.getElementById('modal-input1').focus();
+    document.getElementById('modal-input1').select();
+  }, 300);
+}
+
+function confirmModal() {
+  const v1 = document.getElementById('modal-input1').value.trim();
+  const v2 = document.getElementById('modal-input2').value.trim();
+  document.getElementById('modal-input2').style.display = '';
+  if (!v1) { showToast('Vul een naam in'); return; }
+  document.getElementById('modal').classList.remove('open');
+
+  if (editCallback) {
+    editCallback(v1);
+    editCallback = null;
+    return;
+  }
+
+  if (modalType === 'event') {
+    const dateStr = `${curYear}-${String(curMonth+1).padStart(2,'0')}-${String(selectedDay).padStart(2,'0')}`;
+    sb.insert('events', { title: v1, who: v2, date: dateStr, emoji: '📅', color: '#ff6b35' })
+      .then(() => { showToast(`Event "${v1}" toegevoegd! 📅`); loadEvents(); });
+  } else if (modalType === 'taak') {
+    sb.insert('taken', { name: v1, who: v2, points: 10, done: false })
+      .then(() => { showToast(`Klusje "${v1}" aangemaakt! ✅`); loadTaken(); });
+  } else if (modalType === 'boodschap') {
+    sb.insert('boodschappen', { name: v1, qty: v2, checked: false })
+      .then(() => { showToast(`"${v1}" op de lijst! 🛒`); loadBoodschappen(); });
+  } else if (modalType === 'prikbord') {
+    sb.insert('prikbord', { title: v1, message: v2, sender: myName })
+      .then(() => { showToast('Prikbord bericht geplaatst! 📌'); loadPrikbord(); });
+  }
+}
+
+loadNames();
+</script>
+</body>
+</html>
