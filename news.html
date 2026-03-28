@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#09090e">
+<meta name="description" content="Daily Feed — live nieuws aggregator">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Daily Feed">
+<link rel="manifest" href="manifest.json">
+<title>Daily Feed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300&family=DM+Mono:wght@400;500&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #09090e;
+  --bg2:     #0f0f16;
+  --bg3:     #14141d;
+  --card:    #111119;
+  --border:  rgba(255,255,255,0.055);
+  --border2: rgba(255,255,255,0.10);
+  --text:    #ddddf0;
+  --muted:   #5c5c7a;
+  --muted2:  #8888a8;
+
+  --c-algemeen:   #60a5fa;
+  --c-gaming:     #c084fc;
+  --c-tech:       #fb923c;
+  --c-motorsport: #f87171;
+  --accent: var(--c-algemeen);
+}
+
+* { margin:0; padding:0; box-sizing:border-box }
+html { scroll-behavior:smooth; -webkit-tap-highlight-color:transparent }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Subtiel grid patroon */
+body::after {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+  background-size: 52px 52px;
+}
+
+/* Ambient glow blob */
+.glow-blob {
+  position:fixed; width:700px; height:400px;
+  border-radius:50%; filter:blur(140px);
+  opacity:.055; pointer-events:none; z-index:0;
+  top:-100px; left:50%; transform:translateX(-50%);
+  background: var(--accent);
+  transition: background .6s ease;
+}
+
+.wrap { max-width:1380px; margin:0 auto; padding:0 28px; position:relative; z-index:1 }
+
+/* ═══════════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════════ */
+header {
+  position:sticky; top:0; z-index:100;
+  background: rgba(9,9,14,0.88);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border-bottom: 1px solid var(--border);
+}
+
+.hdr-top {
+  display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:12px; padding:20px 0 16px;
+}
+
+.logo { display:flex; align-items:center; gap:13px }
+
+.logo-mark {
+  width:40px; height:40px; border-radius:11px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; position:relative; overflow:hidden;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--accent) 30%, #09090e),
+    color-mix(in srgb, var(--accent) 12%, #09090e)
+  );
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  transition: background .5s, border-color .5s;
+}
+
+.logo-text h1 {
+  font-family: 'Fraunces', serif;
+  font-size: 22px; font-weight: 600;
+  letter-spacing: -.4px; line-height: 1;
+  color: var(--text);
+}
+.logo-text h1 em {
+  font-style: italic; font-weight: 300;
+  color: var(--accent); transition: color .5s;
+}
+.logo-text .sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 2px; margin-top: 3px;
+}
+
+.hdr-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap }
+
+.date-pill {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; color: var(--muted2);
+  background: var(--bg3); border: 1px solid var(--border);
+  padding: 6px 13px; border-radius: 20px; letter-spacing: .3px;
+}
+
+.btn-refresh {
+  display:flex; align-items:center; gap:7px;
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  padding: 7px 16px; border-radius: 20px;
+  font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all .2s; white-space:nowrap;
+}
+.btn-refresh:hover {
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  transform: translateY(-1px);
+}
+.btn-refresh:disabled { opacity:.35; cursor:not-allowed; transform:none }
+.btn-refresh.spinning svg { animation: spin .7s linear infinite }
+@keyframes spin { to { transform:rotate(360deg) } }
+
+/* ═══════════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════════ */
+.tabs { display:flex; gap:0; overflow-x:auto; scrollbar-width:none }
+.tabs::-webkit-scrollbar { display:none }
+
+.tab {
+  display:flex; align-items:center; gap:7px;
+  padding: 13px 20px 15px;
+  font-size: 13px; font-weight: 600;
+  color: var(--muted); background: transparent; border: none;
+  cursor: pointer; transition: all .2s;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap; position:relative;
+  letter-spacing: .2px;
+}
+.tab:hover { color: var(--muted2) }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent) }
+.tab .ticon { font-size:15px }
+.tab-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; font-weight: 500;
+  padding: 2px 7px; border-radius: 9px;
+  background: rgba(255,255,255,.05); color: var(--muted);
+  transition: all .3s; letter-spacing: .3px;
+}
+.tab.active .tab-badge {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent);
+}
+
+/* ═══════════════════════════════════════════════
+   TOOLBAR (status + filters)
+═══════════════════════════════════════════════ */
+.toolbar {
+  display:flex; align-items:center; gap:10px;
+  flex-wrap:wrap; padding: 18px 0 14px;
+}
+
+.status-pill {
+  display:flex; align-items:center; gap:8px;
+  font-size: 12px; color: var(--muted2);
+  background: var(--bg3); border: 1px solid var(--border);
+  padding: 6px 13px; border-radius: 20px;
+  flex-shrink:0;
+}
+.dot { width:6px; height:6px; border-radius:50%; background:var(--muted); flex-shrink:0 }
+.dot.live    { background:#4ade80; animation:blink 2s infinite }
+.dot.loading { background:var(--accent); animation:blink .6s infinite }
+.dot.error   { background:#f87171 }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+.src-filters { display:flex; gap:5px; flex-wrap:wrap }
+.sf {
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--muted); padding: 5px 12px; border-radius: 14px;
+  font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 500;
+  cursor: pointer; transition: all .18s; white-space:nowrap;
+}
+.sf:hover { color: var(--text); border-color: var(--border2) }
+.sf.active {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  color: var(--accent);
+}
+
+/* ═══════════════════════════════════════════════
+   SOURCE LEGEND
+═══════════════════════════════════════════════ */
+.legend { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:18px }
+.lp {
+  display:inline-flex; align-items:center; gap:4px;
+  padding: 3px 9px; border-radius: 9px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; font-weight: 500; letter-spacing:.2px;
+}
+.lp.ok   { background:rgba(74,222,128,.08);  color:#4ade80; border:1px solid rgba(74,222,128,.18) }
+.lp.err  { background:rgba(248,113,113,.08); color:#f87171; border:1px solid rgba(248,113,113,.18) }
+.lp.pend { background:rgba(255,255,255,.04); color:var(--muted); border:1px solid var(--border) }
+
+/* ═══════════════════════════════════════════════
+   GRID + CARDS
+═══════════════════════════════════════════════ */
+.grid {
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px; margin-bottom: 56px;
+}
+@media(max-width:1080px){ .grid { grid-template-columns:repeat(2,1fr) } }
+@media(max-width:620px) { .grid { grid-template-columns:1fr } }
+
+.grid .card.feat { grid-column: span 2 }
+@media(max-width:620px) { .grid .card.feat { grid-column:span 1 } }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px;
+  display:flex; flex-direction:column; gap:11px;
+  cursor:pointer; position:relative; overflow:hidden;
+  transition: border-color .2s, transform .2s, box-shadow .2s;
+  animation: up .3s ease both;
+}
+
+/* Subtiele gekleurde top-rand */
+.card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--accent) 60%, transparent),
+    transparent 70%
+  );
+  opacity:0; transition:opacity .25s;
+}
+.card.feat::before { opacity:.8 }
+.card:hover {
+  border-color: color-mix(in srgb, var(--accent) 22%, transparent);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 36px rgba(0,0,0,.5);
+}
+.card:hover::before { opacity:.6 }
+
+@keyframes up { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+.card-meta { display:flex; align-items:center; justify-content:space-between; gap:8px }
+
+.src-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; font-weight: 500; letter-spacing:.4px;
+  padding: 3px 9px; border-radius: 9px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: color-mix(in srgb, var(--accent) 90%, white);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+  flex-shrink:0; max-width:140px;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+
+.card-age {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; color: var(--muted); flex-shrink:0;
+}
+
+.card-title {
+  font-family: 'Fraunces', serif;
+  font-size: 15px; font-weight: 400;
+  line-height: 1.48; color: var(--text);
+  transition: color .2s;
+}
+.card:hover .card-title { color:#fff }
+.card.feat .card-title { font-size: 20px; font-weight:300 }
+
+.card-sum {
+  font-size: 13px; color: var(--muted2);
+  line-height: 1.68; flex:1;
+}
+
+.card-foot {
+  display:flex; align-items:center; justify-content:flex-end;
+  padding-top: 10px; border-top: 1px solid var(--border);
+}
+.read-link {
+  display:flex; align-items:center; gap:5px;
+  font-size: 12px; font-weight: 600;
+  color: var(--accent); text-decoration:none;
+  opacity:.8; transition: opacity .2s, gap .2s;
+}
+.read-link:hover { opacity:1; gap:8px }
+
+/* ═══════════════════════════════════════════════
+   SKELETON
+═══════════════════════════════════════════════ */
+.skel-grid {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:14px; margin-bottom:56px;
+}
+@media(max-width:1080px){ .skel-grid{ grid-template-columns:repeat(2,1fr) } }
+@media(max-width:620px) { .skel-grid{ grid-template-columns:1fr } }
+.skel-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:14px; padding:20px;
+  display:flex; flex-direction:column; gap:12px;
+}
+.skel-card:first-child { grid-column:span 2 }
+@media(max-width:620px){ .skel-card:first-child{ grid-column:span 1 } }
+.sk {
+  background: linear-gradient(90deg,
+    var(--bg3) 25%, var(--bg2) 50%, var(--bg3) 75%);
+  background-size:200% 100%;
+  animation: shim 1.5s infinite; border-radius:5px;
+}
+@keyframes shim { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* ═══════════════════════════════════════════════
+   ERROR
+═══════════════════════════════════════════════ */
+.err-box {
+  display:none; text-align:center; padding:40px 24px;
+  background: rgba(248,113,113,.06);
+  border: 1px solid rgba(248,113,113,.18);
+  border-radius:14px; margin-bottom:28px;
+}
+.err-box h3 { color:#f87171; margin-bottom:10px; font-size:15px }
+.err-box p  { color:var(--muted2); font-size:13px; line-height:1.75 }
+
+/* ═══════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════ */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 20px 0; text-align:center;
+  color: var(--muted); font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: .3px; line-height: 1.9;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width:4px }
+::-webkit-scrollbar-track { background:var(--bg) }
+::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px }
+</style>
+</head>
+<body>
+
+<div class="glow-blob" id="glow"></div>
+
+<header>
+  <div class="wrap">
+    <div class="hdr-top">
+      <div class="logo">
+        <div class="logo-mark" id="logo-mark">📰</div>
+        <div class="logo-text">
+          <h1>Daily <em id="logo-em">Feed</em></h1>
+          <div class="sub">live rss · 48u · via allorigins</div>
+        </div>
+      </div>
+      <div class="hdr-actions">
+        <div class="date-pill" id="date-pill"></div>
+        <button class="btn-refresh" id="rbtn" onclick="doRefresh()">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+            <path d="M12 7A5 5 0 1 1 7 2a5 5 0 0 1 3.5 1.5L12 2v4H8l1.8-1.8A3 3 0 1 0 10 7"
+                  stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Vernieuwen
+        </button>
+      </div>
+    </div>
+
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-tab="algemeen" onclick="switchTab('algemeen',this)">
+        <span class="ticon">🌍</span> Algemeen
+        <span class="tab-badge" id="cnt-algemeen">—</span>
+      </button>
+      <button class="tab" data-tab="gaming" onclick="switchTab('gaming',this)">
+        <span class="ticon">🎮</span> Gaming
+        <span class="tab-badge" id="cnt-gaming">—</span>
+      </button>
+      <button class="tab" data-tab="tech" onclick="switchTab('tech',this)">
+        <span class="ticon">💻</span> Tech
+        <span class="tab-badge" id="cnt-tech">—</span>
+      </button>
+      <button class="tab" data-tab="motorsport" onclick="switchTab('motorsport',this)">
+        <span class="ticon">🏎️</span> Motorsport
+        <span class="tab-badge" id="cnt-motorsport">—</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="toolbar">
+    <div class="status-pill">
+      <div class="dot loading" id="sdot"></div>
+      <span id="stxt">Laden...</span>
+    </div>
+    <div class="src-filters" id="src-filters"></div>
+  </div>
+
+  <div class="legend" id="legend"></div>
+
+  <div class="err-box" id="errbox">
+    <h3>Feeds niet bereikbaar</h3>
+    <p>Controleer je internetverbinding.<br>De CORS-proxy (allorigins.win) is mogelijk tijdelijk offline.</p>
+  </div>
+
+  <div class="skel-grid" id="skel">
+    <div class="skel-card"><div class="sk" style="height:16px;width:90px"></div><div class="sk" style="height:22px"></div><div class="sk" style="height:22px;width:74%"></div><div class="sk" style="height:12px"></div><div class="sk" style="height:12px;width:82%"></div><div class="sk" style="height:12px;width:55%"></div></div>
+    <div class="skel-card"><div class="sk" style="height:16px;width:80px"></div><div class="sk" style="height:19px"></div><div class="sk" style="height:19px;width:68%"></div><div class="sk" style="height:12px"></div></div>
+    <div class="skel-card"><div class="sk" style="height:16px;width:100px"></div><div class="sk" style="height:19px"></div><div class="sk" style="height:12px;width:60%"></div></div>
+    <div class="skel-card"><div class="sk" style="height:16px;width:70px"></div><div class="sk" style="height:19px"></div><div class="sk" style="height:12px"></div><div class="sk" style="height:12px;width:75%"></div></div>
+    <div class="skel-card"><div class="sk" style="height:16px;width:85px"></div><div class="sk" style="height:19px"></div><div class="sk" style="height:12px"></div></div>
+    <div class="skel-card"><div class="sk" style="height:16px;width:95px"></div><div class="sk" style="height:19px"></div><div class="sk" style="height:12px;width:50%"></div></div>
+  </div>
+
+  <div class="grid" id="grid" style="display:none"></div>
+  <div id="empty" style="display:none;text-align:center;padding:52px;color:var(--muted);font-size:14px">
+    Geen artikelen voor dit filter.
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    Daily Feed · GitHub Pages PWA · RSS via allorigins.win · Cache 30 min<br>
+    Bijgewerkt: <span id="ftime">—</span> · <span id="fcount">—</span> artikelen geladen
+  </div>
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  CONFIGURATIE
+// ═══════════════════════════════════════════════════════════
+const PROXY1 = url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+const PROXY2 = url => `https://corsproxy.io/?${encodeURIComponent(url)}`;
+
+const TABS_CFG = {
+  algemeen:   { color:'#60a5fa', icon:'🌍', em:'Nieuws'     },
+  gaming:     { color:'#c084fc', icon:'🎮', em:'Gaming'     },
+  tech:       { color:'#fb923c', icon:'💻', em:'Tech'       },
+  motorsport: { color:'#f87171', icon:'🏎️', em:'Motorsport' },
+};
+
+const FEEDS = {
+  algemeen: [
+    { name:'BBC News',         rss:'https://feeds.bbci.co.uk/news/rss.xml' },
+    { name:'Reuters',          rss:'https://feeds.reuters.com/reuters/topNews' },
+    { name:'The Guardian',     rss:'https://www.theguardian.com/world/rss' },
+    { name:'Associated Press', rss:'https://feeds.apnews.com/rss/apf-topnews' },
+    { name:'Al Jazeera',       rss:'https://www.aljazeera.com/xml/rss/all.xml' },
+  ],
+  gaming: [
+    { name:'IGN',              rss:'https://feeds.feedburner.com/ign/games-all' },
+    { name:'Eurogamer',        rss:'https://www.eurogamer.net/?format=rss' },
+    { name:'Kotaku',           rss:'https://kotaku.com/rss' },
+    { name:'PC Gamer',         rss:'https://www.pcgamer.com/rss/' },
+    { name:'Rock Paper Shotgun',rss:'https://www.rockpapershotgun.com/feed' },
+    { name:'VG247',            rss:'https://www.vg247.com/feed' },
+    { name:'GameSpot',         rss:'https://www.gamespot.com/feeds/mashup/' },
+    { name:'Polygon',          rss:'https://www.polygon.com/rss/index.xml' },
+    { name:'GamesRadar',       rss:'https://www.gamesradar.com/rss/' },
+    { name:'Destructoid',      rss:'https://www.destructoid.com/feed/' },
+  ],
+  tech: [
+    { name:'The Verge',        rss:'https://www.theverge.com/rss/index.xml' },
+    { name:'Ars Technica',     rss:'https://feeds.arstechnica.com/arstechnica/index' },
+    { name:'TechCrunch',       rss:'https://techcrunch.com/feed/' },
+    { name:'Wired',            rss:'https://www.wired.com/feed/rss' },
+    { name:'Engadget',         rss:'https://www.engadget.com/rss.xml' },
+    { name:'The Register',     rss:'https://www.theregister.com/headlines.atom' },
+    { name:'Tweakers',         rss:'https://feeds.feedburner.com/tweakers/mixed' },
+    { name:'Hacker News',      rss:'https://hnrss.org/frontpage?count=20' },
+    { name:'MIT Tech Review',  rss:'https://www.technologyreview.com/stories.rss' },
+    { name:'9to5Mac',          rss:'https://9to5mac.com/feed/' },
+  ],
+  motorsport: [
+    { name:'Autosport',        rss:'https://www.autosport.com/rss/feed/all' },
+    { name:'Motorsport.com',   rss:'https://www.motorsport.com/rss/f1/news/' },
+    { name:'RaceFans',         rss:'https://www.racefans.net/feed/' },
+    { name:'The Race',         rss:'https://the-race.com/feed/' },
+    { name:'GPblog',           rss:'https://www.gpblog.com/en/rss' },
+    { name:'Crash.net',        rss:'https://www.crash.net/rss/f1' },
+    { name:'PlanetF1',         rss:'https://www.planetf1.com/feed/' },
+    { name:'F1i.com',          rss:'https://f1i.com/feed' },
+    { name:'Speedcafe',        rss:'https://www.speedcafe.com/feed/' },
+    { name:'Motorsport Week',  rss:'https://www.motorsportweek.com/feed/' },
+  ],
+};
+
+const CACHE_TTL = 30 * 60 * 1000;
+const CACHE_KEY = tab => `df_v4_${tab}`;
+
+// ═══════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════
+const state = Object.fromEntries(
+  Object.keys(FEEDS).map(t => [t, { articles:[], status:{}, loaded:false, ts:0 }])
+);
+let activeTab = 'algemeen';
+let activeSrc = 'all';
+
+// ═══════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════
+function init() {
+  document.getElementById('date-pill').textContent =
+    new Date().toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  applyTheme('algemeen');
+  loadTab('algemeen');
+  setInterval(autoRefresh, CACHE_TTL);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  THEMA
+// ═══════════════════════════════════════════════════════════
+function applyTheme(tab) {
+  const cfg = TABS_CFG[tab];
+  document.documentElement.style.setProperty('--accent', cfg.color);
+  document.getElementById('glow').style.background = cfg.color;
+  document.getElementById('logo-mark').textContent = cfg.icon;
+  document.getElementById('logo-em').textContent   = cfg.em;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  TAB SWITCH
+// ═══════════════════════════════════════════════════════════
+function switchTab(tab, btn) {
+  activeTab = tab;
+  activeSrc = 'all';
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  applyTheme(tab);
+  if (state[tab].loaded) {
+    renderSrcFilters();
+    renderLegend();
+    renderGrid();
+  } else {
+    loadTab(tab);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  LADEN
+// ═══════════════════════════════════════════════════════════
+async function loadTab(tab, force=false) {
+  // Cache check
+  if (!force) {
+    try {
+      const c = JSON.parse(sessionStorage.getItem(CACHE_KEY(tab))||'null');
+      if (c && Date.now()-c.ts < CACHE_TTL) {
+        state[tab] = { articles:c.articles, status:c.status, loaded:true, ts:c.ts };
+        updateTabCount(tab);
+        if (tab === activeTab) { renderSrcFilters(); renderLegend(); renderGrid(); }
+        setStatus('live', `${c.articles.length} artikelen · gecached (${Math.round((Date.now()-c.ts)/60000)}m)`);
+        setLoading(false);
+        return;
+      }
+    } catch(e) {}
+  }
+
+  setLoading(true);
+  setStatus('loading', `${TABS_CFG[tab].em} ophalen...`);
+  document.getElementById('errbox').style.display = 'none';
+
+  // Init status als 'pend'
+  state[tab].status = Object.fromEntries(FEEDS[tab].map(s => [s.name,'pend']));
+  if (tab === activeTab) renderLegend();
+
+  const articles = [];
+  let done = 0;
+
+  await Promise.allSettled(FEEDS[tab].map(async src => {
+    try {
+      const arts = await fetchFeed(src);
+      articles.push(...arts);
+      state[tab].status[src.name] = arts.length > 0 ? 'ok' : 'err';
+    } catch(e) {
+      state[tab].status[src.name] = 'err';
+    }
+    done++;
+    if (tab === activeTab) {
+      setStatus('loading', `${done}/${FEEDS[tab].length} bronnen...`);
+      renderLegend();
+    }
+  }));
+
+  // Dedupliceer + sorteer
+  const seen = new Set();
+  const unique = articles
+    .filter(a => { if(!a.url||seen.has(a.url)) return false; seen.add(a.url); return true; })
+    .sort((a,b) => b.ts - a.ts);
+
+  state[tab].articles = unique;
+  state[tab].loaded   = true;
+  state[tab].ts       = Date.now();
+
+  sessionStorage.setItem(CACHE_KEY(tab), JSON.stringify({
+    articles: unique, status: state[tab].status, ts: Date.now()
+  }));
+
+  updateTabCount(tab);
+
+  if (tab === activeTab) {
+    const ok = Object.values(state[tab].status).filter(v=>v==='ok').length;
+    setStatus('live', `${unique.length} artikelen · ${ok}/${FEEDS[tab].length} bronnen bereikbaar`);
+    renderSrcFilters();
+    renderLegend();
+    renderGrid();
+  }
+
+  setLoading(false);
+  document.getElementById('ftime').textContent =
+    new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('fcount').textContent =
+    Object.values(state).reduce((s,v)=>s+v.articles.length, 0);
+}
+
+function doRefresh() { loadTab(activeTab, true) }
+
+async function autoRefresh() {
+  for (const tab of Object.keys(state)) {
+    state[tab].loaded = false;
+    sessionStorage.removeItem(CACHE_KEY(tab));
+  }
+  loadTab(activeTab, true);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  FEED OPHALEN + XML PARSEN
+// ═══════════════════════════════════════════════════════════
+async function fetchFeed(src) {
+  const cutoff = Date.now() - 48 * 3600 * 1000;
+  let xml = null;
+
+  // Probeer proxy 1, dan proxy 2
+  for (const proxy of [PROXY1, PROXY2]) {
+    try {
+      const res = await fetch(proxy(src.rss), { signal: AbortSignal.timeout(12000) });
+      if (res.ok) { xml = await res.text(); break; }
+    } catch(e) {}
+  }
+  if (!xml) throw new Error('Beide proxies faalden');
+
+  const doc   = new DOMParser().parseFromString(xml, 'text/xml');
+  const items = [...doc.querySelectorAll('item, entry')];
+
+  return items.slice(0,20).flatMap(item => {
+    const title = sh(
+      item.querySelector('title')?.textContent || ''
+    );
+    if (!title) return [];
+
+    // Datum
+    const pubStr =
+      item.querySelector('pubDate')?.textContent ||
+      item.querySelector('published')?.textContent ||
+      item.querySelector('updated')?.textContent || '';
+    const ts = pubStr ? new Date(pubStr).getTime() : 0;
+    if (ts > 0 && ts < cutoff) return [];
+
+    // Link
+    const link =
+      item.querySelector('link')?.textContent?.trim() ||
+      item.querySelector('link')?.getAttribute('href') || '#';
+
+    // Samenvatting
+    const rawSum =
+      item.querySelector('description')?.textContent ||
+      item.querySelector('summary')?.textContent ||
+      item.querySelector('content')?.textContent || '';
+    const summary = sh(rawSum).substring(0, 260);
+
+    return [{
+      title,
+      summary: summary.length === 260 ? summary.substring(0,257)+'…' : summary,
+      source:  src.name,
+      url:     link.startsWith('http') ? link : '#',
+      ts:      ts || Date.now(),
+      timeAgo: ts ? ago(ts) : 'Recent',
+    }];
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════════════
+function renderGrid() {
+  let arts = [...state[activeTab].articles];
+  if (activeSrc !== 'all') arts = arts.filter(a => a.source === activeSrc);
+
+  const grid  = document.getElementById('grid');
+  const empty = document.getElementById('empty');
+
+  if (!arts.length) {
+    grid.style.display  = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.style.display  = 'grid';
+  grid.innerHTML = arts.slice(0,36).map((a,i) => card(a,i)).join('');
+}
+
+function card(a, i) {
+  const feat  = i===0 ? ' feat' : '';
+  const delay = Math.min(i*35,600)+'ms';
+  return `<div class="card${feat}" style="animation-delay:${delay}" onclick="open_('${esc(a.url)}')">
+    <div class="card-meta">
+      <span class="src-tag">${esc(a.source)}</span>
+      <span class="card-age">${esc(a.timeAgo)}</span>
+    </div>
+    <div class="card-title">${esc(a.title)}</div>
+    ${a.summary?`<div class="card-sum">${esc(a.summary)}</div>`:''}
+    <div class="card-foot">
+      <a class="read-link" href="${esc(a.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">
+        Lees meer
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+          <path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+  </div>`;
+}
+
+function renderLegend() {
+  const st = state[activeTab].status;
+  document.getElementById('legend').innerHTML =
+    Object.entries(st).map(([n,s]) =>
+      `<span class="lp ${s}">${s==='ok'?'✓':s==='err'?'✗':'·'} ${n}</span>`
+    ).join('');
+}
+
+function renderSrcFilters() {
+  const arts    = state[activeTab].articles;
+  const sources = [...new Set(arts.map(a=>a.source))].sort();
+  const total   = arts.length;
+  const btns    = [
+    `<button class="sf${activeSrc==='all'?' active':''}" onclick="setSrc('all',this)">Alles (${total})</button>`,
+    ...sources.map(s => {
+      const n = arts.filter(a=>a.source===s).length;
+      return `<button class="sf${activeSrc===s?' active':''}" onclick="setSrc('${esc(s)}',this)">${esc(s)} (${n})</button>`;
+    })
+  ];
+  document.getElementById('src-filters').innerHTML = btns.join('');
+}
+
+function updateTabCount(tab) {
+  document.getElementById('cnt-'+tab).textContent = state[tab].articles.length || '—';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  UI HELPERS
+// ═══════════════════════════════════════════════════════════
+function setLoading(on) {
+  const btn = document.getElementById('rbtn');
+  btn.disabled = on;
+  btn.classList.toggle('spinning', on);
+  document.getElementById('skel').style.display = on ? 'grid' : 'none';
+  if (on) {
+    document.getElementById('grid').style.display  = 'none';
+    document.getElementById('empty').style.display = 'none';
+  }
+}
+
+function setStatus(type, txt) {
+  document.getElementById('sdot').className = 'dot '+type;
+  document.getElementById('stxt').textContent = txt;
+}
+
+function setSrc(src, btn) {
+  activeSrc = src;
+  document.querySelectorAll('.sf').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGrid();
+}
+
+function open_(url) {
+  if (url && url.startsWith('http')) window.open(url,'_blank','noopener');
+}
+
+function sh(s) {
+  return String(s||'')
+    .replace(/<[^>]*>/g,'')
+    .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>')
+    .replace(/&quot;/g,'"').replace(/&#039;/g,"'").replace(/&nbsp;/g,' ')
+    .replace(/\s+/g,' ').trim();
+}
+
+function ago(ts) {
+  const m = Math.floor((Date.now()-ts)/60000);
+  if (m<1)  return 'Zojuist';
+  if (m<60) return `${m}m geleden`;
+  const h = Math.floor(m/60);
+  if (h<24) return `${h}u geleden`;
+  return h<48 ? 'Gisteren' : `${Math.floor(h/24)}d geleden`;
+}
+
+function esc(s) {
+  return String(s||'')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
+init();
+</script>
+</body>
+</html>
