@@ -1,0 +1,1997 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f2f2f7">
+<title>Daily Feed</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/readability/0.5.0/Readability.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,300;1,6..72,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #f2f2f7;
+  --bg2:      #ffffff;
+  --bg3:      #e5e5ea;
+  --card:     #ffffff;
+  --border:   rgba(0,0,0,0.08);
+  --border2:  rgba(0,0,0,0.14);
+  --text:     #1c1c1e;
+  --text2:    #3a3a3c;
+  --muted:    #8e8e93;
+  --muted2:   #aeaeb2;
+
+  --c-algemeen:   #636366;
+  --c-gaming:     #5e5ce6;
+  --c-tech:       #ff9f0a;
+  --c-motorsport: #ff375f;
+  --accent: var(--c-algemeen);
+  --accent-soft: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+/* ── DARK MODE ── */
+[data-theme="dark"] {
+  --bg:     #000000;
+  --bg2:    #1c1c1e;
+  --bg3:    #2c2c2e;
+  --card:   #1c1c1e;
+  --border:  rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.16);
+  --text:   #f2f2f7;
+  --text2:  #ebebf0;
+  --muted:  #8e8e93;
+  --muted2: #636366;
+}
+
+/* Skeleton in dark mode */
+[data-theme="dark"] .sk {
+  background: linear-gradient(90deg,#2c2c2e 25%,#3a3a3c 50%,#2c2c2e 75%);
+  background-size: 200% 100%;
+}
+
+/* Header blur in dark mode */
+[data-theme="dark"] header,
+[data-theme="dark"] #feed-header {
+  background: rgba(0,0,0,0.88);
+}
+
+/* Reader in dark mode */
+[data-theme="dark"] #reader-panel {
+  background: #1c1c1e;
+}
+[data-theme="dark"] .reader-topbar {
+  background: rgba(28,28,30,0.95);
+  border-bottom-color: rgba(255,255,255,0.08);
+}
+[data-theme="dark"] .reader-title,
+[data-theme="dark"] .reader-content { color: #f2f2f7; }
+[data-theme="dark"] .reader-content blockquote { color: #ebebf0; }
+[data-theme="dark"] .reader-content h2,
+[data-theme="dark"] .reader-content h3 { color: #f2f2f7; }
+[data-theme="dark"] .reader-btn {
+  background: #2c2c2e;
+  border-color: rgba(255,255,255,0.1);
+  color: #f2f2f7;
+}
+[data-theme="dark"] .reader-btn:hover { border-color: rgba(255,255,255,0.25) }
+[data-theme="dark"] .reader-body { border-color: rgba(255,255,255,0.08) }
+
+/* Hero dark */
+[data-theme="dark"] #hero-page { background: transparent }
+
+/* Toggle knop */
+/* Slide toggle voor dark mode */
+.dark-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  flex-shrink: 0;
+  user-select: none;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.toggle-icon {
+  font-size: 14px;
+  line-height: 1;
+  transition: opacity .3s;
+}
+
+.toggle-track {
+  width: 44px;
+  height: 26px;
+  border-radius: 13px;
+  background: var(--bg3);
+  border: 1.5px solid var(--border);
+  position: relative;
+  transition: background .3s, border-color .3s;
+  flex-shrink: 0;
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1), background .3s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+[data-theme="dark"] .toggle-track {
+  background: #3a3a3c;
+  border-color: rgba(255,255,255,0.15);
+}
+
+[data-theme="dark"] .toggle-thumb {
+  transform: translateX(18px);
+  background: #ffffff;
+}
+
+.dark-toggle:hover .toggle-track { border-color: var(--border2) }
+
+/* Mobiel */
+@media(max-width: 640px) {
+  .dark-toggle { gap: 5px }
+  .toggle-track { width: 38px; height: 22px; border-radius: 11px }
+  .toggle-thumb { width: 15px; height: 15px; top: 2px; left: 2px }
+  [data-theme="dark"] .toggle-thumb { transform: translateX(16px) }
+  .toggle-icon { font-size: 12px }
+}
+
+* { margin:0; padding:0; box-sizing:border-box }
+html {
+  font-size: 18px;
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width:1440px; margin:0 auto; padding:0 40px; }
+
+/* ════════════════════════════════════════
+   HEADER — Apple stijl navigatie
+════════════════════════════════════════ */
+header {
+  position: sticky; top:0; z-index:100;
+  background: rgba(242,242,247,0.85);
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  border-bottom: 1px solid var(--border);
+}
+
+.hdr-inner {
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 16px 0;
+  flex-wrap: wrap; gap: 12px;
+}
+
+.logo {
+  display:flex; align-items:center; gap:10px;
+}
+
+.logo-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 9px;
+  background: var(--accent);
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+  transition: background .4s;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.logo-icon svg { width:18px; height:18px; fill:white }
+
+.logo-label {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -.4px;
+  color: var(--text);
+}
+.logo-label span { color: var(--accent); transition:color .4s }
+
+.hdr-right { display:flex; align-items:center; gap:10px }
+
+.date-chip {
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.btn-refresh {
+  display:flex; align-items:center; gap:6px;
+  background: var(--accent);
+  color: white; border:none;
+  padding: 7px 15px; border-radius: 980px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 600; cursor:pointer;
+  transition: all .2s;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.btn-refresh:hover { filter:brightness(1.08); transform:scale(1.02) }
+.btn-refresh:active { transform:scale(0.98) }
+.btn-refresh:disabled { opacity:.5; cursor:not-allowed; transform:none; filter:none }
+.btn-refresh.spinning svg { animation:spin .7s linear infinite }
+@keyframes spin { to{transform:rotate(360deg)} }
+
+/* ════════════════════════════════════════
+   CATEGORY TABS — pill stijl
+════════════════════════════════════════ */
+.tabs-wrap {
+  padding: 16px 0 0;
+  display:flex; align-items:center; gap:12px;
+  overflow-x: auto; scrollbar-width:none;
+}
+.tabs-wrap::-webkit-scrollbar { display:none }
+
+.tab {
+  display:flex; align-items:center; gap:6px;
+  padding: 9px 20px;
+  border-radius: 980px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--muted); background: var(--bg2);
+  border: 1.5px solid var(--border);
+  cursor:pointer; transition:all .2s;
+  white-space:nowrap; flex-shrink:0;
+}
+.tab:hover { border-color:var(--border2); color:var(--text2) }
+.tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+  box-shadow: 0 3px 12px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.tab .ticon { font-size:13px }
+.tab-ct {
+  font-size: 12px; font-weight:700;
+  background: rgba(0,0,0,0.1);
+  padding:1px 6px; border-radius:20px;
+  transition:all .2s;
+}
+.tab.active .tab-ct { background:rgba(255,255,255,0.25) }
+
+/* ════════════════════════════════════════
+   TOOLBAR
+════════════════════════════════════════ */
+.toolbar {
+  display:flex; align-items:center; gap:10px;
+  flex-wrap:wrap; padding:20px 0 14px;
+}
+
+.status-chip {
+  display:flex; align-items:center; gap:7px;
+  font-size: 14px;
+  color: var(--muted); font-weight:500;
+  background: var(--bg2);
+  padding: 5px 12px; border-radius:980px;
+  border: 1px solid var(--border);
+  flex-shrink:0;
+}
+.dot { width:6px; height:6px; border-radius:50%; background:var(--muted2); flex-shrink:0 }
+.dot.live    { background:#34c759; animation:pulse 2s infinite }
+.dot.loading { background:var(--accent); animation:pulse .6s infinite }
+.dot.error   { background:#ff3b30 }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.src-filters { display:flex; gap:5px; flex-wrap:wrap }
+.sf {
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  color: var(--muted2);
+  padding: 4px 12px; border-radius:980px;
+  font-family: 'Inter',sans-serif;
+  font-size: 13px;
+  font-weight: 600; cursor:pointer;
+  transition:all .18s; white-space:nowrap;
+}
+.sf:hover { border-color:var(--border2); color:var(--text2) }
+.sf.active {
+  background:var(--accent-soft);
+  border-color: color-mix(in srgb,var(--accent) 35%,transparent);
+  color: var(--accent);
+}
+
+/* ════════════════════════════════════════
+   LEGEND
+════════════════════════════════════════ */
+.legend { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:20px }
+.lp {
+  display:inline-flex; align-items:center; gap:5px;
+  padding: 3px 10px; border-radius:980px;
+  font-size: 12px; font-weight:600;
+  border: 1.5px solid;
+}
+.lp.ok   { color:#1d8348; border-color:rgba(52,199,89,.3); background:rgba(52,199,89,.08) }
+.lp.err  { color:#c0392b; border-color:rgba(255,59,48,.25); background:rgba(255,59,48,.07) }
+.lp.pend { color:var(--muted2); border-color:var(--border); background:transparent }
+.lp-dot { width:5px; height:5px; border-radius:50%; background:currentColor }
+
+/* ════════════════════════════════════════
+   GRID — Apple News asymmetrisch
+════════════════════════════════════════ */
+.grid {
+  display:grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 20px;
+  margin-bottom:52px;
+}
+
+/* Hero card */
+.card:nth-child(1) { grid-column:span 8 }
+/* Sidebar */
+.card:nth-child(2) { grid-column:span 4 }
+.card:nth-child(3) { grid-column:span 4 }
+/* Rij 2 */
+.card:nth-child(4)  { grid-column:span 4 }
+.card:nth-child(5)  { grid-column:span 4 }
+.card:nth-child(6)  { grid-column:span 4 }
+/* Rij 3+ */
+.card:nth-child(n+7) { grid-column:span 4 }
+
+@media(max-width:1000px) {
+  .grid { grid-template-columns: repeat(6,1fr) }
+  .card:nth-child(1) { grid-column:span 6 }
+  .card:nth-child(2), .card:nth-child(3) { grid-column:span 3 }
+  .card:nth-child(n+4) { grid-column:span 3 }
+}
+@media(max-width:580px) {
+  .grid { grid-template-columns:1fr }
+  .card, .card:nth-child(n) { grid-column:span 1 }
+}
+
+/* ════════════════════════════════════════
+   CARDS
+════════════════════════════════════════ */
+.card {
+  background: var(--card);
+  border-radius: 18px;
+  padding: 24px;
+  display:flex; flex-direction:column; gap:16px;
+  cursor:pointer; position:relative; overflow:hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05);
+  transition: box-shadow .25s, transform .25s;
+  animation: slideUp .35s ease both;
+}
+.card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08), 0 12px 36px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+.card:active { transform: scale(0.99) }
+@keyframes slideUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+/* Accentlijn boven hero */
+.card:nth-child(1)::before {
+  content:''; display:block;
+  height:3px; margin:-24px -24px 0;
+  margin-bottom: 0;
+  background: var(--accent);
+  border-radius: 18px 18px 0 0;
+}
+
+.card-meta { display:flex; align-items:center; justify-content:space-between; gap:8px }
+
+.src-tag {
+  display:flex; align-items:center; gap:5px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--accent);
+}
+.src-dot {
+  width:6px; height:6px; border-radius:50%;
+  background: var(--accent); flex-shrink:0;
+}
+
+.card-age {
+  font-size: 13px;
+  color: var(--muted2); font-weight:500;
+}
+
+.card-title {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 22px;
+  font-optical-sizing: auto;
+  font-weight: 600; line-height:1.38;
+  color: var(--text); transition:color .2s;
+  letter-spacing:-.2px;
+}
+.card:hover .card-title { color: var(--accent) }
+
+.card:nth-child(1) .card-title {
+  font-size: 36px;
+  font-weight: 700; line-height:1.18;
+  letter-spacing:-.6px;
+}
+
+.card-sum {
+  font-size: 17px;
+  color: var(--text2); line-height:1.65; flex:1;
+  font-weight: 400;
+}
+
+.card:nth-child(1) .card-sum {
+  font-size: 20px;
+  font-family: 'Newsreader', serif;
+  font-style: italic; font-weight:300;
+  line-height: 1.7;
+}
+
+
+
+.read-link {
+  display:flex; align-items:center; gap:5px;
+  font-size: 15px;
+  font-weight: 600; color: var(--accent);
+  text-decoration: none; transition:gap .2s;
+}
+.read-link:hover { gap:8px }
+.read-link svg { flex-shrink:0 }
+
+/* ════════════════════════════════════════
+   SKELETON
+════════════════════════════════════════ */
+.skel-grid {
+  display:grid; grid-template-columns:repeat(12,1fr);
+  gap:20px; margin-bottom:52px;
+}
+.skel-card {
+  background:var(--card);
+  border-radius:18px;
+  padding:24px;
+  display:flex; flex-direction:column; gap:13px;
+  box-shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.05);
+}
+.skel-card:nth-child(1) { grid-column:span 8 }
+.skel-card:nth-child(2) { grid-column:span 4 }
+.skel-card:nth-child(3) { grid-column:span 4 }
+.skel-card:nth-child(4) { grid-column:span 4 }
+.skel-card:nth-child(5) { grid-column:span 4 }
+.skel-card:nth-child(6) { grid-column:span 4 }
+@media(max-width:1000px){
+  .skel-grid{grid-template-columns:repeat(6,1fr)}
+  .skel-card:nth-child(1){grid-column:span 6}
+  .skel-card:nth-child(n+2){grid-column:span 3}
+}
+@media(max-width:640px){
+  .skel-grid{grid-template-columns:1fr;gap:12px}
+  .skel-card,.skel-card:nth-child(n){grid-column:span 1}
+}
+.sk {
+  background: linear-gradient(90deg,#e5e5ea 25%,#f2f2f7 50%,#e5e5ea 75%);
+  background-size:200% 100%; animation:shim 1.5s infinite; border-radius:8px;
+}
+@keyframes shim{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ════════════════════════════════════════
+   ERROR
+════════════════════════════════════════ */
+.err-box {
+  display:none; text-align:center; padding:40px 24px;
+  background:var(--card); border-radius:20px; margin-bottom:24px;
+  box-shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.05);
+}
+.err-box h3 { color:#ff3b30; margin-bottom:10px; font-size:16px }
+.err-box p  { color:var(--muted); font-size:13px; line-height:1.75 }
+
+/* ════════════════════════════════════════
+   FOOTER
+════════════════════════════════════════ */
+footer {
+  border-top:1px solid var(--border); padding:20px 0;
+  text-align:center; color:var(--muted2);
+  font-size:13px; line-height:1.9;
+  font-weight:500;
+}
+
+/* ════════════════════════════════════════
+   AFBEELDINGEN IN CARDS
+════════════════════════════════════════ */
+.card.has-img {
+  padding: 0;
+  overflow: hidden;
+}
+.card.has-img .card-body {
+  padding: 22px;
+  display:flex; flex-direction:column; gap:14px;
+}
+.card:not(.has-img) .card-body {
+  display:contents; /* transparant — geen layout impact */
+}
+.card-img {
+  width: 100%;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  background: var(--bg3);
+  flex-shrink:0;
+}
+.card-img img {
+  width:100%; height:100%;
+  object-fit:cover;
+  display:block;
+  transition: transform .4s ease;
+}
+.card:hover .card-img img {
+  transform: scale(1.03);
+}
+/* Hero card: grotere afbeelding */
+.card:nth-child(1).has-img .card-img {
+  aspect-ratio: 21/9;
+}
+/* Skeleton afbeelding placeholder */
+.skel-card .sk-img {
+  width:100%; aspect-ratio:16/9;
+  background: linear-gradient(90deg,#e5e5ea 25%,#f2f2f7 50%,#e5e5ea 75%);
+  background-size:200% 100%; animation:shim 1.5s infinite;
+  border-radius: 18px 18px 0 0;
+}
+
+/* ════════════════════════════════════════
+   HERO STARTPAGINA — past altijd in beeld
+════════════════════════════════════════ */
+#hero-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 20px 32px;
+  max-width: 1440px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.hero-branding {
+  margin-bottom: 20px;
+}
+
+.hero-branding-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.hero-app-title {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -.4px;
+  color: var(--text);
+}
+
+.hero-sub {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 400;
+  letter-spacing: .2px;
+}
+
+/* 5 kaarten in 1 grid: 2 boven, 2 midden, 1 breed onder */
+.hero-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: auto auto;
+  gap: 12px;
+  width: 100%;
+  max-width: 1100px;
+}
+
+/* Eerste 4 kaarten: 1 kolom elk */
+.hero-card:nth-child(1) { grid-column: span 1 }
+.hero-card:nth-child(2) { grid-column: span 1 }
+.hero-card:nth-child(3) { grid-column: span 1 }
+.hero-card:nth-child(4) { grid-column: span 1 }
+/* AI kaart: brede onderste rij */
+.hero-card:nth-child(5) { grid-column: span 4 }
+
+.hero-card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 20px 16px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  border: 1.5px solid var(--border);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.04);
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  position: relative;
+  overflow: hidden;
+  animation: heroUp .4s ease both;
+}
+.hero-card:nth-child(1) { animation-delay: 0ms }
+.hero-card:nth-child(2) { animation-delay: 50ms }
+.hero-card:nth-child(3) { animation-delay: 100ms }
+.hero-card:nth-child(4) { animation-delay: 150ms }
+.hero-card:nth-child(5) { animation-delay: 200ms; flex-direction: row; gap: 20px; padding: 18px 24px; text-align: left; align-items: center }
+
+@keyframes heroUp {
+  from { opacity:0; transform:translateY(16px) }
+  to   { opacity:1; transform:translateY(0) }
+}
+
+.hero-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--hc-color);
+  border-radius: 16px 16px 0 0;
+}
+
+.hero-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1), 0 16px 48px rgba(0,0,0,0.07);
+  border-color: var(--hc-color);
+}
+
+.hero-card-icon {
+  font-size: 32px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.hero-card-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--hc-color);
+}
+
+.hero-card-title {
+  font-family: 'Newsreader', serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -.3px;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+/* AI kaart brede layout */
+.hero-card:nth-child(5) .hero-card-title { font-size: 20px }
+.hero-card:nth-child(5) .hero-card-icon  { font-size: 36px }
+
+.hero-card-desc {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+  flex: 1;
+  display: none; /* verbergen op desktop voor compactheid */
+}
+
+/* Toon desc alleen in AI kaart (breed) */
+.hero-card:nth-child(5) .hero-card-desc { display: block }
+
+.hero-card-sources {
+  font-size: 11px;
+  color: var(--muted2);
+  font-weight: 500;
+}
+
+/* AI kaart: geen border-top */
+.hero-card:nth-child(5) .hero-card-sources {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.hero-card-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--hc-color);
+  margin-top: 2px;
+}
+
+/* AI kaart arrow rechts */
+.hero-card:nth-child(5) .hero-card-arrow {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Mobiel: 2 kolommen boven, 1 rij AI */
+@media(max-width: 700px) {
+  #hero-page { padding: 16px 16px; }
+
+  .hero-branding { margin-bottom: 14px }
+  .hero-app-title { font-size: 22px }
+
+  .hero-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .hero-card:nth-child(1),
+  .hero-card:nth-child(2),
+  .hero-card:nth-child(3),
+  .hero-card:nth-child(4) { grid-column: span 1 }
+  .hero-card:nth-child(5) {
+    grid-column: span 2;
+    flex-direction: row;
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .hero-card { border-radius: 14px; padding: 16px 12px; gap: 5px }
+  .hero-card-icon { font-size: 26px }
+  .hero-card:nth-child(5) .hero-card-icon { font-size: 28px }
+  .hero-card-title { font-size: 15px }
+  .hero-card:nth-child(5) .hero-card-title { font-size: 16px }
+  .hero-card-label { font-size: 9px }
+  .hero-card-arrow { font-size: 11px }
+  .hero-card-sources { font-size: 10px }
+}
+
+/* Verberg/toon pagina's */
+#feed-page { display: none }
+#hero-page.hidden { display: none }
+#feed-page.visible { display: block }
+
+/* Terug knop in header */
+.btn-back {
+  display: flex; align-items: center; gap: 6px;
+  background: transparent;
+  color: var(--accent); border: none;
+  padding: 7px 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: all .2s;
+}
+.btn-back:hover { opacity: .7 }
+.btn-back svg { flex-shrink: 0 }
+
+/* ════════════════════════════════════════
+   READER MODAL
+════════════════════════════════════════ */
+#reader-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: overlayIn .2s ease;
+}
+#reader-overlay.open { display: flex; align-items: flex-start; justify-content: center; padding: 24px 16px; overflow-y: auto; }
+@keyframes overlayIn { from{opacity:0} to{opacity:1} }
+
+#reader-panel {
+  background: #fff;
+  border-radius: 20px;
+  width: 100%; max-width: 740px;
+  min-height: 200px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.25);
+  overflow: hidden;
+  animation: panelUp .25s ease;
+  margin: auto;
+}
+@keyframes panelUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+.reader-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 22px;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  position: sticky; top: 0;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(12px);
+  gap: 12px;
+}
+
+.reader-source {
+  font-size: 13px; font-weight: 700;
+  color: var(--accent); letter-spacing: .3px;
+  flex-shrink: 0;
+}
+
+.reader-topbar-actions { display:flex; align-items:center; gap:8px; flex-shrink:0 }
+
+.reader-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--bg); border: 1.5px solid var(--border);
+  color: var(--text2); padding: 7px 14px; border-radius: 980px;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all .18s; white-space: nowrap;
+  text-decoration: none;
+}
+.reader-btn:hover { border-color: var(--border2); color: var(--text) }
+.reader-btn.close-btn { background: var(--bg3); }
+
+.reader-body { padding: 36px 48px 56px; }
+@media(max-width: 600px) { .reader-body { padding: 24px 24px 40px } }
+
+.reader-title {
+  font-family: 'Newsreader', serif;
+  font-size: 32px; font-weight: 700;
+  line-height: 1.25; letter-spacing: -.5px;
+  color: #1c1c1e; margin-bottom: 16px;
+}
+
+.reader-meta {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 13px; color: #8e8e93; font-weight: 500;
+  margin-bottom: 28px; padding-bottom: 24px;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  flex-wrap: wrap;
+}
+
+.reader-content {
+  font-family: 'Newsreader', serif;
+  font-size: 19px; line-height: 1.75;
+  color: #1c1c1e;
+}
+.reader-content p { margin-bottom: 1.3em }
+.reader-content h1, .reader-content h2, .reader-content h3 {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700; margin: 1.6em 0 .6em;
+  line-height: 1.3; color: #1c1c1e;
+}
+.reader-content h2 { font-size: 22px }
+.reader-content h3 { font-size: 18px }
+.reader-content img {
+  width: 100%; border-radius: 12px; margin: 1.4em 0;
+  display: block;
+}
+.reader-content a { color: var(--accent); text-decoration: underline }
+.reader-content blockquote {
+  border-left: 3px solid var(--accent);
+  margin: 1.4em 0; padding: 4px 0 4px 20px;
+  color: #3a3a3c; font-style: italic;
+}
+.reader-content ul, .reader-content ol {
+  padding-left: 1.6em; margin-bottom: 1.2em;
+}
+.reader-content li { margin-bottom: .4em }
+.reader-content figure { margin: 1.4em 0 }
+.reader-content figcaption { font-size: 14px; color: #8e8e93; margin-top: 6px; font-family:'Inter',sans-serif }
+
+.reader-loading {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 64px 32px; gap: 16px; color: #8e8e93;
+  font-size: 15px;
+}
+.reader-spinner {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 3px solid rgba(0,0,0,0.08);
+  border-top-color: var(--accent);
+  animation: spin .7s linear infinite;
+}
+
+.reader-error {
+  padding: 48px 32px; text-align: center; color: #8e8e93;
+}
+.reader-error h3 { color: #ff3b30; margin-bottom: 10px; font-size:16px }
+.reader-error p { font-size: 14px; line-height: 1.7 }
+
+/* ════════════════════════════════════════
+   FEED HEADER — zelfde stijl als hero
+════════════════════════════════════════ */
+#feed-header {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 32px 40px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.feed-topbar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.feed-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.feed-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.feed-logo-icon {
+  width: 36px; height: 36px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background .4s, box-shadow .4s;
+}
+.feed-logo-icon svg { width: 18px; height: 18px; fill: white }
+
+.feed-logo-label {
+  font-size: 18px; font-weight: 700;
+  letter-spacing: -.3px; color: var(--text);
+}
+
+.feed-cat-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 28px;
+  width: 100%;
+}
+
+.feed-cat-icon { font-size: 52px; line-height: 1 }
+
+.feed-cat-label {
+  font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--accent);
+}
+
+.feed-cat-title {
+  font-family: 'Newsreader', serif;
+  font-size: 42px; font-weight: 700;
+  letter-spacing: -1px; line-height: 1.1;
+  color: var(--text);
+}
+
+.feed-cat-sources {
+  font-size: 14px; color: var(--muted);
+  font-weight: 400;
+}
+
+/* Pill tabs — zelfde als voor maar gecentreerd */
+.feed-tabs {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  justify-content: center;
+  padding: 0 0 28px;
+  border-bottom: 1px solid var(--border);
+  width: 100%;
+}
+
+/* Toolbar aanpassing */
+#feed-page .toolbar {
+  justify-content: center;
+}
+
+/* ════════════════════════════════════════
+   MOBILE OPTIMALISATIES
+════════════════════════════════════════ */
+@media(max-width: 640px) {
+
+  html { font-size: 15px }
+
+  .wrap { padding: 0 16px }
+
+  /* Feed header */
+  #feed-header { padding: 16px 16px 0 }
+
+  .feed-topbar {
+    margin-bottom: 20px;
+    gap: 8px;
+    flex-wrap: nowrap;
+  }
+
+  .feed-topbar-left { gap: 8px }
+
+  /* Verberg datum op mobiel — te veel ruimte */
+  #date-chip { display: none }
+
+  /* Logo label korter op mobiel */
+  .feed-logo-label { font-size: 15px }
+  .feed-logo-icon { width: 30px; height: 30px }
+
+  /* Kleine back knop */
+  .btn-back { font-size: 13px }
+  .btn-back svg { width: 15px; height: 15px }
+
+  /* Vernieuwen knop: alleen icon op mobiel */
+  .btn-refresh { padding: 8px 10px; font-size: 0 }
+  .btn-refresh svg { width: 16px; height: 16px; margin: 0 }
+
+  /* Categorie hero kleiner */
+  .feed-cat-icon { font-size: 36px }
+  .feed-cat-title { font-size: 28px; letter-spacing: -.5px }
+  .feed-cat-label { font-size: 11px }
+  .feed-cat-sources { font-size: 12px }
+  .feed-cat-hero { gap: 6px; padding-bottom: 20px }
+
+  /* Tabs scrollen horizontaal */
+  .feed-tabs {
+    padding: 0 0 20px;
+    gap: 6px;
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+  }
+  .feed-tabs::-webkit-scrollbar { display: none }
+  .tab { font-size: 13px; padding: 7px 14px; flex-shrink: 0 }
+
+  /* Status en filters */
+  .toolbar { padding: 14px 0 10px; gap: 8px }
+  .status-chip { font-size: 12px; padding: 5px 10px }
+
+  .src-filters { gap: 4px }
+  .sf { font-size: 12px; padding: 4px 10px }
+
+  /* Legend kleiner */
+  .legend { gap: 4px; margin-bottom: 14px }
+  .lp { font-size: 10px; padding: 3px 8px }
+
+  /* Grid: 1 kolom op mobiel */
+  .grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+  .grid .card:nth-child(1) { grid-column: span 1 }
+
+  /* Cards */
+  .card { border-radius: 14px }
+  .card.has-img .card-body { padding: 16px }
+  .card-title { font-size: 17px; line-height: 1.4 }
+  .card:nth-child(1) .card-title { font-size: 20px }
+  .card-sum { font-size: 14px }
+  .src-tag { font-size: 11px }
+  .card-age { font-size: 11px }
+
+  /* Hero startpagina */
+  #hero-page { padding: 32px 16px }
+  .hero-grid { grid-template-columns: 1fr; gap: 12px }
+  .hero-card { padding: 24px; border-radius: 18px }
+  .hero-card-title { font-size: 22px }
+  .hero-card-icon { font-size: 36px }
+
+  /* Reader modal */
+  #reader-overlay { padding: 0 }
+  #reader-panel { border-radius: 0; min-height: 100vh }
+  .reader-body { padding: 20px 20px 40px }
+  .reader-title { font-size: 24px }
+  .reader-content { font-size: 17px }
+  .reader-topbar { padding: 14px 16px }
+
+}
+
+@media(max-width: 380px) {
+  .feed-logo { display: none } /* Alleen op hele kleine schermen */
+  .feed-cat-title { font-size: 24px }
+}
+
+/* ════════════════════════════════════════
+   VERTAALKNOP
+════════════════════════════════════════ */
+.btn-translate {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--bg3);
+  border: 1.5px solid var(--border);
+  color: var(--text2);
+  padding: 7px 14px; border-radius: 980px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all .2s;
+  white-space: nowrap;
+}
+.btn-translate:hover { border-color: var(--border2); color: var(--text) }
+.btn-translate.active {
+  background: color-mix(in srgb, #7c3aed 12%, transparent);
+  border-color: color-mix(in srgb, #7c3aed 35%, transparent);
+  color: #7c3aed;
+}
+.btn-translate.loading { opacity: .6; cursor: wait }
+.translate-spinner {
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 2px solid rgba(0,0,0,0.1);
+  border-top-color: currentColor;
+  animation: spin .6s linear infinite;
+  display: none;
+}
+.btn-translate.loading .translate-spinner { display: block }
+.btn-translate.loading .translate-icon { display: none }
+
+@media(max-width:640px) {
+  .btn-translate { font-size: 0; padding: 8px 10px; gap: 0 }
+  .btn-translate .translate-icon { font-size: 16px }
+  .translate-label { display: none }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════ HERO STARTPAGINA ══════════ -->
+<div id="hero-page">
+  <div class="hero-branding">
+    <div class="hero-branding-row">
+      <div style="width:38px;height:38px;border-radius:10px;background:#ff375f;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(255,55,95,.3);flex-shrink:0">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M19 5H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2zM5 11h6v2H5v-2zm0-3h14v2H5V8zm0 6h4v2H5v-2zm6 0h8v2h-8v-2z"/></svg>
+      </div>
+      <span class="hero-app-title">Daily Feed</span>
+      <button class="dark-toggle" id="dark-toggle-hero" onclick="toggleDark()" title="Dark mode aan/uit" aria-label="Dark mode">
+        <span class="toggle-icon">☀️</span>
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        <span class="toggle-icon">🌙</span>
+      </button>
+    </div>
+    <div class="hero-sub" id="hero-date"></div>
+  </div>
+
+  <div class="hero-grid">
+    <!-- Algemeen -->
+    <div class="hero-card" style="--hc-color:#636366" onclick="openCategory('algemeen')">
+      <div class="hero-card-icon">🌍</div>
+      <div class="hero-card-label">Wereldnieuws</div>
+      <div class="hero-card-title">Algemeen Nieuws</div>
+      <div class="hero-card-desc">Het belangrijkste nieuws van de dag van de grootste nieuwssites ter wereld.</div>
+      <div class="hero-card-sources">BBC News · Reuters · The Guardian · AP · Al Jazeera</div>
+      <div class="hero-card-arrow">
+        Lees nieuws
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+
+    <!-- Gaming -->
+    <div class="hero-card" style="--hc-color:#5e5ce6" onclick="openCategory('gaming')">
+      <div class="hero-card-icon">🎮</div>
+      <div class="hero-card-label">Games & Entertainment</div>
+      <div class="hero-card-title">Gaming Nieuws</div>
+      <div class="hero-card-desc">Reviews, releases en alles uit de gamesindustrie van de top gaming sites.</div>
+      <div class="hero-card-sources">IGN · Eurogamer · Kotaku · PC Gamer · Polygon · meer</div>
+      <div class="hero-card-arrow">
+        Lees gaming
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+
+    <!-- Tech -->
+    <div class="hero-card" style="--hc-color:#ff9f0a" onclick="openCategory('tech')">
+      <div class="hero-card-icon">💻</div>
+      <div class="hero-card-label">Technologie</div>
+      <div class="hero-card-title">Tech Nieuws</div>
+      <div class="hero-card-desc">AI, hardware, software en de nieuwste ontwikkelingen uit de tech wereld.</div>
+      <div class="hero-card-sources">The Verge · Ars Technica · Wired · Tweakers · meer</div>
+      <div class="hero-card-arrow">
+        Lees tech
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+
+    <!-- Motorsport -->
+    <div class="hero-card" style="--hc-color:#ef4444" onclick="openCategory('motorsport')">
+      <div class="hero-card-icon">🏎️</div>
+      <div class="hero-card-label">Formule 1 & Meer</div>
+      <div class="hero-card-title">Motorsport Nieuws</div>
+      <div class="hero-card-desc">F1, MotoGP en al het motorsportnieuws van de beste racing sites ter wereld.</div>
+      <div class="hero-card-sources">Autosport · RaceFans · The Race · GPblog · meer</div>
+      <div class="hero-card-arrow">
+        Lees motorsport
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+
+    <!-- AI -->
+    <div class="hero-card" style="--hc-color:#7c3aed" onclick="openCategory('ai')">
+      <div class="hero-card-icon">🤖</div>
+      <div class="hero-card-label">Artificiële Intelligentie</div>
+      <div class="hero-card-title">AI Nieuws</div>
+      <div class="hero-card-desc">Het laatste nieuws over AI, machine learning en grote taalmodellen van de beste AI blogs en nieuwssites.</div>
+      <div class="hero-card-sources">Anthropic · MIT Tech Review · The Decoder · VentureBeat · TechCrunch AI · Import AI · meer</div>
+      <div class="hero-card-arrow">
+        Lees AI nieuws
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ FEED PAGINA ══════════ -->
+<div id="feed-page">
+
+<div id="feed-header">
+  <!-- Topbar: logo links, datum + vernieuwen rechts -->
+  <div class="feed-topbar">
+    <div class="feed-topbar-left">
+      <button class="btn-back" onclick="goHome()">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M11 4L6 9l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Home
+      </button>
+      <div class="feed-logo">
+        <div class="feed-logo-icon" id="logo-icon" style="background:var(--accent);box-shadow:0 2px 8px color-mix(in srgb,var(--accent) 35%,transparent)">
+          <svg viewBox="0 0 24 24"><path d="M19 5H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2zM5 11h6v2H5v-2zm0-3h14v2H5V8zm0 6h4v2H5v-2zm6 0h8v2h-8v-2z"/></svg>
+        </div>
+        <span class="feed-logo-label">Daily <span id="logo-accent" style="color:var(--accent)">Feed</span></span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="dark-toggle" id="dark-toggle-feed" onclick="toggleDark()" title="Dark mode aan/uit" aria-label="Dark mode">
+        <span class="toggle-icon">☀️</span>
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        <span class="toggle-icon">🌙</span>
+      </button>
+      <span style="font-size:14px;color:var(--muted);font-weight:500" id="date-chip"></span>
+      <button class="btn-translate" id="btn-translate" onclick="toggleTranslate()">
+        <span class="translate-icon">🇳🇱</span>
+        <span class="translate-label">Vertaal</span>
+        <div class="translate-spinner"></div>
+      </button>
+      <button class="btn-refresh" id="rbtn" onclick="doRefresh()">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+          <path d="M12 7A5 5 0 1 1 7 2a5 5 0 0 1 3.5 1.5L12 2v4H8l1.8-1.8A3 3 0 1 0 10 7"
+                stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Vernieuwen
+      </button>
+    </div>
+  </div>
+
+  <!-- Categorie hero -->
+  <div class="feed-cat-hero">
+    <div class="feed-cat-icon" id="feed-cat-icon">🌍</div>
+    <div class="feed-cat-label" id="feed-cat-label">Wereldnieuws</div>
+    <div class="feed-cat-title" id="feed-cat-title">Algemeen Nieuws</div>
+    <div class="feed-cat-sources" id="feed-cat-sources"></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="feed-tabs">
+    <button class="tab active" data-tab="algemeen" onclick="switchTab('algemeen',this)">
+      <span class="ticon">🌍</span> Algemeen <span class="tab-ct" id="cnt-algemeen">—</span>
+    </button>
+    <button class="tab" data-tab="gaming" onclick="switchTab('gaming',this)">
+      <span class="ticon">🎮</span> Gaming <span class="tab-ct" id="cnt-gaming">—</span>
+    </button>
+    <button class="tab" data-tab="tech" onclick="switchTab('tech',this)">
+      <span class="ticon">💻</span> Tech <span class="tab-ct" id="cnt-tech">—</span>
+    </button>
+    <button class="tab" data-tab="motorsport" onclick="switchTab('motorsport',this)">
+      <span class="ticon">🏎️</span> Motorsport <span class="tab-ct" id="cnt-motorsport">—</span>
+    </button>
+    <button class="tab" data-tab="ai" onclick="switchTab('ai',this)">
+      <span class="ticon">🤖</span> AI <span class="tab-ct" id="cnt-ai">—</span>
+    </button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="toolbar">
+    <div class="status-chip">
+      <div class="dot loading" id="sdot"></div>
+      <span id="stxt">Laden...</span>
+    </div>
+    <div class="src-filters" id="src-filters"></div>
+  </div>
+
+  <div class="legend" id="legend"></div>
+
+  <div class="err-box" id="errbox">
+    <h3>Feeds niet bereikbaar</h3>
+    <p>Controleer je internetverbinding.<br>De proxy is mogelijk tijdelijk offline.</p>
+  </div>
+
+  <div class="skel-grid" id="skel">
+    <div class="skel-card" style="padding:0;overflow:hidden"><div class="sk-img" style="aspect-ratio:21/9"></div><div style="padding:22px;display:flex;flex-direction:column;gap:12px"><div class="sk" style="height:14px;width:100px"></div><div class="sk" style="height:34px"></div><div class="sk" style="height:34px;width:75%"></div><div class="sk" style="height:14px"></div><div class="sk" style="height:14px;width:70%"></div></div></div>
+    <div class="skel-card" style="padding:0;overflow:hidden"><div class="sk-img"></div><div style="padding:22px;display:flex;flex-direction:column;gap:11px"><div class="sk" style="height:13px;width:80px"></div><div class="sk" style="height:22px"></div><div class="sk" style="height:22px;width:70%"></div><div class="sk" style="height:13px"></div></div></div>
+    <div class="skel-card" style="padding:0;overflow:hidden"><div class="sk-img"></div><div style="padding:22px;display:flex;flex-direction:column;gap:11px"><div class="sk" style="height:13px;width:90px"></div><div class="sk" style="height:22px"></div><div class="sk" style="height:13px;width:60%"></div></div></div>
+    <div class="skel-card" style="padding:0;overflow:hidden"><div class="sk-img"></div><div style="padding:22px;display:flex;flex-direction:column;gap:11px"><div class="sk" style="height:13px;width:70px"></div><div class="sk" style="height:22px"></div><div class="sk" style="height:13px"></div></div></div>
+    <div class="skel-card" style="padding:0;overflow:hidden"><div class="sk-img"></div><div style="padding:22px;display:flex;flex-direction:column;gap:11px"><div class="sk" style="height:13px;width:85px"></div><div class="sk" style="height:22px"></div><div class="sk" style="height:13px;width:75%"></div></div></div>
+    <div class="skel-card" style="padding:0;overflow:hidden"><div class="sk-img"></div><div style="padding:22px;display:flex;flex-direction:column;gap:11px"><div class="sk" style="height:13px;width:75px"></div><div class="sk" style="height:22px"></div><div class="sk" style="height:13px"></div></div></div>
+  </div>
+
+  <div class="grid" id="grid" style="display:none"></div>
+  <div id="empty" style="display:none;text-align:center;padding:52px 24px;color:var(--muted);font-size:14px">
+    Geen artikelen voor dit filter.
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    Daily Feed · Live RSS via allorigins.win · Cache 30 min · Bijgewerkt: <span id="ftime">—</span> · <span id="fcount">—</span> artikelen geladen
+  </div>
+</footer>
+
+</div><!-- /feed-page -->
+
+<!-- ══════════ READER MODAL ══════════ -->
+<div id="reader-overlay" onclick="closeReader(event)">
+  <div id="reader-panel">
+    <div class="reader-topbar">
+      <span class="reader-source" id="reader-source"></span>
+      <div class="reader-topbar-actions">
+        <a class="reader-btn" id="reader-ext-link" href="#" target="_blank" rel="noopener">
+          Origineel
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M5 2H2a1 1 0 00-1 1v7a1 1 0 001 1h7a1 1 0 001-1V7M8 1h3v3M11 1L5.5 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <button class="reader-btn close-btn" onclick="closeReader()">✕ Sluiten</button>
+      </div>
+    </div>
+    <div class="reader-body" id="reader-body">
+      <div class="reader-loading" id="reader-loading">
+        <div class="reader-spinner"></div>
+        Artikel laden...
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ── PROXIES — gespreid over feeds voor betere snelheid ──
+const PROXIES = [
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  url => `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}&count=20`,
+];
+// Geef elke feed een eigen proxy op basis van index (round-robin)
+function getProxy(feedIndex) { return PROXIES[feedIndex % PROXIES.length]; }
+// Fallback proxies als de eerste faalt
+function getFallbacks(feedIndex) { return PROXIES.filter((_,i) => i !== feedIndex % PROXIES.length); }
+
+// Compatibiliteit — sommige plekken gebruiken nog PROXY1
+const PROXY1 = PROXIES[0];
+
+const TABS_CFG = {
+  algemeen:   { color:'#636366', label:'Nieuws',     icon:'🌍', catLabel:'Wereldnieuws',         title:'Algemeen Nieuws',  sources:'BBC News · Reuters · The Guardian · AP · Al Jazeera' },
+  gaming:     { color:'#5e5ce6', label:'Gaming',     icon:'🎮', catLabel:'Games & Entertainment', title:'Gaming Nieuws',    sources:'IGN · Eurogamer · Kotaku · PC Gamer · Polygon · meer' },
+  tech:       { color:'#ff9f0a', label:'Tech',       icon:'💻', catLabel:'Technologie',           title:'Tech Nieuws',      sources:'The Verge · Ars Technica · Wired · Tweakers · meer' },
+  motorsport: { color:'#ef4444', label:'Motorsport', icon:'🏎️', catLabel:'Formule 1 & Meer',     title:'Motorsport Nieuws',sources:'Autosport · RaceFans · The Race · GPblog · meer' },
+  ai:         { color:'#7c3aed', label:'AI',         icon:'🤖', catLabel:'Artificiële Intelligentie', title:'AI Nieuws',    sources:'MIT Tech Review · The Decoder · VentureBeat · Anthropic · meer' },
+};
+
+const FEEDS = {
+  algemeen: [
+    {name:'BBC News',        rss:'https://feeds.bbci.co.uk/news/rss.xml'},
+    {name:'Reuters',         rss:'https://feeds.reuters.com/reuters/topNews'},
+    {name:'The Guardian',    rss:'https://www.theguardian.com/world/rss'},
+    {name:'Associated Press',rss:'https://feeds.apnews.com/rss/apf-topnews'},
+    {name:'Al Jazeera',      rss:'https://www.aljazeera.com/xml/rss/all.xml'},
+  ],
+  gaming: [
+    {name:'IGN',             rss:'https://feeds.feedburner.com/ign/games-all'},
+    {name:'Eurogamer',       rss:'https://www.eurogamer.net/?format=rss'},
+    {name:'Kotaku',          rss:'https://kotaku.com/rss'},
+    {name:'PC Gamer',        rss:'https://www.pcgamer.com/rss/'},
+    {name:'Rock Paper Shotgun',rss:'https://www.rockpapershotgun.com/feed'},
+    {name:'VG247',           rss:'https://www.vg247.com/feed'},
+    {name:'GameSpot',        rss:'https://www.gamespot.com/feeds/mashup/'},
+    {name:'Polygon',         rss:'https://www.polygon.com/rss/index.xml'},
+    {name:'GamesRadar',      rss:'https://www.gamesradar.com/rss/'},
+    {name:'Destructoid',     rss:'https://www.destructoid.com/feed/'},
+  ],
+  tech: [
+    {name:'The Verge',       rss:'https://www.theverge.com/rss/index.xml'},
+    {name:'Ars Technica',    rss:'https://feeds.arstechnica.com/arstechnica/index'},
+    {name:'TechCrunch',      rss:'https://techcrunch.com/feed/'},
+    {name:'Wired',           rss:'https://www.wired.com/feed/rss'},
+    {name:'Engadget',        rss:'https://www.engadget.com/rss.xml'},
+    {name:'The Register',    rss:'https://www.theregister.com/headlines.atom'},
+    {name:'Tweakers',        rss:'https://feeds.feedburner.com/tweakers/mixed'},
+    {name:'Hacker News',     rss:'https://hnrss.org/frontpage?count=20'},
+    {name:'MIT Tech Review', rss:'https://www.technologyreview.com/stories.rss'},
+    {name:'9to5Mac',         rss:'https://9to5mac.com/feed/'},
+  ],
+  motorsport: [
+    {name:'Autosport',       rss:'https://www.autosport.com/rss/feed/all'},
+    {name:'Motorsport.com',  rss:'https://www.motorsport.com/rss/f1/news/'},
+    {name:'RaceFans',        rss:'https://www.racefans.net/feed/'},
+    {name:'The Race',        rss:'https://the-race.com/feed/'},
+    {name:'GPblog',          rss:'https://www.gpblog.com/en/rss'},
+    {name:'Crash.net',       rss:'https://www.crash.net/rss/f1'},
+    {name:'PlanetF1',        rss:'https://www.planetf1.com/feed/'},
+    {name:'F1i.com',         rss:'https://f1i.com/feed'},
+    {name:'Speedcafe',       rss:'https://www.speedcafe.com/feed/'},
+    {name:'Motorsport Week', rss:'https://www.motorsportweek.com/feed/'},
+  ],
+  ai: [
+    {name:'Anthropic Blog',  rss:'https://www.anthropic.com/rss.xml'},
+    {name:'MIT Tech Review', rss:'https://www.technologyreview.com/stories.rss'},
+    {name:'The Decoder',     rss:'https://the-decoder.com/feed/'},
+    {name:'VentureBeat AI',  rss:'https://venturebeat.com/category/ai/feed/'},
+    {name:'AI News',         rss:'https://www.artificialintelligence-news.com/feed/'},
+    {name:'TechCrunch AI',   rss:'https://techcrunch.com/category/artificial-intelligence/feed/'},
+    {name:'Ars Technica AI', rss:'https://feeds.arstechnica.com/arstechnica/index'},
+    {name:'The Verge AI',    rss:'https://www.theverge.com/rss/index.xml'},
+    {name:'TLDR AI',         rss:'https://tldr.tech/ai/rss'},
+    {name:'Import AI',       rss:'https://importai.substack.com/feed'},
+  ],
+};
+
+const CACHE_TTL     = 2 * 60 * 60 * 1000; // 2 uur
+const CACHE_KEY     = t => `df_ap_${t}`;
+const CACHE_MAX_MB  = 200; // max localStorage cache in MB
+
+// ── CACHE HELPERS ──
+function cacheRead(tab) {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY(tab));
+    if (!raw) return null;
+    const c = JSON.parse(raw);
+    if (Date.now() - c.ts > CACHE_TTL) { localStorage.removeItem(CACHE_KEY(tab)); return null; }
+    return c;
+  } catch(e) { return null; }
+}
+
+function cacheWrite(tab, data) {
+  try {
+    // Schrijf nieuw item
+    localStorage.setItem(CACHE_KEY(tab), JSON.stringify({ ...data, ts: Date.now() }));
+    // Ruim op als cache te groot wordt
+    pruneCache();
+  } catch(e) {
+    // localStorage vol — verwijder oudste item en probeer opnieuw
+    pruneCache(true);
+    try { localStorage.setItem(CACHE_KEY(tab), JSON.stringify({ ...data, ts: Date.now() })); } catch(e2) {}
+  }
+}
+
+function pruneCache() {
+  // Bereken totale grootte
+  let totalBytes = 0;
+  const items = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (!key.startsWith('df_ap_')) continue;
+    const val = localStorage.getItem(key);
+    const bytes = new Blob([val]).size;
+    totalBytes += bytes;
+    try { items.push({ key, ts: JSON.parse(val).ts || 0, bytes }); } catch(e) {}
+  }
+  const maxBytes = CACHE_MAX_MB * 1024 * 1024;
+  if (totalBytes <= maxBytes) return;
+  // Verwijder oudste items totdat we onder de limiet zijn
+  items.sort((a, b) => a.ts - b.ts);
+  for (const item of items) {
+    localStorage.removeItem(item.key);
+    totalBytes -= item.bytes;
+    console.log(`Cache opruimen: ${item.key} verwijderd (${(item.bytes/1024).toFixed(0)}KB)`);
+    if (totalBytes <= maxBytes * 0.8) break; // ruim tot 80% op voor marge
+  }
+}
+const state = Object.fromEntries(Object.keys(FEEDS).map(t=>[t,{articles:[],status:{},loaded:false,ts:0}]));
+let activeTab = 'algemeen', activeSrc = 'all';
+
+// ── INIT ──
+function init() {
+  const dateStr = new Date().toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('date-chip').textContent = dateStr;
+  const heroDate = document.getElementById('hero-date');
+  if (heroDate) heroDate.textContent = dateStr;
+  setInterval(autoRefresh, CACHE_TTL);
+}
+
+function openCategory(tab) {
+  // Toon feed pagina, verberg hero
+  document.getElementById('hero-page').classList.add('hidden');
+  document.getElementById('feed-page').classList.add('visible');
+  document.getElementById('feed-page').style.display = 'block';
+
+  // Zet actieve tab
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === tab);
+  });
+
+  applyTheme(tab);
+  activeTab = tab;
+  activeSrc = 'all';
+
+  if (state[tab].loaded) {
+    renderSrcFilters(); renderLegend(); renderGrid();
+  } else {
+    loadTab(tab);
+  }
+
+  window.scrollTo(0, 0);
+}
+
+function goHome() {
+  document.getElementById('hero-page').classList.remove('hidden');
+  document.getElementById('feed-page').style.display = 'none';
+  window.scrollTo(0, 0);
+}
+
+// ── THEMA ──
+function applyTheme(tab) {
+  const t = TABS_CFG[tab];
+  const c = t.color;
+  document.documentElement.style.setProperty('--accent', c);
+  document.documentElement.style.setProperty('--accent-soft', `color-mix(in srgb,${c} 10%,transparent)`);
+
+  // Logo
+  const li = document.getElementById('logo-icon');
+  if (li) { li.style.background = c; li.style.boxShadow = `0 2px 8px color-mix(in srgb,${c} 35%,transparent)`; }
+  const la = document.getElementById('logo-accent');
+  if (la) la.style.color = c;
+
+  // Feed categorie hero
+  const icon = document.getElementById('feed-cat-icon');
+  const label = document.getElementById('feed-cat-label');
+  const title = document.getElementById('feed-cat-title');
+  const sources = document.getElementById('feed-cat-sources');
+  if (icon)    icon.textContent    = t.icon;
+  if (label)   label.textContent   = t.catLabel;
+  if (title)   title.textContent   = t.title;
+  if (sources) sources.textContent = t.sources;
+}
+
+// ── TABS ──
+function switchTab(tab, btn) {
+  activeTab = tab; activeSrc = 'all';
+  // Reset vertaling bij tab wissel
+  translateActive = false;
+  const tbtn = document.getElementById('btn-translate');
+  if (tbtn) { tbtn.classList.remove('active','loading'); }
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  applyTheme(tab);
+  if (state[tab].loaded) { renderSrcFilters(); renderLegend(); renderGrid(); }
+  else loadTab(tab);
+  window.scrollTo(0,0);
+}
+
+// ── LADEN ──
+async function loadTab(tab, force=false) {
+  if (!force) {
+    const c = cacheRead(tab);
+    if (c) {
+      state[tab] = {articles:c.articles, status:c.status, loaded:true, ts:c.ts};
+      updateCt(tab);
+      if (tab===activeTab){ renderSrcFilters(); renderLegend(); renderGrid(); }
+      const age = Math.round((Date.now()-c.ts)/60000);
+      setStatus('live',`${c.articles.length} artikelen · gecached (${age}m geleden)`);
+      setLoading(false);
+      // Pre-fetch andere tabs op achtergrond terwijl we cache tonen
+      prefetchOthers(tab);
+      return;
+    }
+  }
+
+  setLoading(true);
+  setStatus('loading', `${TABS_CFG[tab].label} ophalen...`);
+  document.getElementById('errbox').style.display = 'none';
+  state[tab].status = Object.fromEntries(FEEDS[tab].map(s=>[s.name,'pend']));
+  if (tab===activeTab) renderLegend();
+
+  const articles = []; let done = 0;
+  // Round-robin proxy per feed voor betere spreiding
+  await Promise.allSettled(FEEDS[tab].map(async (src, idx) => {
+    try {
+      const arts = await fetchFeed(src, idx);
+      articles.push(...arts);
+      state[tab].status[src.name] = arts.length > 0 ? 'ok' : 'err';
+    } catch(e) {
+      state[tab].status[src.name] = 'err';
+    }
+    done++;
+    if (tab===activeTab) { setStatus('loading',`${done}/${FEEDS[tab].length} bronnen...`); renderLegend(); }
+  }));
+
+  const seen = new Set();
+  const unique = articles
+    .filter(a=>{ if(!a.url||seen.has(a.url)) return false; seen.add(a.url); return true; })
+    .sort((a,b)=>b.ts-a.ts);
+
+  state[tab] = {articles:unique, status:state[tab].status, loaded:true, ts:Date.now()};
+  cacheWrite(tab, {articles:unique, status:state[tab].status});
+  updateCt(tab);
+
+  if (tab===activeTab) {
+    const ok = Object.values(state[tab].status).filter(v=>v==='ok').length;
+    setStatus('live',`${unique.length} artikelen · ${ok}/${FEEDS[tab].length} bronnen bereikbaar`);
+    renderSrcFilters(); renderLegend(); renderGrid();
+  }
+
+  setLoading(false);
+  document.getElementById('ftime').textContent =
+    new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('fcount').textContent =
+    Object.values(state).reduce((s,v)=>s+v.articles.length, 0);
+
+  // Pre-fetch andere tabs op achtergrond
+  prefetchOthers(tab);
+}
+
+// Pre-fetch andere tabs stille op achtergrond (geen UI updates)
+async function prefetchOthers(currentTab) {
+  const others = Object.keys(FEEDS).filter(t => t !== currentTab && !state[t].loaded);
+  for (const tab of others) {
+    const c = cacheRead(tab);
+    if (c) {
+      state[tab] = {articles:c.articles, status:c.status, loaded:true, ts:c.ts};
+      updateCt(tab);
+      continue;
+    }
+    // Kleine vertraging zodat de actieve tab prioriteit heeft
+    await new Promise(r => setTimeout(r, 800));
+    loadTabSilent(tab);
+  }
+}
+
+// Laad tab op achtergrond zonder UI updates
+async function loadTabSilent(tab) {
+  if (state[tab].loaded) return;
+  try {
+    state[tab].status = Object.fromEntries(FEEDS[tab].map(s=>[s.name,'pend']));
+    const articles = [];
+    await Promise.allSettled(FEEDS[tab].map(async (src, idx) => {
+      try {
+        const arts = await fetchFeed(src, idx);
+        articles.push(...arts);
+        state[tab].status[src.name] = arts.length > 0 ? 'ok' : 'err';
+      } catch(e) { state[tab].status[src.name] = 'err'; }
+    }));
+    const seen = new Set();
+    const unique = articles
+      .filter(a=>{ if(!a.url||seen.has(a.url)) return false; seen.add(a.url); return true; })
+      .sort((a,b)=>b.ts-a.ts);
+    state[tab] = {articles:unique, status:state[tab].status, loaded:true, ts:Date.now()};
+    cacheWrite(tab, {articles:unique, status:state[tab].status});
+    updateCt(tab);
+  } catch(e) {}
+}
+
+function doRefresh() { loadTab(activeTab, true); }
+async function autoRefresh() {
+  for (const t of Object.keys(state)) {
+    state[t].loaded = false;
+    localStorage.removeItem(CACHE_KEY(t));
+  }
+  loadTab(activeTab, true);
+}
+
+// ── FETCH ──
+async function fetchFeed(src, feedIndex=0) {
+  const cutoff = Date.now() - 48*3600*1000; let xml = null;
+  // Probeer primaire proxy voor deze feed, dan fallbacks
+  const primary = getProxy(feedIndex);
+  const fallbacks = getFallbacks(feedIndex);
+  for (const p of [primary, ...fallbacks]) {
+    try {
+      const r = await fetch(p(src.rss), {signal: AbortSignal.timeout(8000)});
+      if (!r.ok) continue;
+      const raw = await r.text();
+      // rss2json geeft JSON terug, anderen XML
+      if (raw.trim().startsWith('{')) {
+        const j = JSON.parse(raw);
+        if (j.items) { xml = rss2jsonToXml(j); break; }
+      } else { xml = raw; break; }
+    } catch(e) {}
+  }
+  if (!xml) throw new Error('proxy fail');
+  const doc = new DOMParser().parseFromString(xml,'text/xml');
+  return [...doc.querySelectorAll('item, entry')].slice(0,20).flatMap(item => {
+    const title = sh(item.querySelector('title')?.textContent||''); if(!title) return [];
+    const pubStr = item.querySelector('pubDate')?.textContent||item.querySelector('published')?.textContent||item.querySelector('updated')?.textContent||'';
+    const ts = pubStr?new Date(pubStr).getTime():0; if(ts>0&&ts<cutoff) return [];
+    const link = item.querySelector('link')?.textContent?.trim()||item.querySelector('link')?.getAttribute('href')||'#';
+    const rawSum = item.querySelector('description')?.textContent||item.querySelector('summary')?.textContent||item.querySelector('content')?.textContent||'';
+    const summary = sh(rawSum).substring(0,260);
+
+    // Afbeelding ophalen (meerdere methodes)
+    let img = null;
+    // 1. media:content of media:thumbnail
+    const mc = item.querySelector('content, thumbnail');
+    if (mc) img = mc.getAttribute('url') || mc.textContent?.trim() || null;
+    // 2. enclosure
+    if (!img) { const enc = item.querySelector('enclosure'); if (enc?.getAttribute('type')?.startsWith('image')) img = enc.getAttribute('url'); }
+    // 3. eerste <img> uit description/content HTML
+    if (!img) {
+      const raw = item.querySelector('description')?.textContent || item.querySelector('content')?.textContent || '';
+      const m = raw.match(/<img[^>]+src=["']([^"']+)["']/i);
+      if (m) img = m[1];
+    }
+    // 4. link[rel=enclosure] in Atom
+    if (!img) { const el = item.querySelector('link[rel="enclosure"]'); if(el) img = el.getAttribute('href'); }
+    // Filteren: geen tracking pixels of svg
+    if (img && (img.includes('1x1') || img.includes('pixel') || img.includes('spacer') || img.endsWith('.svg') || img.includes('placeholder'))) img = null;
+
+    return [{title, summary:summary.length===260?summary.substring(0,257)+'\u2026':summary, img, source:src.name, url:link.startsWith('http')?link:'#', ts:ts||Date.now(), timeAgo:ts?ago(ts):'Recent'}];
+  });
+}
+
+// ── RENDER ──
+function renderGrid() {
+  let arts = [...state[activeTab].articles];
+  if (activeSrc!=='all') arts = arts.filter(a=>a.source===activeSrc);
+  const grid=document.getElementById('grid'), empty=document.getElementById('empty');
+  if (!arts.length){grid.style.display='none';empty.style.display='block';return;}
+  empty.style.display='none'; grid.style.display='grid';
+  grid.innerHTML = arts.slice(0,30).map((a,i)=>card(a,i)).join('');
+}
+
+// Artikel store — veilig doorgeven zonder HTML-escaping issues
+const articleStore = new Map();
+let articleIdx = 0;
+
+function storeArticle(a) {
+  const id = 'a' + (articleIdx++);
+  articleStore.set(id, a);
+  return id;
+}
+
+function card(a, i) {
+  const delay = Math.min(i*38,650)+'ms';
+  const hasImg = a.img && a.img.startsWith('http');
+  const id = storeArticle(a);
+  const imgHtml = hasImg
+    ? `<div class="card-img"><img src="${esc(a.img)}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`
+    : '';
+  return `<div class="card${hasImg?' has-img':''}" style="animation-delay:${delay}" onclick="openReaderById('${id}')">
+    ${imgHtml}
+    <div class="card-body">
+      <div class="card-meta">
+        <div class="src-tag"><span class="src-dot"></span>${esc(a.source)}</div>
+        <span class="card-age">${esc(a.timeAgo)}</span>
+      </div>
+      <div class="card-title">${esc(a.title)}</div>
+      ${a.summary?`<div class="card-sum">${esc(a.summary)}</div>`:''}
+
+    </div>
+  </div>`;
+}
+
+function openReaderById(id) {
+  const a = articleStore.get(id);
+  if (a) openReader(a);
+}
+
+function renderLegend() {
+  document.getElementById('legend').innerHTML =
+    Object.entries(state[activeTab].status).map(([n,s])=>
+      `<span class="lp ${s}"><span class="lp-dot"></span>${n}</span>`
+    ).join('');
+}
+
+function renderSrcFilters() {
+  const arts=state[activeTab].articles, sources=[...new Set(arts.map(a=>a.source))].sort(), total=arts.length;
+  document.getElementById('src-filters').innerHTML = [
+    `<button class="sf${activeSrc==='all'?' active':''}" onclick="setSrc('all',this)">Alles (${total})</button>`,
+    ...sources.map(s=>{const n=arts.filter(a=>a.source===s).length;return`<button class="sf${activeSrc===s?' active':''}" onclick="setSrc('${esc(s)}',this)">${esc(s)} (${n})</button>`;})
+  ].join('');
+}
+
+function updateCt(tab){ document.getElementById('cnt-'+tab).textContent = state[tab].articles.length||'—'; }
+function setLoading(on){ const btn=document.getElementById('rbtn');btn.disabled=on;btn.classList.toggle('spinning',on);document.getElementById('skel').style.display=on?'grid':'none';if(on){document.getElementById('grid').style.display='none';document.getElementById('empty').style.display='none';} }
+function setStatus(type,txt){ document.getElementById('sdot').className='dot '+type;document.getElementById('stxt').textContent=txt; }
+function setSrc(src,btn){ activeSrc=src;document.querySelectorAll('.sf').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderGrid(); }
+function open_(url){ if(url&&url.startsWith('http')) window.open(url,'_blank','noopener'); }
+
+// ── READER ──
+async function openReader(article) {
+  const overlay = document.getElementById('reader-overlay');
+  const body    = document.getElementById('reader-body');
+  const extLink = document.getElementById('reader-ext-link');
+  const srcEl   = document.getElementById('reader-source');
+
+  body.innerHTML = '<div class="reader-loading"><div class="reader-spinner"></div>Artikel laden...</div>';
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  srcEl.textContent = article.source || '';
+  extLink.href = article.url || '#';
+
+  // Probeer alle 3 proxies achter elkaar, korte timeout per poging
+  let html = null;
+  for (const proxy of PROXIES) {
+    try {
+      const r = await fetch(proxy(article.url), { signal: AbortSignal.timeout(6000) });
+      if (r.ok) { html = await r.text(); break; }
+    } catch(e) {}
+  }
+
+  // Probeer Readability als we HTML hebben
+  if (html) {
+    try {
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const base = doc.createElement('base');
+      base.href = article.url;
+      doc.head.appendChild(base);
+
+      if (typeof Readability !== 'undefined') {
+        const parsed = new Readability(doc, { charThreshold: 100 }).parse();
+        if (parsed?.content) {
+          const metaParts = [article.source, article.timeAgo].filter(Boolean);
+          body.innerHTML = `
+            <div class="reader-title">${esc(parsed.title || article.title)}</div>
+            <div class="reader-meta">${metaParts.map(p=>`<span>${esc(p)}</span>`).join('<span>·</span>')}</div>
+            <div class="reader-content">${sanitize(parsed.content)}</div>`;
+          return;
+        }
+      }
+    } catch(e) {}
+  }
+
+  // Fallback 1: toon RSS samenvatting netjes opgemaakt
+  if (article.summary || article.title) {
+    const metaParts = [article.source, article.timeAgo].filter(Boolean);
+    const imgHtml = article.img
+      ? `<img src="${esc(article.img)}" style="width:100%;border-radius:12px;margin-bottom:24px;display:block" onerror="this.style.display='none'">`
+      : '';
+    body.innerHTML = `
+      <div class="reader-title">${esc(article.title)}</div>
+      <div class="reader-meta">
+        ${metaParts.map(p=>`<span>${esc(p)}</span>`).join('<span>·</span>')}
+        <span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600">RSS samenvatting</span>
+      </div>
+      ${imgHtml}
+      <div class="reader-content">
+        <p>${esc(article.summary || 'Geen samenvatting beschikbaar.')}</p>
+        <p style="margin-top:24px">
+          <a href="${esc(article.url)}" target="_blank" rel="noopener"
+             style="display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:white;padding:10px 18px;border-radius:980px;font-family:Inter,sans-serif;font-size:14px;font-weight:600;text-decoration:none">
+            Lees volledig artikel
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M5 2H2a1 1 0 00-1 1v7a1 1 0 001 1h7a1 1 0 001-1V7M8 1h3v3M11 1L5.5 6.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </p>
+      </div>`;
+    return;
+  }
+
+  // Fallback 2: alles faalt
+  body.innerHTML = `
+    <div class="reader-error">
+      <h3>Artikel niet bereikbaar</h3>
+      <p>De site blokkeert externe toegang via alle proxies.<br><br>
+      <a class="reader-btn" href="${esc(article.url)}" target="_blank" rel="noopener" style="display:inline-flex;margin-top:8px">
+        Open in nieuwe tab
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="margin-left:6px"><path d="M5 2H2a1 1 0 00-1 1v7a1 1 0 001 1h7a1 1 0 001-1V7M8 1h3v3M11 1L5.5 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a></p>
+    </div>`;
+}
+
+function closeReader(e) {
+  if (e && e.target !== document.getElementById('reader-overlay')) return;
+  document.getElementById('reader-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Escape voor Readability output — alleen script tags strippen
+function sanitize(html) {
+  return html
+    .replace(/<script[^>]*>.*?<\/script>/gis, '')
+    .replace(/<style[^>]*>.*?<\/style>/gis, '')
+    .replace(/on\w+="[^"]*"/gi, '')
+    .replace(/on\w+='[^']*'/gi, '');
+}
+// Converteer rss2json JSON response naar pseudo-XML die DOMParser kan lezen
+function rss2jsonToXml(j) {
+  const items = (j.items || []).map(item => `<item>
+    <title><![CDATA[${item.title||''}]]></title>
+    <link>${item.link||item.url||''}</link>
+    <pubDate>${item.pubDate||''}</pubDate>
+    <description><![CDATA[${item.description||item.content||''}]]></description>
+    ${item.thumbnail?`<media:thumbnail url="${item.thumbnail}"/>`:''}
+    ${item.enclosure?.link?`<enclosure url="${item.enclosure.link}" type="${item.enclosure.type||'image/jpeg'}"/>`:''}
+  </item>`).join('');
+  return `<?xml version="1.0"?><rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/"><channel>${items}</channel></rss>`;
+}
+
+function sh(s){ return String(s||'').replace(/<[^>]*>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#039;/g,"'").replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim(); }
+function ago(ts){ const m=Math.floor((Date.now()-ts)/60000);if(m<1)return'Zojuist';if(m<60)return`${m}m geleden`;const h=Math.floor(m/60);if(h<24)return`${h}u geleden`;return h<48?'Gisteren':`${Math.floor(h/24)}d geleden`; }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+
+// ── DARK MODE ──
+function initDark() {
+  const saved = localStorage.getItem('df_theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const isDark = saved ? saved === 'dark' : prefersDark;
+  setDark(isDark);
+}
+
+function setDark(dark) {
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  localStorage.setItem('df_theme', dark ? 'dark' : 'light');
+  // Toggle state wordt via CSS [data-theme="dark"] afgehandeld
+}
+
+function toggleDark() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  setDark(!isDark);
+}
+
+
+// ── VERTALING ──
+let translateActive = false;
+const translationCache = new Map();
+
+async function translateText(text) {
+  if (!text) return text;
+  if (translationCache.has(text)) return translationCache.get(text);
+  try {
+    // MyMemory API — gratis, geen key nodig
+    const res = await fetch(
+      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.substring(0,500))}&langpair=en|nl`,
+      { signal: AbortSignal.timeout(8000) }
+    );
+    const data = await res.json();
+    const translated = data?.responseData?.translatedText || text;
+    translationCache.set(text, translated);
+    return translated;
+  } catch(e) {
+    return text; // fallback: origineel
+  }
+}
+
+async function toggleTranslate() {
+  translateActive = !translateActive;
+  const btn = document.getElementById('btn-translate');
+  btn.classList.toggle('active', translateActive);
+
+  if (!translateActive) {
+    // Terug naar origineel — herrender grid
+    renderGrid();
+    return;
+  }
+
+  // Start vertaling
+  btn.classList.add('loading');
+  setStatus('loading', 'Artikelen vertalen...');
+
+  const arts = [...state[activeTab].articles];
+  if (activeSrc !== 'all') arts.filter(a => a.source === activeSrc);
+
+  // Vertaal in batches van 5 tegelijk
+  const toTranslate = arts.slice(0, 30).filter(a => !translationCache.has(a.title));
+  for (let i = 0; i < toTranslate.length; i += 5) {
+    const batch = toTranslate.slice(i, i + 5);
+    await Promise.all(batch.map(async a => {
+      a._titleNL   = await translateText(a.title);
+      a._summaryNL = a.summary ? await translateText(a.summary) : '';
+    }));
+    // Render tussentijds zodat vertaalde artikelen direct zichtbaar zijn
+    renderGridTranslated(arts);
+  }
+
+  btn.classList.remove('loading');
+  const ok = Object.values(state[activeTab].status).filter(v=>v==='ok').length;
+  setStatus('live', `${arts.length} artikelen · ${ok}/${Object.keys(state[activeTab].status).length} bronnen · 🇳🇱 vertaald`);
+}
+
+function renderGridTranslated(arts) {
+  const grid = document.getElementById('grid');
+  if (!grid || grid.style.display === 'none') return;
+  const filtered = activeSrc !== 'all' ? arts.filter(a => a.source === activeSrc) : arts;
+  grid.innerHTML = filtered.slice(0, 30).map((a, i) => {
+    const title   = (translateActive && a._titleNL)   ? a._titleNL   : a.title;
+    const summary = (translateActive && a._summaryNL) ? a._summaryNL : a.summary;
+    const delay = Math.min(i*38,650)+'ms';
+    const hasImg = a.img && a.img.startsWith('http');
+    const id = storeArticle(a);
+    const imgHtml = hasImg
+      ? `<div class="card-img"><img src="${esc(a.img)}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`
+      : '';
+    return `<div class="card${hasImg?' has-img':''}" style="animation-delay:${delay}" onclick="openReaderById('${id}')">
+      ${imgHtml}
+      <div class="card-body">
+        <div class="card-meta">
+          <div class="src-tag"><span class="src-dot"></span>${esc(a.source)}</div>
+          <span class="card-age">${esc(a.timeAgo)}</span>
+        </div>
+        <div class="card-title">${esc(title)}</div>
+        ${summary?`<div class="card-sum">${esc(summary)}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+init();
+initDark();
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeReader(); });
+</script>
+</body>
+</html>
