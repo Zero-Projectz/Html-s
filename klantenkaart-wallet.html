@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Wallet">
+<meta name="theme-color" content="#f2f2f7">
+<title>Klantenkaart Wallet</title>
+
+<!-- ZXing barcode/QR scanner -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zxing-js/0.21.1/zxing.min.js"></script>
+<!-- JsBarcode for rendering barcodes -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
+<!-- QRCode.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #f2f2f7;
+    --card-bg: #ffffff;
+    --label: #3c3c43cc;
+    --text: #1c1c1e;
+    --text2: #636366;
+    --blue: #007aff;
+    --blue-dark: #0066d6;
+    --red: #ff3b30;
+    --green: #34c759;
+    --separator: #c6c6c8;
+    --fill: #e5e5ea;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --shadow: 0 2px 16px rgba(0,0,0,0.10);
+    --shadow-card: 0 4px 24px rgba(0,0,0,0.13);
+    --font: -apple-system, 'SF Pro Display', BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    font-family: var(--font);
+    color: var(--text);
+    overscroll-behavior: none;
+  }
+
+  /* ─── LAYOUT ─── */
+  #app { display: flex; flex-direction: column; height: 100dvh; }
+
+  /* ─── HEADER ─── */
+  .header {
+    background: rgba(242,242,247,0.85);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    padding: env(safe-area-inset-top, 16px) 20px 12px;
+    position: sticky; top: 0; z-index: 100;
+    border-bottom: 1px solid var(--separator);
+  }
+  .header-inner { display: flex; align-items: center; justify-content: space-between; }
+  .header h1 { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+  .header-subtitle { font-size: 13px; color: var(--text2); margin-top: 2px; }
+  .btn-icon {
+    width: 36px; height: 36px;
+    border-radius: 50%; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--fill); color: var(--blue);
+    font-size: 20px; transition: transform 0.12s, background 0.12s;
+  }
+  .btn-icon:active { transform: scale(0.9); background: #d1d1d6; }
+
+  /* ─── TABS ─── */
+  .tabs {
+    display: flex; gap: 0;
+    background: var(--fill);
+    border-radius: 9px; margin: 12px 20px 0;
+    padding: 2px;
+  }
+  .tab {
+    flex: 1; padding: 7px 0; border: none; background: transparent;
+    font-size: 13px; font-weight: 500; color: var(--text2);
+    border-radius: 7px; cursor: pointer; transition: all 0.18s;
+    font-family: var(--font);
+  }
+  .tab.active {
+    background: #fff; color: var(--text);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  }
+
+  /* ─── SCROLL AREA ─── */
+  .scroll { flex: 1; overflow-y: auto; padding: 16px 20px 100px; }
+  .scroll::-webkit-scrollbar { display: none; }
+
+  /* ─── EMPTY STATE ─── */
+  .empty {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 60px 20px; gap: 12px; text-align: center;
+  }
+  .empty-icon { font-size: 52px; opacity: 0.3; }
+  .empty h2 { font-size: 20px; font-weight: 600; color: var(--text2); }
+  .empty p { font-size: 14px; color: var(--text2); line-height: 1.5; max-width: 240px; }
+
+  /* ─── CARD GRID ─── */
+  .card-grid { display: flex; flex-direction: column; gap: 12px; }
+
+  /* ─── WALLET CARD ─── */
+  .wallet-card {
+    border-radius: var(--radius);
+    padding: 20px;
+    cursor: pointer;
+    position: relative; overflow: hidden;
+    box-shadow: var(--shadow-card);
+    transition: transform 0.18s, box-shadow 0.18s;
+    min-height: 120px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    color: #fff;
+    user-select: none;
+  }
+  .wallet-card:active { transform: scale(0.97); box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+
+  .wallet-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .card-top { display: flex; align-items: flex-start; justify-content: space-between; }
+  .card-store-name { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.1; }
+  .card-category { font-size: 11px; font-weight: 500; opacity: 0.8; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .card-logo {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: rgba(255,255,255,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+  .card-code { font-size: 13px; font-weight: 500; opacity: 0.85; letter-spacing: 1.5px; font-variant-numeric: tabular-nums; }
+  .card-delete-btn {
+    position: absolute; top: 10px; right: 10px;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(0,0,0,0.25); border: none; color: #fff;
+    font-size: 14px; cursor: pointer; display: none;
+    align-items: center; justify-content: center;
+    z-index: 5;
+  }
+  .edit-mode .card-delete-btn { display: flex; }
+  .edit-mode .wallet-card { animation: wobble 0.4s ease infinite alternate; }
+  @keyframes wobble {
+    0% { transform: rotate(-0.8deg); }
+    100% { transform: rotate(0.8deg); }
+  }
+
+  /* ─── BOTTOM FAB ─── */
+  .fab {
+    position: fixed; bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+    left: 50%; transform: translateX(-50%);
+    background: var(--blue); color: #fff;
+    border: none; border-radius: 50px; padding: 14px 28px;
+    font-size: 16px; font-weight: 600; font-family: var(--font);
+    cursor: pointer; box-shadow: 0 4px 20px rgba(0,122,255,0.40);
+    display: flex; align-items: center; gap: 8px;
+    transition: transform 0.15s, background 0.15s;
+    z-index: 200;
+    white-space: nowrap;
+  }
+  .fab:active { transform: translateX(-50%) scale(0.95); background: var(--blue-dark); }
+
+  /* ─── MODAL OVERLAY ─── */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex; align-items: flex-end;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.22s;
+  }
+  .modal-overlay.visible { opacity: 1; pointer-events: all; }
+
+  .modal-sheet {
+    width: 100%; background: var(--card-bg);
+    border-radius: 20px 20px 0 0;
+    padding: 0 0 env(safe-area-inset-bottom, 20px);
+    transform: translateY(100%);
+    transition: transform 0.32s cubic-bezier(0.32,0.72,0,1);
+    max-height: 92dvh;
+    overflow-y: auto;
+  }
+  .modal-overlay.visible .modal-sheet { transform: translateY(0); }
+
+  .modal-handle {
+    width: 36px; height: 5px; border-radius: 3px;
+    background: var(--separator); margin: 12px auto 0;
+  }
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--separator);
+  }
+  .modal-title { font-size: 17px; font-weight: 600; }
+  .modal-close {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--fill); border: none; cursor: pointer;
+    color: var(--text2); font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font);
+  }
+
+  .modal-body { padding: 20px; }
+
+  /* ─── SCANNER ─── */
+  #scanner-container {
+    width: 100%; aspect-ratio: 1;
+    border-radius: var(--radius); overflow: hidden;
+    background: #000; position: relative;
+    margin-bottom: 16px;
+  }
+  #scanner-video {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .scan-overlay {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+  .scan-frame {
+    width: 62%; aspect-ratio: 1;
+    border: 2.5px solid rgba(255,255,255,0.9);
+    border-radius: 16px; position: relative;
+    box-shadow: 0 0 0 2000px rgba(0,0,0,0.35);
+  }
+  .scan-line {
+    position: absolute; top: 0; left: 4px; right: 4px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--blue), transparent);
+    animation: scanline 2s ease-in-out infinite;
+    border-radius: 2px;
+  }
+  @keyframes scanline {
+    0% { top: 8px; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { top: calc(100% - 8px); opacity: 0; }
+  }
+  .scan-corner {
+    position: absolute; width: 18px; height: 18px; border-color: var(--blue);
+    border-style: solid;
+  }
+  .scan-corner.tl { top: -2px; left: -2px; border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
+  .scan-corner.tr { top: -2px; right: -2px; border-width: 3px 3px 0 0; border-radius: 0 4px 0 0; }
+  .scan-corner.bl { bottom: -2px; left: -2px; border-width: 0 0 3px 3px; border-radius: 0 0 0 4px; }
+  .scan-corner.br { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
+
+  .scan-hint { text-align: center; font-size: 14px; color: var(--text2); margin-bottom: 16px; line-height: 1.5; }
+  .scan-result-box {
+    background: var(--fill); border-radius: var(--radius-sm);
+    padding: 12px 16px; margin-bottom: 12px; display: none;
+  }
+  .scan-result-box.visible { display: block; }
+  .scan-result-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .scan-result-value { font-size: 15px; font-weight: 500; word-break: break-all; }
+
+  /* ─── FORM ─── */
+  .form-section { margin-bottom: 20px; }
+  .form-label { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 8px; display: block; text-transform: uppercase; letter-spacing: 0.4px; }
+  .form-input {
+    width: 100%; padding: 12px 14px;
+    border: 1.5px solid var(--separator); border-radius: var(--radius-sm);
+    font-size: 16px; font-family: var(--font); color: var(--text);
+    background: var(--card-bg); outline: none;
+    transition: border-color 0.15s;
+    appearance: none; -webkit-appearance: none;
+  }
+  .form-input:focus { border-color: var(--blue); }
+
+  .color-picker { display: flex; gap: 10px; flex-wrap: wrap; }
+  .color-swatch {
+    width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+    border: 3px solid transparent; transition: transform 0.12s, border-color 0.12s;
+    position: relative;
+  }
+  .color-swatch.selected { border-color: #fff; box-shadow: 0 0 0 2px var(--blue); transform: scale(1.1); }
+
+  .emoji-picker { display: flex; gap: 10px; flex-wrap: wrap; }
+  .emoji-btn {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: var(--fill); border: 2px solid transparent;
+    font-size: 22px; cursor: pointer; transition: all 0.12s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .emoji-btn.selected { border-color: var(--blue); background: rgba(0,122,255,0.08); transform: scale(1.08); }
+
+  .btn-primary {
+    width: 100%; padding: 14px;
+    background: var(--blue); color: #fff; border: none;
+    border-radius: var(--radius-sm); font-size: 16px; font-weight: 600;
+    font-family: var(--font); cursor: pointer; transition: background 0.15s, transform 0.12s;
+    margin-top: 8px;
+  }
+  .btn-primary:active { background: var(--blue-dark); transform: scale(0.98); }
+  .btn-primary:disabled { background: var(--separator); cursor: not-allowed; transform: none; }
+
+  /* ─── CARD DETAIL ─── */
+  .detail-card-preview {
+    border-radius: var(--radius);
+    padding: 24px;
+    color: #fff; margin-bottom: 24px;
+    box-shadow: var(--shadow-card);
+    position: relative; overflow: hidden;
+    min-height: 160px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .detail-card-preview::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .detail-store-name { font-size: 26px; font-weight: 700; letter-spacing: -0.8px; }
+  .detail-category { font-size: 12px; opacity: 0.8; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .detail-logo-big {
+    width: 56px; height: 56px; border-radius: 14px;
+    background: rgba(255,255,255,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+  }
+  .detail-code-label { font-size: 11px; opacity: 0.75; letter-spacing: 0.5px; }
+  .detail-code-value { font-size: 16px; font-weight: 600; letter-spacing: 2px; margin-top: 4px; }
+
+  .barcode-container {
+    background: #fff; border-radius: var(--radius);
+    padding: 20px; display: flex; flex-direction: column;
+    align-items: center; gap: 12px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  #detail-barcode { max-width: 100%; }
+  #detail-qr { display: flex; justify-content: center; }
+  .barcode-code-text { font-size: 13px; color: var(--text2); letter-spacing: 2px; font-variant-numeric: tabular-nums; }
+
+  .detail-actions { display: flex; gap: 10px; }
+  .btn-secondary {
+    flex: 1; padding: 12px;
+    background: var(--fill); color: var(--text); border: none;
+    border-radius: var(--radius-sm); font-size: 15px; font-weight: 500;
+    font-family: var(--font); cursor: pointer; transition: background 0.12s;
+  }
+  .btn-secondary:active { background: #d1d1d6; }
+  .btn-danger {
+    flex: 1; padding: 12px;
+    background: rgba(255,59,48,0.1); color: var(--red); border: none;
+    border-radius: var(--radius-sm); font-size: 15px; font-weight: 500;
+    font-family: var(--font); cursor: pointer;
+  }
+  .btn-danger:active { background: rgba(255,59,48,0.2); }
+
+  /* ─── FULLSCREEN SCAN MODE ─── */
+  .fullscreen-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: #000;
+    display: none; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 40px 20px;
+  }
+  .fullscreen-overlay.visible { display: flex; }
+  .fullscreen-close {
+    position: absolute; top: calc(20px + env(safe-area-inset-top, 0px)); right: 20px;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255,255,255,0.15); border: none;
+    color: #fff; font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .fullscreen-store { color: #fff; font-size: 22px; font-weight: 700; margin-bottom: 8px; text-align: center; }
+  .fullscreen-hint { color: rgba(255,255,255,0.5); font-size: 13px; margin-bottom: 32px; text-align: center; }
+  #fullscreen-barcode svg, #fullscreen-barcode canvas { max-width: min(90vw, 400px) !important; background: #fff; padding: 12px; border-radius: 12px; }
+  #fullscreen-qr { background: #fff; padding: 16px; border-radius: 12px; }
+  #fullscreen-qr canvas { display: block; }
+  .fullscreen-code { color: rgba(255,255,255,0.6); font-size: 14px; letter-spacing: 2px; margin-top: 20px; }
+
+  /* ─── SECTION HEADER ─── */
+  .section-header { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; margin-top: 8px; }
+
+  /* ─── TOAST ─── */
+  .toast {
+    position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: rgba(28,28,30,0.88); color: #fff;
+    padding: 10px 20px; border-radius: 20px;
+    font-size: 14px; font-weight: 500;
+    opacity: 0; transition: all 0.25s; pointer-events: none; z-index: 900;
+    backdrop-filter: blur(10px); white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ─── SCAN TABS ─── */
+  .scan-mode-tabs { display: flex; background: var(--fill); border-radius: 9px; padding: 2px; margin-bottom: 16px; }
+  .scan-mode-tab { flex: 1; padding: 7px; border: none; background: transparent; font-size: 13px; font-weight: 500; color: var(--text2); border-radius: 7px; cursor: pointer; font-family: var(--font); transition: all 0.15s; }
+  .scan-mode-tab.active { background: #fff; color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
+
+  /* ─── MANUAL INPUT PANEL ─── */
+  #manual-panel { display: none; }
+  #manual-panel.visible { display: block; }
+  #camera-panel.hidden { display: none; }
+
+  /* ─── BACKUP MODAL ─── */
+  .backup-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; background: var(--card-bg);
+    border-radius: var(--radius-sm); margin-bottom: 10px;
+    box-shadow: var(--shadow); cursor: pointer;
+    transition: background 0.12s;
+  }
+  .backup-row:active { background: var(--fill); }
+  .backup-row-icon { font-size: 24px; margin-right: 14px; flex-shrink: 0; }
+  .backup-row-text h3 { font-size: 15px; font-weight: 600; }
+  .backup-row-text p { font-size: 13px; color: var(--text2); margin-top: 2px; }
+  .backup-row-arrow { color: var(--text2); font-size: 18px; flex-shrink: 0; margin-left: 8px; }
+  .backup-meta {
+    background: var(--fill); border-radius: var(--radius-sm);
+    padding: 12px 14px; margin-bottom: 16px;
+    font-size: 13px; color: var(--text2); line-height: 1.6;
+  }
+  .backup-meta strong { color: var(--text); }
+  #import-file { display: none; }
+  .import-drop-zone {
+    border: 2px dashed var(--separator); border-radius: var(--radius);
+    padding: 28px 20px; text-align: center; cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    margin-bottom: 12px;
+  }
+  .import-drop-zone.drag-over { border-color: var(--blue); background: rgba(0,122,255,0.05); }
+  .import-drop-zone-icon { font-size: 36px; margin-bottom: 8px; }
+  .import-drop-zone p { font-size: 14px; color: var(--text2); line-height: 1.5; }
+  .import-drop-zone span { color: var(--blue); font-weight: 600; }
+  .import-preview {
+    background: var(--fill); border-radius: var(--radius-sm);
+    padding: 12px 14px; margin-bottom: 12px; display: none;
+  }
+  .import-preview.visible { display: block; }
+  .import-preview-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .import-preview-info { font-size: 14px; font-weight: 500; }
+
+  /* no cards hint */
+  .count-badge {
+    background: var(--fill); border-radius: 20px; padding: 2px 8px;
+    font-size: 12px; color: var(--text2); font-weight: 500;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-inner">
+      <div>
+        <h1>Klantenkaarten</h1>
+        <div class="header-subtitle" id="card-count-label">Geen kaarten opgeslagen</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-icon" id="backup-btn" title="Backup">☁️</button>
+        <button class="btn-icon" id="edit-btn" title="Beheer kaarten">✏️</button>
+      </div>
+    </div>
+    <div class="tabs" style="margin-top:12px;">
+      <button class="tab active" data-tab="kaarten">Mijn kaarten</button>
+      <button class="tab" data-tab="recent">Recent</button>
+    </div>
+  </div>
+
+  <!-- SCROLL -->
+  <div class="scroll" id="main-scroll">
+    <div id="tab-kaarten">
+      <div id="empty-state" class="empty">
+        <div class="empty-icon">💳</div>
+        <h2>Nog geen kaarten</h2>
+        <p>Voeg je eerste klantenkaart toe door op de knop hieronder te tikken.</p>
+      </div>
+      <div class="card-grid" id="card-grid" style="display:none;"></div>
+    </div>
+    <div id="tab-recent" style="display:none;">
+      <div id="recent-empty" class="empty">
+        <div class="empty-icon">🕐</div>
+        <h2>Geen recent gebruik</h2>
+        <p>Kaarten die je toont aan de kassa verschijnen hier.</p>
+      </div>
+      <div class="card-grid" id="recent-grid" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- FAB -->
+  <button class="fab" id="add-btn">
+    <span>＋</span> Kaart toevoegen
+  </button>
+</div>
+
+<!-- MODAL: SCAN/ADD -->
+<div class="modal-overlay" id="scan-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <span class="modal-title">Kaart toevoegen</span>
+      <button class="modal-close" id="close-scan-modal">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- Scan mode tabs -->
+      <div class="scan-mode-tabs">
+        <button class="scan-mode-tab active" data-mode="camera">📷 Scannen</button>
+        <button class="scan-mode-tab" data-mode="manual">✏️ Handmatig</button>
+      </div>
+
+      <!-- CAMERA PANEL -->
+      <div id="camera-panel">
+        <div id="scanner-container">
+          <video id="scanner-video" autoplay playsinline muted></video>
+          <div class="scan-overlay">
+            <div class="scan-frame">
+              <div class="scan-line"></div>
+              <div class="scan-corner tl"></div>
+              <div class="scan-corner tr"></div>
+              <div class="scan-corner bl"></div>
+              <div class="scan-corner br"></div>
+            </div>
+          </div>
+        </div>
+        <p class="scan-hint">Houd je klantenkaart voor de camera.<br>Barcode én QR-code worden automatisch herkend.</p>
+        <div class="scan-result-box" id="scan-result-box">
+          <div class="scan-result-label">Gescande code</div>
+          <div class="scan-result-value" id="scan-result-value"></div>
+        </div>
+      </div>
+
+      <!-- MANUAL PANEL -->
+      <div id="manual-panel">
+        <div class="form-section">
+          <label class="form-label">Kaartnummer / code</label>
+          <input class="form-input" id="manual-code" type="text" placeholder="bv. 1234567890123" inputmode="text" autocomplete="off">
+        </div>
+        <div class="form-section">
+          <label class="form-label">Type code</label>
+          <div class="scan-mode-tabs" style="margin-bottom:0;">
+            <button class="scan-mode-tab active" data-codetype="barcode">Barcode</button>
+            <button class="scan-mode-tab" data-codetype="qr">QR-code</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shared form fields -->
+      <div id="shared-form" style="margin-top:16px;">
+        <div class="form-section">
+          <label class="form-label">Naam winkel</label>
+          <input class="form-input" id="store-name" type="text" placeholder="bv. Albert Heijn" autocomplete="off">
+        </div>
+        <div class="form-section">
+          <label class="form-label">Categorie</label>
+          <input class="form-input" id="store-category" type="text" placeholder="bv. Supermarkt" autocomplete="off">
+        </div>
+        <div class="form-section">
+          <label class="form-label">Kleur</label>
+          <div class="color-picker" id="color-picker"></div>
+        </div>
+        <div class="form-section">
+          <label class="form-label">Icoon</label>
+          <div class="emoji-picker" id="emoji-picker"></div>
+        </div>
+        <button class="btn-primary" id="save-card-btn" disabled>Kaart opslaan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CARD DETAIL -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <span class="modal-title" id="detail-modal-title">Kaartdetails</span>
+      <button class="modal-close" id="close-detail-modal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-card-preview" id="detail-preview">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div class="detail-store-name" id="detail-store-name"></div>
+            <div class="detail-category" id="detail-category"></div>
+          </div>
+          <div class="detail-logo-big" id="detail-logo"></div>
+        </div>
+        <div>
+          <div class="detail-code-label">KAARTNUMMER</div>
+          <div class="detail-code-value" id="detail-code-display"></div>
+        </div>
+      </div>
+
+      <div class="barcode-container">
+        <svg id="detail-barcode" style="display:none;"></svg>
+        <div id="detail-qr"></div>
+        <div class="barcode-code-text" id="detail-barcode-text"></div>
+      </div>
+
+      <div class="detail-actions">
+        <button class="btn-primary" id="show-fullscreen-btn" style="flex:2;">
+          📱 Toon aan kassa
+        </button>
+        <button class="btn-danger" id="delete-card-btn" style="flex:1;">Verwijder</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FULLSCREEN BARCODE -->
+<div class="fullscreen-overlay" id="fullscreen-overlay">
+  <button class="fullscreen-close" id="fullscreen-close">✕</button>
+  <div class="fullscreen-store" id="fullscreen-store"></div>
+  <div class="fullscreen-hint">Houd voor de scanner aan de kassa</div>
+  <svg id="fullscreen-barcode" style="display:none;"></svg>
+  <div id="fullscreen-qr" style="display:none;"></div>
+  <div class="fullscreen-code" id="fullscreen-code"></div>
+</div>
+
+<!-- MODAL: BACKUP -->
+<div class="modal-overlay" id="backup-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <span class="modal-title">Backup & herstel</span>
+      <button class="modal-close" id="close-backup-modal">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="backup-meta">
+        <strong id="backup-card-count">0 kaarten</strong> opgeslagen op dit apparaat.<br>
+        Laatste backup: <span id="backup-last-date">Nog geen backup gemaakt</span>
+      </div>
+
+      <!-- EXPORT -->
+      <div class="backup-row" id="export-btn-row">
+        <div class="backup-row-icon">📤</div>
+        <div class="backup-row-text">
+          <h3>Exporteer backup</h3>
+          <p>Sla al je kaarten op als .json bestand</p>
+        </div>
+        <div class="backup-row-arrow">›</div>
+      </div>
+
+      <!-- IMPORT -->
+      <div class="backup-row" id="import-btn-row">
+        <div class="backup-row-icon">📥</div>
+        <div class="backup-row-text">
+          <h3>Importeer backup</h3>
+          <p>Zet kaarten terug vanuit een .json bestand</p>
+        </div>
+        <div class="backup-row-arrow">›</div>
+      </div>
+
+      <!-- Import drop zone (hidden by default) -->
+      <div id="import-section" style="display:none; margin-top:16px;">
+        <div class="import-drop-zone" id="import-drop-zone">
+          <div class="import-drop-zone-icon">📂</div>
+          <p>Tik om een backupbestand te kiezen<br><span>of sleep het hier naartoe</span></p>
+        </div>
+        <input type="file" id="import-file" accept=".json,application/json">
+        <div class="import-preview" id="import-preview">
+          <div class="import-preview-label">Gevonden in bestand</div>
+          <div class="import-preview-info" id="import-preview-info"></div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn-secondary" id="import-cancel-btn" style="flex:1;">Annuleer</button>
+          <button class="btn-primary" id="import-confirm-btn" disabled style="flex:2;margin-top:0;">Importeer kaarten</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── STATE ───
+let cards = JSON.parse(localStorage.getItem('wallet_cards') || '[]');
+let recentIds = JSON.parse(localStorage.getItem('wallet_recent') || '[]');
+let editMode = false;
+let activeTab = 'kaarten';
+let scannedCode = '';
+let scannedType = 'barcode'; // 'barcode' | 'qr'
+let manualCodeType = 'barcode';
+let selectedColor = '#007aff';
+let selectedEmoji = '🛍️';
+let currentDetailCard = null;
+let scannerStream = null;
+let zxingReader = null;
+let scanActive = false;
+
+// ─── COLORS & EMOJIS ───
+const COLORS = [
+  '#007aff','#34c759','#ff9500','#ff2d55','#af52de',
+  '#5ac8fa','#ff6b35','#30b0c7','#636366','#1c1c1e'
+];
+const EMOJIS = ['🛍️','🛒','💊','👟','📱','🍔','☕','🏠','✈️','🎮','👗','🔧','💰','🌿','🎵'];
+
+// ─── INIT ───
+function init() {
+  buildColorPicker();
+  buildEmojiPicker();
+  renderCards();
+  renderRecent();
+  updateCountLabel();
+  bindEvents();
+}
+
+function buildColorPicker() {
+  const cp = document.getElementById('color-picker');
+  cp.innerHTML = COLORS.map(c => `
+    <div class="color-swatch${c === selectedColor ? ' selected' : ''}"
+      style="background:${c};" data-color="${c}"></div>
+  `).join('');
+  cp.querySelectorAll('.color-swatch').forEach(s => {
+    s.addEventListener('click', () => {
+      selectedColor = s.dataset.color;
+      cp.querySelectorAll('.color-swatch').forEach(x => x.classList.remove('selected'));
+      s.classList.add('selected');
+    });
+  });
+}
+
+function buildEmojiPicker() {
+  const ep = document.getElementById('emoji-picker');
+  ep.innerHTML = EMOJIS.map(e => `
+    <button class="emoji-btn${e === selectedEmoji ? ' selected' : ''}" data-emoji="${e}">${e}</button>
+  `).join('');
+  ep.querySelectorAll('.emoji-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      selectedEmoji = b.dataset.emoji;
+      ep.querySelectorAll('.emoji-btn').forEach(x => x.classList.remove('selected'));
+      b.classList.add('selected');
+    });
+  });
+}
+
+// ─── RENDER CARDS ───
+function renderCards() {
+  const grid = document.getElementById('card-grid');
+  const empty = document.getElementById('empty-state');
+  if (!cards.length) {
+    grid.style.display = 'none';
+    empty.style.display = 'flex';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.style.display = 'flex';
+  grid.innerHTML = cards.map(card => cardHTML(card)).join('');
+  grid.querySelectorAll('.wallet-card').forEach(el => {
+    el.querySelector('.card-delete-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      deleteCard(el.dataset.id);
+    });
+    el.addEventListener('click', () => { if (!editMode) openDetail(el.dataset.id); });
+  });
+  if (editMode) grid.classList.add('edit-mode');
+  else grid.classList.remove('edit-mode');
+  updateCountLabel();
+}
+
+function cardHTML(card) {
+  const codeDisplay = card.code.length > 20
+    ? card.code.slice(0,10) + '…' + card.code.slice(-6)
+    : card.code;
+  return `
+    <div class="wallet-card" data-id="${card.id}" style="background:linear-gradient(135deg, ${card.color} 0%, ${darken(card.color,30)} 100%);">
+      <button class="card-delete-btn" data-id="${card.id}">✕</button>
+      <div class="card-top">
+        <div>
+          <div class="card-store-name">${esc(card.name)}</div>
+          <div class="card-category">${esc(card.category||'')}</div>
+        </div>
+        <div class="card-logo">${card.emoji}</div>
+      </div>
+      <div class="card-code">${esc(codeDisplay)}</div>
+    </div>
+  `;
+}
+
+function renderRecent() {
+  const grid = document.getElementById('recent-grid');
+  const empty = document.getElementById('recent-empty');
+  const recents = recentIds.map(id => cards.find(c=>c.id===id)).filter(Boolean).slice(0,10);
+  if (!recents.length) {
+    grid.style.display = 'none';
+    empty.style.display = 'flex';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.style.display = 'flex';
+  grid.innerHTML = recents.map(card => cardHTML(card)).join('');
+  grid.querySelectorAll('.wallet-card').forEach(el => {
+    el.addEventListener('click', () => openDetail(el.dataset.id));
+  });
+}
+
+function updateCountLabel() {
+  const el = document.getElementById('card-count-label');
+  const n = cards.length;
+  el.textContent = n === 0 ? 'Geen kaarten opgeslagen' : `${n} kaart${n !== 1 ? 'en' : ''} opgeslagen`;
+}
+
+// ─── DETAIL MODAL ───
+function openDetail(id) {
+  const card = cards.find(c => c.id === id);
+  if (!card) return;
+  currentDetailCard = card;
+
+  // Track recent
+  recentIds = [id, ...recentIds.filter(r => r !== id)].slice(0, 20);
+  localStorage.setItem('wallet_recent', JSON.stringify(recentIds));
+  renderRecent();
+
+  document.getElementById('detail-modal-title').textContent = card.name;
+  document.getElementById('detail-store-name').textContent = card.name;
+  document.getElementById('detail-category').textContent = card.category || '';
+  document.getElementById('detail-logo').textContent = card.emoji;
+  document.getElementById('detail-code-display').textContent = card.code;
+  document.getElementById('detail-preview').style.background = `linear-gradient(135deg, ${card.color} 0%, ${darken(card.color,30)} 100%)`;
+  document.getElementById('detail-barcode-text').textContent = card.code;
+
+  // Render barcode or QR
+  const barcodeEl = document.getElementById('detail-barcode');
+  const qrEl = document.getElementById('detail-qr');
+  qrEl.innerHTML = '';
+  barcodeEl.style.display = 'none';
+
+  if (card.type === 'qr') {
+    barcodeEl.style.display = 'none';
+    new QRCode(qrEl, { text: card.code, width: 200, height: 200, colorDark: '#1c1c1e', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.H });
+  } else {
+    barcodeEl.style.display = 'block';
+    try {
+      JsBarcode(barcodeEl, card.code, { format: 'AUTO', displayValue: false, margin: 8, width: 2, height: 80, background: '#fff' });
+    } catch(e) {
+      try { JsBarcode(barcodeEl, card.code, { format: 'CODE128', displayValue: false, margin: 8, width: 2, height: 80 }); } catch(_) {}
+    }
+  }
+
+  openModal('detail-modal');
+}
+
+// ─── FULLSCREEN ───
+function showFullscreen() {
+  if (!currentDetailCard) return;
+  const card = currentDetailCard;
+  document.getElementById('fullscreen-store').textContent = card.name;
+  document.getElementById('fullscreen-code').textContent = card.code;
+
+  const bcEl = document.getElementById('fullscreen-barcode');
+  const qrEl = document.getElementById('fullscreen-qr');
+  bcEl.style.display = 'none';
+  qrEl.style.display = 'none';
+  qrEl.innerHTML = '';
+
+  if (card.type === 'qr') {
+    qrEl.style.display = 'block';
+    new QRCode(qrEl, { text: card.code, width: 240, height: 240, colorDark: '#1c1c1e', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.H });
+  } else {
+    bcEl.style.display = 'block';
+    try {
+      JsBarcode(bcEl, card.code, { format: 'AUTO', displayValue: false, margin: 10, width: 3, height: 100, background: '#fff' });
+    } catch(e) {
+      try { JsBarcode(bcEl, card.code, { format: 'CODE128', displayValue: false, margin: 10, width: 3, height: 100 }); } catch(_) {}
+    }
+  }
+
+  // Prevent screen dimming
+  if ('wakeLock' in navigator) {
+    navigator.wakeLock.request('screen').catch(()=>{});
+  }
+  // Maximize brightness hint
+  document.getElementById('fullscreen-overlay').classList.add('visible');
+}
+
+// ─── SCANNER ───
+async function startScanner() {
+  scannedCode = '';
+  document.getElementById('scan-result-box').classList.remove('visible');
+  document.getElementById('save-card-btn').disabled = true;
+
+  try {
+    scannerStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+    const video = document.getElementById('scanner-video');
+    video.srcObject = scannerStream;
+    await video.play();
+    scanActive = true;
+
+    // Try ZXing
+    if (typeof ZXing !== 'undefined') {
+      const hints = new Map();
+      zxingReader = new ZXing.BrowserMultiFormatReader(hints);
+      zxingReader.decodeFromVideoElement(video, (result, err) => {
+        if (result && scanActive) {
+          handleScanResult(result.getText(), result.getBarcodeFormat().toString());
+        }
+      });
+    } else {
+      // Fallback canvas-based simple detection hint
+      console.warn('ZXing not loaded, manual input only');
+    }
+  } catch(e) {
+    showToast('Camera toegang geweigerd. Gebruik handmatig invoeren.');
+    switchScanMode('manual');
+  }
+}
+
+function stopScanner() {
+  scanActive = false;
+  if (zxingReader) { try { zxingReader.reset(); } catch(e){} zxingReader = null; }
+  if (scannerStream) { scannerStream.getTracks().forEach(t => t.stop()); scannerStream = null; }
+}
+
+function handleScanResult(code, format) {
+  if (!scanActive) return;
+  scannedCode = code;
+  scannedType = (format && format.toLowerCase().includes('qr')) ? 'qr' : 'barcode';
+  scanActive = false;
+
+  document.getElementById('scan-result-value').textContent = code;
+  document.getElementById('scan-result-box').classList.add('visible');
+  checkSaveReady();
+  showToast('✓ Code gescand!');
+}
+
+// ─── SAVE CARD ───
+function checkSaveReady() {
+  const name = document.getElementById('store-name').value.trim();
+  const code = scannedCode || document.getElementById('manual-code').value.trim();
+  document.getElementById('save-card-btn').disabled = !(name && code);
+}
+
+function saveCard() {
+  const name = document.getElementById('store-name').value.trim();
+  const category = document.getElementById('store-category').value.trim();
+  const isManual = document.getElementById('manual-panel').classList.contains('visible');
+  const code = isManual ? document.getElementById('manual-code').value.trim() : scannedCode;
+  const type = isManual ? manualCodeType : scannedType;
+
+  if (!name || !code) return;
+
+  const card = {
+    id: Date.now().toString(),
+    name, category, code, type,
+    color: selectedColor,
+    emoji: selectedEmoji,
+    added: Date.now()
+  };
+
+  cards.unshift(card);
+  localStorage.setItem('wallet_cards', JSON.stringify(cards));
+  renderCards();
+  closeModal('scan-modal');
+  showToast('✓ Kaart opgeslagen!');
+}
+
+function deleteCard(id) {
+  cards = cards.filter(c => c.id !== id);
+  recentIds = recentIds.filter(r => r !== id);
+  localStorage.setItem('wallet_cards', JSON.stringify(cards));
+  localStorage.setItem('wallet_recent', JSON.stringify(recentIds));
+  renderCards();
+  renderRecent();
+  if (currentDetailCard && currentDetailCard.id === id) closeModal('detail-modal');
+  showToast('Kaart verwijderd');
+}
+
+// ─── MODALS ───
+function openModal(id) {
+  document.getElementById(id).classList.add('visible');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('visible');
+  document.body.style.overflow = '';
+  if (id === 'scan-modal') {
+    stopScanner();
+    resetAddForm();
+  }
+}
+
+function resetAddForm() {
+  scannedCode = '';
+  document.getElementById('scan-result-box').classList.remove('visible');
+  document.getElementById('scan-result-value').textContent = '';
+  document.getElementById('store-name').value = '';
+  document.getElementById('store-category').value = '';
+  document.getElementById('manual-code').value = '';
+  document.getElementById('save-card-btn').disabled = true;
+  switchScanMode('camera');
+  selectedColor = '#007aff';
+  selectedEmoji = '🛍️';
+  buildColorPicker();
+  buildEmojiPicker();
+}
+
+function switchScanMode(mode) {
+  const camPanel = document.getElementById('camera-panel');
+  const manPanel = document.getElementById('manual-panel');
+  document.querySelectorAll('.scan-mode-tab[data-mode]').forEach(t => {
+    t.classList.toggle('active', t.dataset.mode === mode);
+  });
+  if (mode === 'camera') {
+    camPanel.classList.remove('hidden');
+    manPanel.classList.remove('visible');
+    startScanner();
+  } else {
+    camPanel.classList.add('hidden');
+    manPanel.classList.add('visible');
+    stopScanner();
+  }
+}
+
+// ─── TABS ───
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.getElementById('tab-kaarten').style.display = tab === 'kaarten' ? 'block' : 'none';
+  document.getElementById('tab-recent').style.display = tab === 'recent' ? 'block' : 'none';
+}
+
+// ─── TOAST ───
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ─── UTILS ───
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function darken(hex, pct) {
+  const n = parseInt(hex.slice(1),16);
+  const r = Math.max(0, (n>>16) - pct);
+  const g = Math.max(0, ((n>>8)&0xff) - pct);
+  const b = Math.max(0, (n&0xff) - pct);
+  return '#' + [r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+
+// ─── BACKUP ───
+function openBackupModal() {
+  const n = cards.length;
+  document.getElementById('backup-card-count').textContent = `${n} kaart${n !== 1 ? 'en' : ''}`;
+  const lastBackup = localStorage.getItem('wallet_last_backup');
+  document.getElementById('backup-last-date').textContent = lastBackup
+    ? new Date(parseInt(lastBackup)).toLocaleString('nl-NL', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' })
+    : 'Nog geen backup gemaakt';
+  document.getElementById('import-section').style.display = 'none';
+  document.getElementById('import-preview').classList.remove('visible');
+  document.getElementById('import-confirm-btn').disabled = true;
+  document.getElementById('import-file').value = '';
+  importData = null;
+  openModal('backup-modal');
+}
+
+function exportBackup() {
+  if (!cards.length) { showToast('Geen kaarten om te exporteren'); return; }
+  const payload = { version: 1, exported: Date.now(), cards };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const date = new Date().toISOString().slice(0,10);
+  a.href = url; a.download = `klantenkaarten-backup-${date}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  localStorage.setItem('wallet_last_backup', Date.now().toString());
+  document.getElementById('backup-last-date').textContent = new Date().toLocaleString('nl-NL', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  showToast('✓ Backup gedownload!');
+}
+
+let importData = null;
+
+function handleImportFile(file) {
+  if (!file || !file.name.endsWith('.json')) { showToast('Kies een geldig .json bestand'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (!parsed.cards || !Array.isArray(parsed.cards)) throw new Error('Ongeldig formaat');
+      importData = parsed;
+      const n = parsed.cards.length;
+      const date = parsed.exported ? new Date(parsed.exported).toLocaleDateString('nl-NL', { day:'numeric', month:'long', year:'numeric' }) : 'Onbekend';
+      document.getElementById('import-preview-info').textContent = `${n} kaart${n!==1?'en':''} — backup van ${date}`;
+      document.getElementById('import-preview').classList.add('visible');
+      document.getElementById('import-confirm-btn').disabled = false;
+    } catch(err) {
+      showToast('Ongeldig backupbestand');
+      importData = null;
+    }
+  };
+  reader.readAsText(file);
+}
+
+function confirmImport() {
+  if (!importData || !importData.cards) return;
+  const incoming = importData.cards;
+  const existingIds = new Set(cards.map(c => c.id));
+  let added = 0, skipped = 0;
+  incoming.forEach(card => {
+    if (existingIds.has(card.id)) { skipped++; }
+    else { cards.push(card); added++; }
+  });
+  localStorage.setItem('wallet_cards', JSON.stringify(cards));
+  renderCards();
+  renderRecent();
+  closeModal('backup-modal');
+  showToast(`✓ ${added} kaart${added!==1?'en':''} toegevoegd${skipped ? `, ${skipped} al aanwezig` : ''}!`);
+  importData = null;
+}
+
+
+function bindEvents() {
+  // FAB
+  document.getElementById('add-btn').addEventListener('click', () => {
+    openModal('scan-modal');
+    switchScanMode('camera');
+  });
+
+  // Close modals
+  document.getElementById('close-scan-modal').addEventListener('click', () => closeModal('scan-modal'));
+  document.getElementById('close-detail-modal').addEventListener('click', () => closeModal('detail-modal'));
+  document.getElementById('scan-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('scan-modal'); });
+  document.getElementById('detail-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('detail-modal'); });
+
+  // Fullscreen
+  document.getElementById('show-fullscreen-btn').addEventListener('click', showFullscreen);
+  document.getElementById('fullscreen-close').addEventListener('click', () => {
+    document.getElementById('fullscreen-overlay').classList.remove('visible');
+  });
+
+  // Tabs
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
+
+  // Edit mode
+  document.getElementById('edit-btn').addEventListener('click', () => {
+    editMode = !editMode;
+    document.getElementById('card-grid').classList.toggle('edit-mode', editMode);
+    document.getElementById('edit-btn').style.background = editMode ? 'rgba(0,122,255,0.15)' : '';
+    showToast(editMode ? 'Tik ✕ om een kaart te verwijderen' : 'Klaar met bewerken');
+  });
+
+  // Scan mode tabs
+  document.querySelectorAll('.scan-mode-tab[data-mode]').forEach(t => {
+    t.addEventListener('click', () => switchScanMode(t.dataset.mode));
+  });
+
+  // Code type tabs (manual)
+  document.querySelectorAll('.scan-mode-tab[data-codetype]').forEach(t => {
+    t.addEventListener('click', () => {
+      manualCodeType = t.dataset.codetype;
+      document.querySelectorAll('.scan-mode-tab[data-codetype]').forEach(x => x.classList.toggle('active', x.dataset.codetype === manualCodeType));
+    });
+  });
+
+  // Form inputs
+  document.getElementById('store-name').addEventListener('input', checkSaveReady);
+  document.getElementById('manual-code').addEventListener('input', checkSaveReady);
+
+  // Save
+  document.getElementById('save-card-btn').addEventListener('click', saveCard);
+
+  // Delete from detail
+  document.getElementById('delete-card-btn').addEventListener('click', () => {
+    if (currentDetailCard) deleteCard(currentDetailCard.id);
+  });
+
+  // Backup modal
+  document.getElementById('backup-btn').addEventListener('click', openBackupModal);
+  document.getElementById('close-backup-modal').addEventListener('click', () => closeModal('backup-modal'));
+  document.getElementById('backup-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('backup-modal'); });
+
+  document.getElementById('export-btn-row').addEventListener('click', exportBackup);
+
+  document.getElementById('import-btn-row').addEventListener('click', () => {
+    const sec = document.getElementById('import-section');
+    sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
+  });
+
+  // Drop zone
+  const dropZone = document.getElementById('import-drop-zone');
+  dropZone.addEventListener('click', () => document.getElementById('import-file').click());
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) handleImportFile(file);
+  });
+  document.getElementById('import-file').addEventListener('change', e => {
+    if (e.target.files[0]) handleImportFile(e.target.files[0]);
+  });
+
+  document.getElementById('import-confirm-btn').addEventListener('click', confirmImport);
+  document.getElementById('import-cancel-btn').addEventListener('click', () => {
+    document.getElementById('import-section').style.display = 'none';
+    importData = null;
+  });
+}
+
+init();
+</script>
+</body>
+</html>
