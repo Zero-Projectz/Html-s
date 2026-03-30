@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f5efe6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>🍽️ Weekmenu Planner</title>
+<link rel="manifest" href="data:application/json,{}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --cream: #f5efe6;
+    --warm-white: #fdfaf5;
+    --terracotta: #c9623f;
+    --terracotta-light: #e08060;
+    --terracotta-dark: #a04a2c;
+    --sage: #7a9e7e;
+    --sage-light: #a3bf9e;
+    --mustard: #d4a847;
+    --mustard-light: #e8c878;
+    --brown: #5c3d2e;
+    --brown-light: #8b6355;
+    --text-dark: #2d1f14;
+    --text-medium: #5c3d2e;
+    --text-light: #9a7a6a;
+    --border: #e0cfc0;
+    --shadow: rgba(93,61,46,0.12);
+    --lidl: #0050aa;
+    --jumbo: #ffcc00;
+    --jumbo-text: #333;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Lato', sans-serif;
+    background: var(--cream);
+    color: var(--text-dark);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(201,98,63,0.06) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(122,158,126,0.06) 0%, transparent 50%),
+      url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c9623f' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, var(--terracotta) 0%, var(--terracotta-dark) 100%);
+    color: white;
+    padding: 20px 24px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(160,74,44,0.3);
+  }
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  header h1 span { font-size: 1.2rem; }
+  .header-sub {
+    font-size: 0.8rem;
+    opacity: 0.85;
+    margin-top: 2px;
+    font-weight: 300;
+  }
+
+  /* ===== NAV TABS ===== */
+  nav {
+    display: flex;
+    background: var(--warm-white);
+    border-bottom: 2px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  .nav-btn {
+    flex: 1;
+    min-width: 80px;
+    padding: 12px 8px;
+    background: none;
+    border: none;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+  }
+  .nav-btn.active {
+    color: var(--terracotta);
+    border-bottom-color: var(--terracotta);
+  }
+  .nav-btn:hover { color: var(--terracotta-light); }
+
+  /* ===== MAIN CONTENT ===== */
+  main { padding: 20px 16px 100px; max-width: 900px; margin: 0 auto; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ===== FILTERS BAR ===== */
+  .filters-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .filter-chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 2px solid var(--border);
+    background: var(--warm-white);
+    font-family: 'Lato', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-medium);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-chip.active, .filter-chip:hover {
+    background: var(--terracotta);
+    border-color: var(--terracotta);
+    color: white;
+  }
+  .filter-chip.season { border-color: var(--sage); }
+  .filter-chip.season.active { background: var(--sage); border-color: var(--sage); }
+
+  /* ===== WEEK CARD ===== */
+  .week-section {
+    background: var(--warm-white);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px var(--shadow);
+    margin-bottom: 24px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .week-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: linear-gradient(90deg, var(--brown) 0%, var(--brown-light) 100%);
+    color: white;
+  }
+  .week-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  .week-roll-all {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px;
+    color: white;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Lato', sans-serif;
+    transition: all 0.2s;
+  }
+  .week-roll-all:hover { background: rgba(255,255,255,0.25); }
+
+  /* ===== DAY ROW ===== */
+  .day-row {
+    display: grid;
+    grid-template-columns: 72px 1fr auto;
+    align-items: center;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+    transition: background 0.15s;
+  }
+  .day-row:last-child { border-bottom: none; }
+  .day-row:hover { background: #fdf7f0; }
+  .day-row.weekend { background: #fef9f2; }
+  .day-row.weekend:hover { background: #fdf5ea; }
+
+  .day-label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .day-label .day-date {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: var(--text-light);
+    text-transform: none;
+    margin-top: 1px;
+  }
+
+  .meal-select-wrap { position: relative; }
+  .meal-select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    background: var(--cream);
+    font-family: 'Lato', sans-serif;
+    font-size: 0.88rem;
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: border-color 0.2s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c9623f' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+  }
+  .meal-select:focus {
+    outline: none;
+    border-color: var(--terracotta);
+    box-shadow: 0 0 0 3px rgba(201,98,63,0.15);
+  }
+  .meal-select.has-value { background-color: var(--warm-white); border-color: var(--sage); }
+
+  .dice-btn {
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--mustard);
+    border-radius: 10px;
+    background: var(--warm-white);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .dice-btn:hover {
+    background: var(--mustard);
+    transform: rotate(20deg) scale(1.1);
+  }
+  .dice-btn:active { transform: rotate(180deg) scale(0.95); }
+
+  /* ===== CATEGORY BADGE ===== */
+  .cat-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 8px;
+    margin-left: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    vertical-align: middle;
+  }
+  .cat-snel { background: #fff3cd; color: #856404; }
+  .cat-veg { background: #d1f0d1; color: #2d6a2d; }
+  .cat-comfort { background: #fde2d4; color: #a04a2c; }
+  .cat-soep { background: #dbeafe; color: #1e4faa; }
+  .cat-snack { background: #ede9fe; color: #5b21b6; }
+
+  /* ===== MEAL INFO TOOLTIP ===== */
+  .meal-info {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    margin-top: 4px;
+    padding-left: 2px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .store-tag {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+  .store-lidl { background: var(--lidl); color: white; }
+  .store-jumbo { background: var(--jumbo); color: var(--jumbo-text); }
+  .store-beide { background: var(--sage); color: white; }
+
+  /* ===== BOODSCHAPPEN ===== */
+  .shopping-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .shopping-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    color: var(--brown);
+  }
+  .store-filter {
+    display: flex;
+    gap: 6px;
+  }
+  .store-filter-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 2px solid var(--border);
+    font-family: 'Lato', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--warm-white);
+  }
+  .store-filter-btn.lidl.active { background: var(--lidl); border-color: var(--lidl); color: white; }
+  .store-filter-btn.jumbo.active { background: var(--jumbo); border-color: #cca300; color: var(--jumbo-text); }
+  .store-filter-btn.all.active { background: var(--terracotta); border-color: var(--terracotta); color: white; }
+
+  .shopping-category {
+    margin-bottom: 16px;
+  }
+  .shopping-cat-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-light);
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .shopping-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+  .shopping-item.checked {
+    opacity: 0.4;
+    text-decoration: line-through;
+  }
+  .shopping-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--terracotta);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .shopping-item-name { flex: 1; font-size: 0.88rem; }
+  .shopping-item-meal { font-size: 0.7rem; color: var(--text-light); }
+  .shopping-item-store { flex-shrink: 0; }
+
+  .empty-shopping {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-light);
+  }
+  .empty-shopping .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+  .empty-shopping p { font-size: 0.9rem; }
+
+  /* ===== GERECHTEN DATABASE ===== */
+  .db-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .db-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    color: var(--brown);
+  }
+  .add-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    background: var(--terracotta);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 3px 10px rgba(201,98,63,0.3);
+  }
+  .add-btn:hover { background: var(--terracotta-dark); transform: translateY(-1px); }
+
+  .db-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 12px;
+  }
+  .db-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .db-card:hover { box-shadow: 0 4px 15px var(--shadow); transform: translateY(-2px); }
+  .db-card-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+    padding-right: 24px;
+  }
+  .db-card-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .db-card-delete {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 22px;
+    height: 22px;
+    border: none;
+    background: none;
+    color: var(--text-light);
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .db-card-delete:hover { color: var(--terracotta); background: rgba(201,98,63,0.1); }
+  .custom-badge {
+    font-size: 0.6rem;
+    background: var(--mustard-light);
+    color: var(--brown);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(45,31,20,0.5);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--warm-white);
+    border-radius: 20px;
+    padding: 28px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 20px 60px rgba(45,31,20,0.3);
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .modal h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    color: var(--brown);
+    margin-bottom: 20px;
+  }
+  .form-group { margin-bottom: 14px; }
+  .form-group label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-medium);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.88rem;
+    color: var(--text-dark);
+    background: var(--cream);
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: var(--terracotta);
+    box-shadow: 0 0 0 3px rgba(201,98,63,0.15);
+  }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .modal-btns {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .btn-primary {
+    flex: 1;
+    padding: 12px;
+    background: var(--terracotta);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary:hover { background: var(--terracotta-dark); }
+  .btn-secondary {
+    flex: 1;
+    padding: 12px;
+    background: var(--cream);
+    color: var(--text-medium);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--brown-light); }
+
+  /* ===== TAGS ROW ===== */
+  .tags-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .tag-checkbox {
+    display: none;
+  }
+  .tag-label {
+    padding: 6px 12px;
+    border-radius: 16px;
+    border: 2px solid var(--border);
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .tag-checkbox:checked + .tag-label {
+    border-color: var(--sage);
+    background: var(--sage);
+    color: white;
+  }
+
+  /* ===== WEEK SELECTOR ===== */
+  .week-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    background: var(--warm-white);
+    padding: 14px 18px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 10px var(--shadow);
+  }
+  .week-nav-btn {
+    width: 36px;
+    height: 36px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: var(--cream);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .week-nav-btn:hover { border-color: var(--terracotta); color: var(--terracotta); }
+  .week-nav-info { flex: 1; text-align: center; }
+  .week-nav-info .week-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--brown);
+  }
+  .week-nav-info .week-range {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    margin-top: 2px;
+  }
+
+  /* ===== SEASON SELECTOR ===== */
+  .season-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .season-btn {
+    flex: 1;
+    padding: 8px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: var(--warm-white);
+    font-family: 'Lato', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .season-btn .season-icon { display: block; font-size: 1.2rem; margin-bottom: 2px; }
+  .season-btn.active { border-color: var(--mustard); background: #fff8e6; }
+  .season-btn:hover { border-color: var(--mustard-light); }
+
+  /* ===== TOAST ===== */
+  .toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--brown);
+    color: white;
+    padding: 12px 22px;
+    border-radius: 24px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 300;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0 6px 20px rgba(45,31,20,0.3);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ===== DICE ANIMATION ===== */
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(720deg); }
+  }
+  .dice-spinning { animation: spin 0.4s ease; }
+
+  /* ===== FOOTER SAVE ===== */
+  .fab-area {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+    z-index: 100;
+  }
+  .fab {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    border: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(45,31,20,0.25);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .fab:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(45,31,20,0.3); }
+  .fab-save { background: var(--terracotta); color: white; }
+  .fab-share { background: var(--sage); color: white; }
+
+  /* ===== SEARCH ===== */
+  .search-wrap {
+    position: relative;
+    margin-bottom: 16px;
+  }
+  .search-wrap input {
+    width: 100%;
+    padding: 10px 14px 10px 40px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.88rem;
+    background: var(--warm-white);
+    transition: border-color 0.2s;
+  }
+  .search-wrap input:focus { outline: none; border-color: var(--terracotta); }
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-light);
+    font-size: 1rem;
+  }
+
+  /* ===== STATS ===== */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--terracotta);
+  }
+  .stat-label {
+    font-size: 0.7rem;
+    color: var(--text-light);
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 480px) {
+    .day-row { grid-template-columns: 60px 1fr auto; gap: 8px; padding: 10px 12px; }
+    .season-btn .season-icon { font-size: 1rem; }
+    .form-row { grid-template-columns: 1fr; }
+    .db-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🍽️ Weekmenu <span>Planner</span></h1>
+  <div class="header-sub">Plan je avondmaaltijden — geen gedoe meer!</div>
+</header>
+
+<nav>
+  <button class="nav-btn active" onclick="showPage('planner')">📅 Planner</button>
+  <button class="nav-btn" onclick="showPage('boodschappen')">🛒 Boodschappen</button>
+  <button class="nav-btn" onclick="showPage('gerechten')">📖 Gerechten</button>
+</nav>
+
+<main>
+
+  <!-- ===== PLANNER PAGE ===== -->
+  <div id="page-planner" class="page active">
+
+    <div class="week-nav">
+      <button class="week-nav-btn" onclick="changeWeek(-1)">◀</button>
+      <div class="week-nav-info">
+        <div class="week-num" id="week-num-display">Week 1</div>
+        <div class="week-range" id="week-range-display"></div>
+      </div>
+      <button class="week-nav-btn" onclick="changeWeek(1)">▶</button>
+    </div>
+
+    <div class="season-bar">
+      <button class="season-btn" data-season="lente" onclick="setSeason('lente')">
+        <span class="season-icon">🌸</span>Lente
+      </button>
+      <button class="season-btn active" data-season="zomer" onclick="setSeason('zomer')">
+        <span class="season-icon">☀️</span>Zomer
+      </button>
+      <button class="season-btn" data-season="herfst" onclick="setSeason('herfst')">
+        <span class="season-icon">🍂</span>Herfst
+      </button>
+      <button class="season-btn" data-season="winter" onclick="setSeason('winter')">
+        <span class="season-icon">❄️</span>Winter
+      </button>
+    </div>
+
+    <div class="filters-bar">
+      <span style="font-size:0.78rem;font-weight:700;color:var(--text-light);">Filter:</span>
+      <button class="filter-chip active" onclick="setFilter('alle')">Alle</button>
+      <button class="filter-chip" onclick="setFilter('snel')">⚡ Snel</button>
+      <button class="filter-chip" onclick="setFilter('vegetarisch')">🥦 Veg</button>
+      <button class="filter-chip" onclick="setFilter('comfort')">🫕 Comfort</button>
+    </div>
+
+    <div id="weeks-container"></div>
+  </div>
+
+  <!-- ===== BOODSCHAPPEN PAGE ===== -->
+  <div id="page-boodschappen" class="page">
+    <div class="shopping-header">
+      <h2>🛒 Boodschappenlijst</h2>
+      <div class="store-filter">
+        <button class="store-filter-btn all active" onclick="setStoreFilter('all')">Alle</button>
+        <button class="store-filter-btn lidl" onclick="setStoreFilter('lidl')">Lidl</button>
+        <button class="store-filter-btn jumbo" onclick="setStoreFilter('jumbo')">Jumbo</button>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-num" id="stat-items">0</div>
+        <div class="stat-label">Producten</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-meals">0</div>
+        <div class="stat-label">Gerechten</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-checked">0</div>
+        <div class="stat-label">Afgevinkt</div>
+      </div>
+    </div>
+
+    <div id="shopping-list-container"></div>
+  </div>
+
+  <!-- ===== GERECHTEN PAGE ===== -->
+  <div id="page-gerechten" class="page">
+    <div class="db-header">
+      <h2>📖 Gerechten</h2>
+      <button class="add-btn" onclick="openAddModal()">+ Toevoegen</button>
+    </div>
+
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Zoek gerecht..." oninput="filterDb(this.value)" id="db-search">
+    </div>
+
+    <div class="filters-bar" style="margin-bottom:16px;">
+      <button class="filter-chip active" onclick="setDbFilter('alle')">Alle</button>
+      <button class="filter-chip" onclick="setDbFilter('snel')">⚡ Snel</button>
+      <button class="filter-chip" onclick="setDbFilter('vegetarisch')">🥦 Vegetarisch</button>
+      <button class="filter-chip" onclick="setDbFilter('comfort')">🫕 Comfort</button>
+      <button class="filter-chip" onclick="setDbFilter('soep')">🍲 Soep</button>
+    </div>
+
+    <div class="db-grid" id="db-grid"></div>
+  </div>
+
+</main>
+
+<!-- ===== FAB BUTTONS ===== -->
+<div class="fab-area">
+  <button class="fab fab-share" onclick="shareMenu()" title="Delen">📤</button>
+  <button class="fab fab-save" onclick="saveData()" title="Opslaan">💾</button>
+</div>
+
+<!-- ===== ADD MODAL ===== -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <h3>✨ Gerecht Toevoegen</h3>
+    <div class="form-group">
+      <label>Naam gerecht *</label>
+      <input type="text" id="new-name" placeholder="bijv. Spaghetti Bolognese">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Categorie</label>
+        <select id="new-cat">
+          <option value="comfort">🫕 Comfort food</option>
+          <option value="snel">⚡ Snel</option>
+          <option value="vegetarisch">🥦 Vegetarisch</option>
+          <option value="soep">🍲 Soep</option>
+          <option value="snack">🥪 Snack/licht</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Supermarkt</label>
+        <select id="new-store">
+          <option value="beide">Beide</option>
+          <option value="lidl">Lidl</option>
+          <option value="jumbo">Jumbo</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Seizoen</label>
+      <div class="tags-row">
+        <input class="tag-checkbox" type="checkbox" id="s-lente" value="lente" checked>
+        <label class="tag-label" for="s-lente">🌸 Lente</label>
+        <input class="tag-checkbox" type="checkbox" id="s-zomer" value="zomer" checked>
+        <label class="tag-label" for="s-zomer">☀️ Zomer</label>
+        <input class="tag-checkbox" type="checkbox" id="s-herfst" value="herfst" checked>
+        <label class="tag-label" for="s-herfst">🍂 Herfst</label>
+        <input class="tag-checkbox" type="checkbox" id="s-winter" value="winter" checked>
+        <label class="tag-label" for="s-winter">❄️ Winter</label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Ingrediënten (kommagescheiden)</label>
+      <textarea id="new-ingredients" rows="3" placeholder="aardappels, gehakt, uien, groenten..."></textarea>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeModal()">Annuleren</button>
+      <button class="btn-primary" onclick="addGerecht()">✅ Toevoegen</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// DATA — GERECHTEN DATABASE
+// ============================================================
+const DEFAULT_GERECHTEN = [
+  // COMFORT FOOD — NL klassiekers
+  { id:'g001', name:'Stamppot boerenkool met rookworst', cat:'comfort', store:'beide', seizoen:['herfst','winter'], ingredients:['boerenkool','aardappels','rookworst','uien','spek','mosterd'] },
+  { id:'g002', name:'Stamppot andijvie met spek', cat:'comfort', store:'beide', seizoen:['herfst','winter'], ingredients:['andijvie','aardappels','spek','uien','roomboter'] },
+  { id:'g003', name:'Stamppot hutspot', cat:'comfort', store:'beide', seizoen:['herfst','winter'], ingredients:['aardappels','wortelen','uien','runderlap','roomboter'] },
+  { id:'g004', name:'Erwtensoep (snert)', cat:'soep', store:'beide', seizoen:['herfst','winter'], ingredients:['spliterwten','rookworst','selderij','prei','wortelen','spek','zout'] },
+  { id:'g005', name:'Hollandse bruine bonensoep', cat:'soep', store:'beide', seizoen:['herfst','winter'], ingredients:['bruine bonen','spek','uien','selderij','zout'] },
+  { id:'g006', name:'Nasi goreng', cat:'snel', store:'beide', seizoen:['lente','zomer','herfst','winter'], ingredients:['rijst','ei','kip','prei','sambal','ketjap','knoflook'] },
+  { id:'g007', name:'Bami goreng', cat:'snel', store:'beide', seizoen:['lente','zomer','herfst','winter'], ingredients:['bamimie','kip','paprika','prei','sambal','ketjap','ei'] },
+  { id:'g008', name:'Spaghetti bolognese', cat:'comfort', store:'beide', seizoen:['lente','zomer','herfst','winter'], ingredients:['spaghetti','gehakt','tomatenpuree','uien','knoflook','laurierblad','parmezaan'] },
+  { id:'g009', name:'Lasagne', cat:'comfort', store:'beide', seizoen:['lente','zomer','herfst','winter'], ingredients:['lasagnebladen','gehakt','tomatensaus','béchamelsaus','parmezaan','uien','knoflook'] },
+  { id:'g010', name:'Hachee met aardappelpuree', cat:'comfort', store:'beide', seizoen:['herfst','winter'], ingredients:['runderlap','uien','laurierblad','kruidnagel','azijn','aardappels','roomboter'] },
+  { id:'g011', name:'Karbonade met boontjes en frites', cat:'comfort', store:'beide', seizoen:['lente','zomer','herfst','winter'], ingredients:['karbonade','sperziebonen','aardappels','uien','roomboter'] },
+  { id:'g012', name:'Kipfilet met rijst en groenten', cat:'snel', store:'beide', seizoen:['lente','zomer','herfst','winter'], ingredients:['kipfilet','rijst','broccoli','wortelen','knoflook','olijfolie'] },
+  { id:'g013', name:'Gehaktballen in tomatensaus', cat:'comfort', store:'beide', seizoen:['lente','zomer','herfst','winter'], ingredients:['gehakt','ei','paneermeel','tomatenpuree','uien','knoflook','kruiden'] },
+  { id:'g014', name:'Macaroni met gehakt', cat:'comfort', store:'beide', seizoen:['lente','zomer','herfst','winter'], ingredients:['macaroni','gehakt','tomatenpuree','uien','kaas'] },
+  { id:'g015', name:'Pannenkoeken', cat:'snel', store:'beide', seizoen:['lente','zomer','herfst','winter'], ingredients:['bloem','eieren','melk','boter','spek','appel','poedersuiker'] },
+  { id:'g016', name:'Shoarma met friet', cat:'comfort', store:'beide', seizoen:['lente','zomer','herfst','winter'], ingredients:['kippendij','aardappels','knoflooksaus','salade','tomaat','komkommer'] },
+  { id:'g017', name:'Pizza margherita (zelfgemaakt)', cat:'comfort', store:'beide', seizoen:['lente','zomer','herfst','winter'], ingredients:['pizzadeeg','tomatensaus','mozzarella','basilicum','olijfolie'] },
+  { id:'g018', name:'Bruschetta met tomaat', cat:'snack', store:'beide', seizoen:['zomer'], ingredients:['ciabatta','tomaten','knoflook','basilicum','olijfolie','zeezout'] },
+  { id:'g019', name:'Salade niçoise', cat:'snel', store:'beide', seizoen:['zomer'], ingredients:['tonijn','sperziebonen','ei','tomaten','olijven','sla','dressing'] },
+  { id:'g020', name:'Groentesoep met vermicelli', cat:'soep', store:'beide', seizoen:['lente','herfst','winter'], ingredients:['prei','wortelen','selderij','vermicelli','soepballetjes','bouillon'] },
+  { id:'g021', name:'Tomatensoep met brood', cat:'soep', store:'beide', seizoen:['lente','zomer','herfst','winter'], ingredients:['tomaten','uien','knoflook','room','basilicum','brood','boter'] },
+  { id:'g022', name:'Wok groenten met noodles', cat:'snel', store:'beide', seizoen:['lente','zomer','herfst','winter'], ingredients:['wokgroenten','noodles','sojasaus','sesamolie','knoflook','gember'] },
+  { id:'g023', name:'Chili con carne', cat:'comfort', store:'beide', seizoen:['herfst','winter'], ingredients:['gehakt','kidneybonen','tomatenpuree','paprika','uien','komijn','chilipoeder','rijst'] },
+  { id:'g024', name:'Curry met kip en rijst', cat:'comfort', store:'beide', seizoen:['lente','zomer','herfst','winter'], ingredients:['kipfilet','currypasta','kokosmelk','rijst','paprika','uien','koriander'] },
+  { id:'g025', name:'Risotto met paddenstoelen', cat:'vegetarisch', store:'jumbo', seizoen:['herfst','winter'], ingredients:['risottorijst','paddenstoelen','ui','parmezaan','witte wijn','bouillon','roomboter'] },
+  { id:'g026', name:'Quiche Lorraine', cat:'comfort', store:'beide', seizoen:['lente','herfst'], ingredients:['bladerdeeg','spek','eieren','room','kaas','ui'] },
+  { id:'g027', name:'Gegrilde zalm met groenten', cat:'snel', store:'jumbo', seizoen:['lente','zomer'], ingredients:['zalmfilet','courgette','paprika','citroen','dille','olijfolie'] },
+  { id:'g028', name:'Kabeljauw in tomatensaus', cat:'comfort', store:'jumbo', seizoen:['lente','herfst','winter'], ingredients:['kabeljauw','tomaten','ui','knoflook','kappertjes','peterselie'] },
+  { id:'g029', name:'Vegetarische burger met friet', cat:'vegetarisch', store:'beide', seizoen:['lente','zomer'], ingredients:['vegaburger','briochebroodje','sla','tomaat','uienringen','friet','saus'] },
+  { id:'g030', name:'Omelet met groenten', cat:'vegetarisch', store:'beide', seizoen:['lente','zomer','herfst','winter'], ingredients:['eieren','paprika','courgette','ui','kaas','kruiden'] },
+  { id:'g031', name:'Penne arrabiata', cat:'vegetarisch', store:'beide', seizoen:['lente','zomer','herfst','winter'], ingredients:['penne','tomatenpuree','knoflook','chilipeper','olijfolie','parmezaan'] },
+  { id:'g032', name:'Tagliatelle carbonara', cat:'comfort', store:'jumbo', seizoen:['lente','zomer','herfst','winter'], ingredients:['tagliatelle','spek','eieren','parmezaan','zwarte peper'] },
+  { id:'g033', name:'Goulash met brood', cat:'comfort', store:'beide', seizoen:['herfst','winter'], ingredients:['runderlap','paprika','uien','tomatenpuree','paprikapoeder','brood'] },
+  { id:'g034', name:'Souvlaki met tzatziki', cat:'snel', store:'jumbo', seizoen:['zomer'], ingredients:['varkensvlees','pitabrood','tzatziki','tomaat','rode ui','peterselie'] },
+  { id:'g035', name:'Boerenkoolsoep', cat:'soep', store:'beide', seizoen:['herfst','winter'], ingredients:['boerenkool','aardappels','rookworst','ui','bouillon'] },
+  { id:'g036', name:'Bloemkoolschotel met kaas', cat:'vegetarisch', store:'beide', seizoen:['herfst','winter'], ingredients:['bloemkool','béchamelsaus','kaas','mager spek','aardappels'] },
+  { id:'g037', name:'Wraps met kip en avocado', cat:'snel', store:'beide', seizoen:['lente','zomer'], ingredients:['wraps','kip','avocado','tomaat','sla','zure room','limoensap'] },
+  { id:'g038', name:'Witlofschotel met ham en kaas', cat:'comfort', store:'beide', seizoen:['herfst','winter'], ingredients:['witlof','ham','kaas','béchamelsaus','aardappels'] },
+  { id:'g039', name:'Gestoofde kip met champignons', cat:'comfort', store:'beide', seizoen:['herfst','winter'], ingredients:['kip','champignons','room','ui','peterselie','bouillon'] },
+  { id:'g040', name:'Groenteburrito', cat:'vegetarisch', store:'beide', seizoen:['lente','zomer'], ingredients:['tortilla','zwarte bonen','rijst','maïs','avocado','cheddar','pico de gallo'] },
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  gerechten: [],
+  planner: {}, // { 'w1-ma': 'g001', ... }
+  currentWeek: 1,
+  season: 'zomer',
+  catFilter: 'alle',
+  dbFilter: 'alle',
+  dbSearch: '',
+  storeFilter: 'all',
+  checkedItems: {},
+};
+
+const DAYS = ['ma','di','wo','do','vr','za','zo'];
+const DAYNAMES = { ma:'Maandag', di:'Dinsdag', wo:'Woensdag', do:'Donderdag', vr:'Vrijdag', za:'Zaterdag', zo:'Zondag' };
+const WEEKEND_DAYS = ['vr','za','zo'];
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  const saved = localStorage.getItem('maaltijdplanner_v2');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      state = { ...state, ...parsed };
+      // merge new default gerechten not in saved
+      const savedIds = new Set(state.gerechten.map(g => g.id));
+      DEFAULT_GERECHTEN.forEach(g => { if (!savedIds.has(g.id)) state.gerechten.push(g); });
+    } catch(e) { state.gerechten = [...DEFAULT_GERECHTEN]; }
+  } else {
+    state.gerechten = [...DEFAULT_GERECHTEN];
+  }
+
+  // Auto-detect season
+  const month = new Date().getMonth() + 1;
+  if (month >= 3 && month <= 5) state.season = 'lente';
+  else if (month >= 6 && month <= 8) state.season = 'zomer';
+  else if (month >= 9 && month <= 11) state.season = 'herfst';
+  else state.season = 'winter';
+
+  updateSeasonUI();
+  renderPlanner();
+  renderDb();
+  updateWeekDisplay();
+}
+
+// ============================================================
+// WEEK NAVIGATION
+// ============================================================
+function changeWeek(delta) {
+  state.currentWeek = Math.max(1, Math.min(52, state.currentWeek + delta));
+  updateWeekDisplay();
+  renderPlanner();
+}
+
+function updateWeekDisplay() {
+  document.getElementById('week-num-display').textContent = `Week ${state.currentWeek}`;
+  const today = new Date();
+  const firstDay = new Date(today.getFullYear(), 0, 1 + (state.currentWeek - 1) * 7);
+  const lastDay = new Date(firstDay);
+  lastDay.setDate(lastDay.getDate() + 6);
+  const fmt = d => `${d.getDate()}/${d.getMonth()+1}`;
+  document.getElementById('week-range-display').textContent = `${fmt(firstDay)} – ${fmt(lastDay)} ${firstDay.getFullYear()}`;
+}
+
+// ============================================================
+// SEASON
+// ============================================================
+function setSeason(s) {
+  state.season = s;
+  updateSeasonUI();
+  renderPlanner();
+  renderDb();
+}
+
+function updateSeasonUI() {
+  document.querySelectorAll('.season-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.season === state.season);
+  });
+}
+
+// ============================================================
+// FILTER
+// ============================================================
+function setFilter(f) {
+  state.catFilter = f;
+  document.querySelectorAll('#page-planner .filter-chip').forEach(b => {
+    b.classList.toggle('active', b.textContent.toLowerCase().includes(f) || (f === 'alle' && b.textContent === 'Alle'));
+  });
+}
+
+function setDbFilter(f) {
+  state.dbFilter = f;
+  document.querySelectorAll('#page-gerechten .filter-chip').forEach(b => {
+    b.classList.toggle('active', b.textContent.toLowerCase().includes(f) || (f === 'alle' && b.textContent === 'Alle'));
+  });
+  renderDb();
+}
+
+function filterDb(val) {
+  state.dbSearch = val;
+  renderDb();
+}
+
+// ============================================================
+// GET AVAILABLE MEALS (with filters, no repeats in 14 days)
+// ============================================================
+function getUsedIds(excludeKey) {
+  const used = new Set();
+  // check week1 and week2
+  for (let w = 1; w <= 2; w++) {
+    DAYS.forEach(d => {
+      const key = `w${w}-${d}`;
+      if (key !== excludeKey && state.planner[key]) used.add(state.planner[key]);
+    });
+  }
+  return used;
+}
+
+function getAvailable(forDay, forWeek) {
+  const isWeekend = WEEKEND_DAYS.includes(forDay);
+  const excludeKey = `w${forWeek}-${forDay}`;
+  const used = getUsedIds(excludeKey);
+
+  return state.gerechten.filter(g => {
+    // Weekend: all cats. Weekdays: no soep/snack
+    if (!isWeekend && (g.cat === 'soep' || g.cat === 'snack')) return false;
+    // Season filter
+    if (!g.seizoen.includes(state.season)) return false;
+    // Cat filter (planner)
+    if (state.catFilter !== 'alle' && g.cat !== state.catFilter) return false;
+    // No repeats
+    if (used.has(g.id)) return false;
+    return true;
+  });
+}
+
+// ============================================================
+// RENDER PLANNER
+// ============================================================
+function renderPlanner() {
+  const container = document.getElementById('weeks-container');
+  container.innerHTML = '';
+
+  for (let w = 1; w <= 2; w++) {
+    const section = document.createElement('div');
+    section.className = 'week-section';
+    section.innerHTML = `
+      <div class="week-header">
+        <h2>Week ${w} ${w === state.currentWeek ? '← Huidig' : ''}</h2>
+        <button class="week-roll-all" onclick="rollWeek(${w})">🎲 Gooi alles</button>
+      </div>
+    `;
+
+    DAYS.forEach(day => {
+      const key = `w${w}-${day}`;
+      const isWeekend = WEEKEND_DAYS.includes(day);
+      const selectedId = state.planner[key] || '';
+      const available = getAvailable(day, w);
+      const selectedGerecht = state.gerechten.find(g => g.id === selectedId);
+
+      const row = document.createElement('div');
+      row.className = `day-row${isWeekend ? ' weekend' : ''}`;
+
+      // Build options
+      let options = `<option value="">— Kies gerecht —</option>`;
+      available.forEach(g => {
+        options += `<option value="${g.id}" ${g.id === selectedId ? 'selected' : ''}>${g.name}</option>`;
+      });
+      // If selected not in available (season/filter mismatch), still show it
+      if (selectedId && !available.find(g => g.id === selectedId) && selectedGerecht) {
+        options += `<option value="${selectedId}" selected>⚠️ ${selectedGerecht.name}</option>`;
+      }
+
+      const infoHtml = selectedGerecht ? `
+        <div class="meal-info">
+          <span class="cat-badge cat-${selectedGerecht.cat}">${catLabel(selectedGerecht.cat)}</span>
+          <span class="store-tag store-${selectedGerecht.store}">${storeLabel(selectedGerecht.store)}</span>
+        </div>
+      ` : '';
+
+      row.innerHTML = `
+        <div class="day-label">
+          ${DAYNAMES[day].slice(0,2)}
+          <span class="day-date">${DAYNAMES[day]}</span>
+        </div>
+        <div>
+          <div class="meal-select-wrap">
+            <select class="meal-select ${selectedId ? 'has-value' : ''}" 
+                    onchange="selectMeal('${key}', this.value, this)">
+              ${options}
+            </select>
+          </div>
+          ${infoHtml}
+        </div>
+        <button class="dice-btn" onclick="rollDay('${key}', ${w}, '${day}', this)" title="Willekeurig">🎲</button>
+      `;
+
+      section.appendChild(row);
+    });
+
+    container.appendChild(section);
+  }
+}
+
+function catLabel(cat) {
+  const map = { snel:'⚡ Snel', vegetarisch:'🥦 Veg', comfort:'🫕 Comfort', soep:'🍲 Soep', snack:'🥪 Licht' };
+  return map[cat] || cat;
+}
+function storeLabel(store) {
+  return store === 'lidl' ? '🔵 Lidl' : store === 'jumbo' ? '🟡 Jumbo' : '🟢 Beide';
+}
+
+function selectMeal(key, val, selectEl) {
+  state.planner[key] = val;
+  if (selectEl) selectEl.classList.toggle('has-value', !!val);
+  renderPlanner();
+  renderShoppingList();
+}
+
+function rollDay(key, week, day, btn) {
+  btn.classList.add('dice-spinning');
+  setTimeout(() => btn.classList.remove('dice-spinning'), 400);
+
+  const available = getAvailable(day, week);
+  if (!available.length) { showToast('Geen beschikbare gerechten!'); return; }
+  const pick = available[Math.floor(Math.random() * available.length)];
+  state.planner[key] = pick.id;
+  showToast(`🎲 ${pick.name}`);
+  renderPlanner();
+  renderShoppingList();
+}
+
+function rollWeek(week) {
+  DAYS.forEach(day => {
+    const key = `w${week}-${day}`;
+    const available = getAvailable(day, week);
+    if (available.length) {
+      const pick = available[Math.floor(Math.random() * available.length)];
+      state.planner[key] = pick.id;
+    }
+  });
+  showToast('🎲 Hele week gevuld!');
+  renderPlanner();
+  renderShoppingList();
+}
+
+// ============================================================
+// SHOPPING LIST
+// ============================================================
+function setStoreFilter(f) {
+  state.storeFilter = f;
+  document.querySelectorAll('.store-filter-btn').forEach(b => {
+    b.classList.toggle('active', b.classList.contains(f) || (f === 'all' && b.classList.contains('all')));
+  });
+  renderShoppingList();
+}
+
+function renderShoppingList() {
+  const container = document.getElementById('shopping-list-container');
+
+  // Collect all selected meals
+  const selectedMeals = [];
+  for (let w = 1; w <= 2; w++) {
+    DAYS.forEach(day => {
+      const key = `w${w}-${day}`;
+      const id = state.planner[key];
+      if (id) {
+        const g = state.gerechten.find(x => x.id === id);
+        if (g) selectedMeals.push({ ...g, weekday: `W${w} ${DAYNAMES[day]}` });
+      }
+    });
+  }
+
+  if (!selectedMeals.length) {
+    container.innerHTML = `
+      <div class="empty-shopping">
+        <div class="empty-icon">🛒</div>
+        <p>Nog geen gerechten gepland.<br>Ga naar de <strong>Planner</strong> en kies gerechten!</p>
+      </div>`;
+    updateStats(0, 0, 0);
+    return;
+  }
+
+  // Filter by store
+  const filteredMeals = selectedMeals.filter(g => {
+    if (state.storeFilter === 'all') return true;
+    return g.store === state.storeFilter || g.store === 'beide';
+  });
+
+  // Group ingredients by category
+  const catMap = {
+    'Vlees & Vis': ['kip','gehakt','rookworst','spek','zalm','kabeljauw','varkensvlees','runderlap','karbonade','kippendij','kipfilet','tonijn','soepballetjes'],
+    'Groenten': ['boerenkool','andijvie','wortelen','uien','ui','prei','paprika','broccoli','courgette','bloemkool','witlof','champignons','paddenstoelen','tomaten','sla','avocado','selderij','sperziebonen'],
+    'Zuivel & Eieren': ['eieren','ei','kaas','room','béchamelsaus','parmezaan','mozzarella','roomboter','boter','cheddar','tzatziki','zure room'],
+    'Pasta & Granen': ['spaghetti','lasagnebladen','macaroni','rijst','penne','tagliatelle','risottorijst','noodles','bamimie','vermicelli'],
+    'Aardappelen & Brood': ['aardappels','friet','ciabatta','brood','pitabrood','tortilla','wraps','briochebroodje','pizzadeeg','bladerdeeg'],
+    'Sauzen & Kruiden': ['tomatenpuree','tomatensaus','sambal','ketjap','sojasaus','currypasta','kokosmelk','knoflook','gember','komijn','chilipoeder','paprikapoeder','kruiden','basilicum','dille','peterselie','koriander','mosterd','olijfolie','sesamolie','laurierblad','kruidnagel','azijn'],
+    'Overig': []
+  };
+
+  // Collect all ingredients with their source
+  const allIngredients = [];
+  filteredMeals.forEach(meal => {
+    meal.ingredients.forEach(ing => {
+      allIngredients.push({ ing, meal: meal.name, store: meal.store });
+    });
+  });
+
+  // Deduplicate
+  const deduped = {};
+  allIngredients.forEach(({ ing, meal, store }) => {
+    if (!deduped[ing]) deduped[ing] = { ing, meals: [], store };
+    if (!deduped[ing].meals.includes(meal)) deduped[ing].meals.push(meal);
+  });
+  const items = Object.values(deduped);
+
+  // Sort into categories
+  const grouped = {};
+  Object.keys(catMap).forEach(c => grouped[c] = []);
+
+  items.forEach(item => {
+    let placed = false;
+    for (const [cat, keywords] of Object.entries(catMap)) {
+      if (cat === 'Overig') continue;
+      if (keywords.some(k => item.ing.toLowerCase().includes(k.toLowerCase()))) {
+        grouped[cat].push(item);
+        placed = true;
+        break;
+      }
+    }
+    if (!placed) grouped['Overig'].push(item);
+  });
+
+  // Render
+  let html = '';
+  const totalItems = items.length;
+  const checkedCount = items.filter(i => state.checkedItems[i.ing]).length;
+
+  Object.entries(grouped).forEach(([cat, catItems]) => {
+    if (!catItems.length) return;
+    html += `<div class="shopping-category">
+      <div class="shopping-cat-title">${cat}</div>`;
+    catItems.forEach(item => {
+      const checked = !!state.checkedItems[item.ing];
+      html += `
+        <div class="shopping-item ${checked ? 'checked' : ''}" id="si-${item.ing.replace(/\s/g,'_')}">
+          <input type="checkbox" ${checked ? 'checked' : ''} 
+                 onchange="toggleCheck('${item.ing.replace(/'/g,"\\'")}', this)">
+          <div>
+            <div class="shopping-item-name">${item.ing}</div>
+            <div class="shopping-item-meal">${item.meals.slice(0,2).join(', ')}${item.meals.length > 2 ? ' +'+( item.meals.length-2) : ''}</div>
+          </div>
+          <div class="shopping-item-store">
+            <span class="store-tag store-${item.store}">${storeShort(item.store)}</span>
+          </div>
+        </div>`;
+    });
+    html += `</div>`;
+  });
+
+  container.innerHTML = html;
+  updateStats(totalItems, filteredMeals.length, checkedCount);
+}
+
+function storeShort(s) {
+  return s === 'lidl' ? 'L' : s === 'jumbo' ? 'J' : 'L+J';
+}
+
+function toggleCheck(ing, cb) {
+  state.checkedItems[ing] = cb.checked;
+  const el = document.getElementById(`si-${ing.replace(/\s/g,'_')}`);
+  if (el) el.classList.toggle('checked', cb.checked);
+  const items = document.querySelectorAll('.shopping-item');
+  const checked = document.querySelectorAll('.shopping-item.checked');
+  const meals = document.getElementById('stat-meals').textContent;
+  document.getElementById('stat-checked').textContent = checked.length;
+}
+
+function updateStats(items, meals, checked) {
+  document.getElementById('stat-items').textContent = items;
+  document.getElementById('stat-meals').textContent = meals;
+  document.getElementById('stat-checked').textContent = checked;
+}
+
+// ============================================================
+// GERECHTEN DB
+// ============================================================
+function renderDb() {
+  const grid = document.getElementById('db-grid');
+  let filtered = state.gerechten.filter(g => {
+    if (state.dbFilter !== 'alle' && g.cat !== state.dbFilter) return false;
+    if (state.dbSearch && !g.name.toLowerCase().includes(state.dbSearch.toLowerCase())) return false;
+    return true;
+  });
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div style="color:var(--text-light);font-size:0.9rem;padding:20px 0;">Geen gerechten gevonden.</div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(g => `
+    <div class="db-card">
+      <div class="db-card-name">${g.name} ${g.custom ? '<span class="custom-badge">Eigen</span>' : ''}</div>
+      <div class="db-card-meta">
+        <span class="cat-badge cat-${g.cat}">${catLabel(g.cat)}</span>
+        <span class="store-tag store-${g.store}">${storeLabel(g.store)}</span>
+        ${g.seizoen.map(s => `<span style="font-size:0.8rem;">${seasonIcon(s)}</span>`).join('')}
+      </div>
+      <div style="font-size:0.72rem;color:var(--text-light);margin-top:6px;">${(g.ingredients||[]).join(', ')}</div>
+      ${g.custom ? `<button class="db-card-delete" onclick="deleteGerecht('${g.id}')">✕</button>` : ''}
+    </div>
+  `).join('');
+}
+
+function seasonIcon(s) {
+  return { lente:'🌸', zomer:'☀️', herfst:'🍂', winter:'❄️' }[s] || '';
+}
+
+// ============================================================
+// ADD GERECHT
+// ============================================================
+function openAddModal() {
+  document.getElementById('add-modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('add-modal').classList.remove('open');
+  document.getElementById('new-name').value = '';
+  document.getElementById('new-ingredients').value = '';
+}
+
+function addGerecht() {
+  const name = document.getElementById('new-name').value.trim();
+  if (!name) { showToast('Vul een naam in!'); return; }
+
+  const cat = document.getElementById('new-cat').value;
+  const store = document.getElementById('new-store').value;
+  const ingredients = document.getElementById('new-ingredients').value
+    .split(',').map(s => s.trim()).filter(Boolean);
+  const seizoen = ['lente','zomer','herfst','winter'].filter(s =>
+    document.getElementById(`s-${s}`).checked
+  );
+  if (!seizoen.length) seizoen.push('lente','zomer','herfst','winter');
+
+  const newG = {
+    id: 'custom_' + Date.now(),
+    name, cat, store, seizoen, ingredients,
+    custom: true
+  };
+
+  state.gerechten.push(newG);
+  closeModal();
+  renderDb();
+  renderPlanner();
+  showToast(`✅ ${name} toegevoegd!`);
+  saveData();
+}
+
+function deleteGerecht(id) {
+  state.gerechten = state.gerechten.filter(g => g.id !== id);
+  // Also remove from planner
+  Object.keys(state.planner).forEach(k => {
+    if (state.planner[k] === id) delete state.planner[k];
+  });
+  renderDb();
+  renderPlanner();
+  renderShoppingList();
+  saveData();
+  showToast('Gerecht verwijderd');
+}
+
+// ============================================================
+// SAVE / SHARE
+// ============================================================
+function saveData() {
+  const toSave = {
+    gerechten: state.gerechten,
+    planner: state.planner,
+    checkedItems: state.checkedItems,
+  };
+  localStorage.setItem('maaltijdplanner_v2', JSON.stringify(toSave));
+  showToast('💾 Opgeslagen!');
+}
+
+function shareMenu() {
+  let text = '🍽️ Weekmenu Planner\n\n';
+  for (let w = 1; w <= 2; w++) {
+    text += `📅 WEEK ${w}\n`;
+    DAYS.forEach(day => {
+      const key = `w${w}-${day}`;
+      const id = state.planner[key];
+      const g = id ? state.gerechten.find(x => x.id === id) : null;
+      text += `${DAYNAMES[day].slice(0,2)}: ${g ? g.name : '—'}\n`;
+    });
+    text += '\n';
+  }
+  if (navigator.share) {
+    navigator.share({ title: 'Weekmenu', text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).then(() => showToast('📋 Gekopieerd!'));
+  }
+}
+
+// ============================================================
+// UI HELPERS
+// ============================================================
+function showPage(p) {
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`page-${p}`).classList.add('active');
+  event.target.classList.add('active');
+  if (p === 'boodschappen') renderShoppingList();
+  if (p === 'gerechten') renderDb();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Close modal on overlay click
+document.getElementById('add-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// Auto-save on planner changes
+setInterval(() => {
+  const toSave = { gerechten: state.gerechten, planner: state.planner, checkedItems: state.checkedItems };
+  localStorage.setItem('maaltijdplanner_v2', JSON.stringify(toSave));
+}, 30000);
+
+// ============================================================
+// START
+// ============================================================
+init();
+</script>
+</body>
+</html>
