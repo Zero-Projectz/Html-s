@@ -1,0 +1,2141 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#2d0a4e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Groep 4 Quiz">
+<title>🎓 Groep 4 Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f0520;
+  --bg2: #1a0a35;
+  --bg3: #240d47;
+  --card: #2d1254;
+  --card2: #3a1768;
+  --purple: #7c3aed;
+  --purple2: #9d5cf0;
+  --purple3: #c084fc;
+  --accent: #f59e0b;
+  --accent2: #fbbf24;
+  --green: #10b981;
+  --green2: #34d399;
+  --red: #ef4444;
+  --red2: #f87171;
+  --blue: #3b82f6;
+  --pink: #ec4899;
+  --text: #f3e8ff;
+  --text2: #d8b4fe;
+  --text3: #a78bfa;
+  --radius: 20px;
+  --shadow: 0 8px 32px rgba(124,58,237,0.3);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body { height:100%; overflow:hidden; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(124,58,237,0.25) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 80% 80%, rgba(192,132,252,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(245,158,11,0.05) 0%, transparent 70%);
+  pointer-events:none; z-index:0;
+}
+
+/* Stars bg */
+.stars {
+  position:fixed; inset:0; pointer-events:none; z-index:0;
+  overflow:hidden;
+}
+.star {
+  position:absolute; border-radius:50%;
+  background:rgba(255,255,255,0.6);
+  animation: twinkle var(--d, 3s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes twinkle {
+  0%,100%{opacity:0.2;transform:scale(1);}
+  50%{opacity:1;transform:scale(1.4);}
+}
+
+#app {
+  position:relative; z-index:1;
+  height:100vh; width:100vw;
+  overflow-y:auto; overflow-x:hidden;
+  scroll-behavior:smooth;
+}
+
+/* ======= SCREENS ======= */
+.screen {
+  display:none;
+  min-height:100vh;
+  padding:20px;
+  animation: fadeIn 0.4s ease;
+}
+.screen.active { display:flex; flex-direction:column; align-items:center; justify-content:center; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+/* ======= WELCOME SCREEN ======= */
+.logo-area {
+  text-align:center; margin-bottom:32px;
+}
+.logo-emoji { font-size:80px; display:block; animation: float 3s ease-in-out infinite; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+.logo-title {
+  font-family:'Fredoka One',cursive;
+  font-size:42px; color:var(--purple3);
+  text-shadow:0 0 30px rgba(192,132,252,0.6);
+  line-height:1;
+}
+.logo-sub { font-size:16px; color:var(--text3); margin-top:6px; font-weight:700; }
+
+.welcome-card {
+  background:var(--card);
+  border:1.5px solid rgba(192,132,252,0.2);
+  border-radius:var(--radius);
+  padding:28px;
+  width:100%;
+  max-width:420px;
+  box-shadow:var(--shadow);
+}
+.welcome-card label {
+  display:block; font-weight:800; font-size:14px;
+  color:var(--text3); text-transform:uppercase; letter-spacing:1px;
+  margin-bottom:8px;
+}
+.welcome-card input {
+  width:100%; padding:14px 18px;
+  background:var(--bg2);
+  border:2px solid rgba(124,58,237,0.4);
+  border-radius:14px;
+  color:var(--text); font-family:'Nunito',sans-serif;
+  font-size:18px; font-weight:700;
+  outline:none; transition:border-color 0.2s;
+}
+.welcome-card input:focus { border-color:var(--purple2); }
+.welcome-card input::placeholder { color:var(--text3); opacity:0.5; }
+
+.btn {
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  padding:14px 28px;
+  border-radius:50px; border:none;
+  font-family:'Nunito',sans-serif; font-size:18px; font-weight:900;
+  cursor:pointer; transition:all 0.2s;
+  text-decoration:none;
+}
+.btn-primary {
+  background:linear-gradient(135deg,var(--purple),var(--purple2));
+  color:#fff; box-shadow:0 4px 20px rgba(124,58,237,0.5);
+}
+.btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(124,58,237,0.7); }
+.btn-primary:active { transform:translateY(0); }
+.btn-full { width:100%; margin-top:16px; }
+
+/* Player stats bar */
+.player-bar {
+  display:flex; align-items:center; gap:10px;
+  background:var(--card); border-radius:50px;
+  padding:8px 16px; margin-bottom:20px;
+  border:1px solid rgba(192,132,252,0.15);
+  width:100%; max-width:500px;
+}
+.player-avatar {
+  width:38px;height:38px;border-radius:50%;
+  background:linear-gradient(135deg,var(--purple),var(--pink));
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+}
+.player-name-bar { font-weight:800;font-size:15px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.level-badge {
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#1a0a00; border-radius:50px; padding:3px 10px;
+  font-size:12px; font-weight:900; white-space:nowrap;
+}
+.xp-mini { font-size:11px; color:var(--text3); white-space:nowrap; }
+
+/* ======= SUBJECT SELECT ======= */
+.subject-grid {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:14px; width:100%; max-width:500px;
+}
+.subject-card {
+  background:var(--card);
+  border:2px solid rgba(192,132,252,0.15);
+  border-radius:var(--radius);
+  padding:20px 14px;
+  text-align:center;
+  cursor:pointer;
+  transition:all 0.25s;
+  position:relative; overflow:hidden;
+}
+.subject-card::before {
+  content:''; position:absolute; inset:0;
+  background:var(--sc-color,var(--purple));
+  opacity:0; transition:opacity 0.25s;
+}
+.subject-card:hover::before { opacity:0.1; }
+.subject-card:hover { transform:translateY(-4px); border-color:var(--sc-color,var(--purple)); box-shadow:0 8px 24px rgba(0,0,0,0.3); }
+.subject-card:active { transform:translateY(-1px); }
+.sc-emoji { font-size:48px; display:block; margin-bottom:8px; }
+.sc-name {
+  font-family:'Fredoka One',cursive; font-size:18px;
+  color:var(--text); display:block;
+}
+.sc-score {
+  font-size:11px; color:var(--text3); font-weight:700;
+  margin-top:4px;
+}
+.sc-stars { color:var(--accent); font-size:13px; }
+
+.section-title {
+  font-family:'Fredoka One',cursive;
+  font-size:28px; color:var(--purple3);
+  text-align:center; margin-bottom:20px;
+}
+
+/* ======= QUIZ SCREEN ======= */
+.quiz-wrap { width:100%;max-width:520px; display:flex;flex-direction:column;gap:14px; }
+
+.quiz-header {
+  display:flex; align-items:center; gap:12px;
+}
+.back-btn {
+  background:var(--card); border:none; color:var(--text3);
+  width:40px;height:40px;border-radius:50%;
+  font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s; flex-shrink:0;
+}
+.back-btn:hover { background:var(--card2); color:var(--text); }
+.quiz-subject-label {
+  font-family:'Fredoka One',cursive;font-size:20px;
+  color:var(--purple3); flex:1;
+}
+.quiz-counter { font-weight:800;font-size:14px;color:var(--text3); }
+
+/* Progress bar */
+.progress-wrap {
+  background:var(--bg2); border-radius:50px; height:10px;
+  overflow:hidden; position:relative;
+}
+.progress-fill {
+  height:100%; border-radius:50px;
+  background:linear-gradient(90deg,var(--purple),var(--purple3),var(--pink));
+  transition:width 0.5s cubic-bezier(.4,0,.2,1);
+}
+
+/* Timer */
+.timer-row { display:flex;align-items:center;gap:10px; }
+.timer-label { font-size:12px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:1px; }
+.timer-bar-wrap { flex:1;background:var(--bg2);border-radius:50px;height:8px;overflow:hidden; }
+.timer-bar-fill {
+  height:100%;border-radius:50px;
+  background:linear-gradient(90deg,var(--green),var(--accent));
+  transition:width 0.1s linear, background 0.5s;
+}
+.timer-bar-fill.warn { background:linear-gradient(90deg,var(--accent),var(--red)); }
+.timer-num {
+  font-family:'Fredoka One',cursive;font-size:22px;
+  min-width:32px;text-align:right;
+  transition:color 0.3s;
+}
+.timer-num.warn { color:var(--red2); }
+
+/* Question card */
+.question-card {
+  background:var(--card);
+  border:2px solid rgba(192,132,252,0.15);
+  border-radius:var(--radius);
+  padding:24px 20px;
+  box-shadow:var(--shadow);
+  position:relative;
+}
+.q-category {
+  font-size:11px;font-weight:800;color:var(--purple3);
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;
+}
+.q-text {
+  font-size:20px;font-weight:800;line-height:1.4;
+  color:var(--text);
+}
+
+/* Answer options */
+.answers-grid {
+  display:flex;flex-direction:column;gap:10px;
+}
+.answer-btn {
+  background:var(--bg2);
+  border:2px solid rgba(124,58,237,0.25);
+  border-radius:14px;padding:14px 18px;
+  color:var(--text);font-family:'Nunito',sans-serif;
+  font-size:16px;font-weight:700;
+  cursor:pointer;text-align:left;
+  transition:all 0.2s;display:flex;align-items:center;gap:10px;
+}
+.answer-btn:hover:not(:disabled) {
+  background:var(--card); border-color:var(--purple2);
+  transform:translateX(4px);
+}
+.answer-btn:active:not(:disabled) { transform:translateX(2px); }
+.answer-btn.correct {
+  background:rgba(16,185,129,0.2); border-color:var(--green2);
+  color:var(--green2); animation:correctBounce 0.5s;
+}
+.answer-btn.wrong {
+  background:rgba(239,68,68,0.2); border-color:var(--red2);
+  color:var(--red2); animation:shake 0.4s;
+}
+.answer-btn.show-correct {
+  background:rgba(16,185,129,0.15); border-color:var(--green);
+}
+.answer-btn:disabled { cursor:not-allowed; }
+.answer-letter {
+  width:28px;height:28px;border-radius:50%;
+  background:rgba(124,58,237,0.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:900;flex-shrink:0;
+}
+@keyframes correctBounce {
+  0%{transform:scale(1)}30%{transform:scale(1.05)}60%{transform:scale(0.97)}100%{transform:scale(1)}
+}
+@keyframes shake {
+  0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}
+}
+
+/* Feedback box */
+.feedback-box {
+  border-radius:14px; padding:14px 16px;
+  font-size:14px;font-weight:700;line-height:1.5;
+  display:none;
+}
+.feedback-box.show { display:block; animation:fadeIn 0.3s; }
+.feedback-box.correct { background:rgba(16,185,129,0.15);border:1.5px solid var(--green2);color:var(--green2); }
+.feedback-box.wrong { background:rgba(239,68,68,0.1);border:1.5px solid var(--red2);color:var(--text); }
+.feedback-box .feedback-title { font-size:16px;font-weight:900;margin-bottom:4px; }
+
+.next-btn {
+  background:linear-gradient(135deg,var(--purple),var(--purple2));
+  border:none;border-radius:50px;
+  color:#fff;font-family:'Nunito',sans-serif;
+  font-size:18px;font-weight:900;
+  padding:14px 24px;cursor:pointer;
+  width:100%;transition:all 0.2s;
+  display:none;
+}
+.next-btn.show { display:block; animation:fadeIn 0.3s; }
+.next-btn:hover { transform:translateY(-2px);box-shadow:0 8px 24px rgba(124,58,237,0.5); }
+
+/* Streak badge */
+.streak-display {
+  display:flex;align-items:center;gap:8px;
+  background:rgba(245,158,11,0.15);border:1.5px solid rgba(245,158,11,0.3);
+  border-radius:50px;padding:6px 14px;
+  font-weight:800;font-size:14px;
+  color:var(--accent2);
+  opacity:0;transition:opacity 0.3s;
+}
+.streak-display.visible { opacity:1; }
+
+/* ======= RESULTS SCREEN ======= */
+.results-card {
+  background:var(--card);border:2px solid rgba(192,132,252,0.2);
+  border-radius:var(--radius);padding:28px 24px;
+  width:100%;max-width:480px;
+  text-align:center;box-shadow:var(--shadow);
+}
+.result-emoji { font-size:72px;display:block;animation:float 3s ease-in-out infinite; }
+.result-title {
+  font-family:'Fredoka One',cursive;font-size:36px;
+  color:var(--purple3);margin:12px 0 4px;
+}
+.result-subtitle { font-size:16px;color:var(--text3);font-weight:700;margin-bottom:20px; }
+
+.result-stats {
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;
+}
+.stat-box {
+  background:var(--bg2);border-radius:14px;padding:14px;
+}
+.stat-num {
+  font-family:'Fredoka One',cursive;font-size:32px;
+  color:var(--purple3);
+}
+.stat-label { font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px; }
+
+.xp-gained {
+  background:linear-gradient(135deg,rgba(245,158,11,0.2),rgba(251,191,36,0.1));
+  border:1.5px solid rgba(245,158,11,0.3);
+  border-radius:14px;padding:14px;margin-bottom:20px;
+  font-size:18px;font-weight:800;color:var(--accent2);
+}
+
+.achievements-list { text-align:left; margin-bottom:20px; }
+.achievement-item {
+  display:flex;align-items:center;gap:10px;
+  background:var(--bg2);border-radius:12px;padding:10px 14px;
+  margin-bottom:8px;animation:fadeIn 0.4s;
+}
+.achievement-icon { font-size:24px;flex-shrink:0; }
+.achievement-name { font-weight:800;font-size:14px; }
+.achievement-desc { font-size:12px;color:var(--text3); }
+
+.btn-secondary {
+  background:var(--bg2);border:2px solid rgba(192,132,252,0.2);
+  color:var(--text3);font-family:'Nunito',sans-serif;
+  font-size:16px;font-weight:800;
+  padding:12px 24px;border-radius:50px;
+  cursor:pointer;transition:all 0.2s;
+}
+.btn-secondary:hover { border-color:var(--purple2);color:var(--text); }
+
+.btn-row { display:flex;gap:10px;width:100%; }
+.btn-row .btn, .btn-row .btn-secondary { flex:1; }
+
+/* ======= PROFILE SCREEN ======= */
+.profile-wrap { width:100%;max-width:480px; }
+.profile-header {
+  text-align:center;margin-bottom:20px;
+}
+.profile-avatar-big {
+  width:80px;height:80px;border-radius:50%;
+  background:linear-gradient(135deg,var(--purple),var(--pink));
+  display:flex;align-items:center;justify-content:center;
+  font-size:40px;margin:0 auto 12px;
+  box-shadow:0 0 30px rgba(124,58,237,0.5);
+}
+.profile-name { font-family:'Fredoka One',cursive;font-size:28px;color:var(--purple3); }
+.xp-bar-wrap {
+  background:var(--bg2);border-radius:50px;height:12px;
+  overflow:hidden;margin:8px 0 4px;
+}
+.xp-bar-fill {
+  height:100%;border-radius:50px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  transition:width 0.8s cubic-bezier(.4,0,.2,1);
+}
+.xp-text { font-size:12px;color:var(--text3);font-weight:700; }
+
+.profile-section-title {
+  font-family:'Fredoka One',cursive;font-size:20px;
+  color:var(--text2);margin:16px 0 8px;
+}
+.subject-scores { display:flex;flex-direction:column;gap:8px; }
+.subject-score-row {
+  background:var(--card);border-radius:12px;padding:12px 16px;
+  display:flex;align-items:center;gap:12px;
+}
+.ss-emoji { font-size:24px; }
+.ss-info { flex:1; }
+.ss-name { font-weight:800;font-size:14px; }
+.ss-bar-wrap { background:var(--bg2);border-radius:50px;height:6px;margin-top:4px; }
+.ss-bar-fill { height:100%;border-radius:50px;transition:width 0.8s; }
+.ss-stat { font-size:12px;color:var(--text3);font-weight:700; }
+
+.achievements-grid {
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+}
+.ach-card {
+  background:var(--card);border-radius:12px;padding:12px;text-align:center;
+  border:1.5px solid rgba(192,132,252,0.1);
+}
+.ach-card.locked { opacity:0.4; }
+.ach-card .ach-icon { font-size:32px;display:block;margin-bottom:4px; }
+.ach-card .ach-name { font-size:11px;font-weight:800;color:var(--text2); }
+
+/* ======= XP POPUP ======= */
+.xp-popup {
+  position:fixed;top:20px;right:20px;z-index:1000;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#1a0a00;border-radius:50px;padding:10px 20px;
+  font-weight:900;font-size:16px;
+  transform:translateY(-100px);opacity:0;
+  transition:all 0.4s cubic-bezier(.4,0,.2,1);
+  pointer-events:none;box-shadow:0 4px 20px rgba(245,158,11,0.5);
+}
+.xp-popup.show {
+  transform:translateY(0);opacity:1;
+}
+
+/* ======= LEVEL UP ======= */
+.levelup-overlay {
+  position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,0.7);
+  display:none;align-items:center;justify-content:center;
+  animation:fadeIn 0.3s;
+}
+.levelup-overlay.show { display:flex; }
+.levelup-card {
+  background:var(--card);border-radius:var(--radius);
+  padding:40px 32px;text-align:center;
+  border:2px solid var(--accent);
+  box-shadow:0 0 60px rgba(245,158,11,0.3);
+  animation:levelUpAnim 0.5s;
+}
+@keyframes levelUpAnim {
+  0%{transform:scale(0.5);opacity:0}
+  70%{transform:scale(1.08)}
+  100%{transform:scale(1);opacity:1}
+}
+.levelup-emoji { font-size:80px;display:block;margin-bottom:12px; }
+.levelup-title {
+  font-family:'Fredoka One',cursive;font-size:40px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2),var(--purple3));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:8px;
+}
+.levelup-desc { font-size:18px;color:var(--text3);font-weight:700;margin-bottom:24px; }
+
+/* ======= CONFETTI ======= */
+.confetti-container {
+  position:fixed;inset:0;pointer-events:none;z-index:999;overflow:hidden;
+}
+.confetti-piece {
+  position:absolute;top:-20px;
+  width:10px;height:12px;
+  border-radius:2px;
+  animation:confettiFall var(--dur) ease-in forwards;
+  animation-delay:var(--delay);
+}
+@keyframes confettiFall {
+  0%{transform:translateY(0) rotate(0deg);opacity:1}
+  100%{transform:translateY(110vh) rotate(720deg);opacity:0}
+}
+
+/* ======= NAV ======= */
+.bottom-nav {
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(26,10,53,0.95);
+  backdrop-filter:blur(20px);
+  border-top:1px solid rgba(192,132,252,0.15);
+  display:flex;z-index:200;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.nav-item {
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:10px 0 8px;cursor:pointer;
+  transition:all 0.2s;color:var(--text3);font-size:10px;font-weight:700;
+  gap:3px;border:none;background:none;
+}
+.nav-item.active { color:var(--purple3); }
+.nav-icon { font-size:22px; }
+.nav-item.active .nav-icon { animation:navPop 0.3s; }
+@keyframes navPop { 0%{transform:scale(1)}50%{transform:scale(1.3)}100%{transform:scale(1)} }
+
+/* Padding for bottom nav */
+.screen { padding-bottom:80px; }
+
+/* ======= RESPONSIVE ======= */
+@media(min-width:500px) {
+  .q-text { font-size:22px; }
+  .answer-btn { font-size:17px; }
+}
+
+/* Loading state */
+.loading-dots {
+  display:inline-flex;gap:6px;
+}
+.loading-dots span {
+  width:8px;height:8px;border-radius:50%;
+  background:var(--purple3);
+  animation:dotBounce 1.4s ease-in-out infinite;
+}
+.loading-dots span:nth-child(2){animation-delay:0.2s;}
+.loading-dots span:nth-child(3){animation-delay:0.4s;}
+@keyframes dotBounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
+
+.scroll-area { overflow-y:auto;flex:1;width:100%; }
+
+/* ======= ZAKGELD ======= */
+.piggy-bar {
+  background:linear-gradient(135deg,#064e3b,#065f46);
+  border:1.5px solid #34d399;
+  border-radius:var(--radius);
+  padding:14px 18px;
+  width:100%;max-width:500px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin-bottom:4px;
+}
+.piggy-left { display:flex;align-items:center;gap:10px; }
+.piggy-icon { font-size:2rem; }
+.piggy-label { font-size:11px;color:#6ee7b7;text-transform:uppercase;letter-spacing:1px;font-weight:700; }
+.piggy-amount { font-family:'Fredoka One',cursive;font-size:1.8rem;color:#34d399;line-height:1; }
+.piggy-pending { font-size:11px;color:#6ee7b7;margin-top:2px; }
+.piggy-btn {
+  background:#065f46;border:1.5px solid #34d399;border-radius:10px;
+  padding:8px 12px;color:#34d399;font-family:'Nunito',sans-serif;
+  font-weight:700;font-size:12px;cursor:pointer;transition:background 0.15s;white-space:nowrap;
+}
+.piggy-btn:hover { background:#047857; }
+
+.money-toast {
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(135deg,#065f46,#047857);
+  border:1.5px solid #34d399;border-radius:20px;
+  padding:12px 22px;display:flex;align-items:center;gap:10px;
+  z-index:300;box-shadow:0 0 20px rgba(52,211,153,0.4);
+  white-space:nowrap;pointer-events:none;
+  animation:slideUpToast 0.4s ease, fadeOutToast 0.4s ease 2.8s forwards;
+}
+.money-toast-icon { font-size:1.4rem; }
+.money-toast-text { font-weight:800;font-size:14px;color:#d1fae5; }
+.money-toast-amount { font-family:'Fredoka One',cursive;font-size:1.3rem;color:#34d399; }
+@keyframes slideUpToast { from{transform:translateX(-50%) translateY(20px);opacity:0} to{transform:translateX(-50%) translateY(0);opacity:1} }
+@keyframes fadeOutToast { to{opacity:0;transform:translateX(-50%) translateY(10px)} }
+
+/* ======= PIN OVERLAY ======= */
+.pin-overlay {
+  position:fixed;inset:0;background:rgba(0,0,0,0.85);
+  backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;
+  z-index:400;opacity:0;pointer-events:none;transition:opacity 0.3s;
+}
+.pin-overlay.show { opacity:1;pointer-events:all; }
+.pin-box {
+  background:var(--card);border:1.5px solid rgba(192,132,252,0.3);
+  border-radius:24px;padding:32px 28px;text-align:center;
+  max-width:300px;width:90%;box-shadow:0 0 40px rgba(192,132,252,0.3);
+  animation:levelUpAnim 0.4s ease;
+}
+.pin-title { font-family:'Fredoka One',cursive;font-size:1.6rem;color:var(--purple3);margin-bottom:6px; }
+.pin-sub { font-size:13px;color:var(--text3);margin-bottom:20px; }
+.pin-dots { display:flex;justify-content:center;gap:12px;margin-bottom:20px; }
+.pin-dot { width:14px;height:14px;border-radius:50%;background:rgba(124,58,237,0.3);transition:background 0.2s; }
+.pin-dot.filled { background:var(--purple3); }
+.pin-numpad { display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px; }
+.pin-key {
+  background:var(--bg2);border:1.5px solid rgba(124,58,237,0.25);
+  border-radius:14px;padding:16px;font-family:'Fredoka One',cursive;
+  font-size:1.4rem;color:var(--text);cursor:pointer;transition:all 0.1s;
+}
+.pin-key:active { transform:scale(0.92);background:var(--card2); }
+.pin-error { color:var(--red2);font-size:13px;min-height:20px;margin-bottom:4px; }
+.pin-cancel { background:none;border:none;color:var(--text3);font-family:'Nunito',sans-serif;font-size:14px;cursor:pointer;padding:8px;text-decoration:underline; }
+
+/* ======= DASHBOARD SCREEN ======= */
+.dash-wrap { width:100%;max-width:480px; }
+.dash-header { display:flex;align-items:center;gap:12px;margin-bottom:16px; }
+.dash-title { font-family:'Fredoka One',cursive;font-size:1.6rem;color:var(--purple3); }
+.dash-subtitle { font-size:12px;color:var(--text3); }
+.dash-card {
+  background:var(--card);border:1.5px solid rgba(192,132,252,0.15);
+  border-radius:var(--radius);padding:20px;margin-bottom:14px;
+}
+.dash-card-title { font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:14px; }
+.money-overview { display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px; }
+.money-stat { text-align:center; }
+.money-stat-val { font-family:'Fredoka One',cursive;font-size:1.5rem; }
+.money-stat-val.mgreen { color:#34d399; }
+.money-stat-val.mgold { color:var(--accent2); }
+.money-stat-val.mmuted { color:var(--text3); }
+.money-stat-lbl { font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-top:2px; }
+.uitbetalen-box {
+  background:linear-gradient(135deg,#064e3b,#065f46);
+  border:1.5px solid #34d399;border-radius:14px;padding:16px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.uitbetalen-info { flex:1; }
+.uitbetalen-label { font-size:11px;color:#6ee7b7;font-weight:700;text-transform:uppercase;letter-spacing:1px; }
+.uitbetalen-amount { font-family:'Fredoka One',cursive;font-size:2rem;color:#34d399; }
+.btn-uitbetalen {
+  background:#34d399;border:none;border-radius:12px;padding:12px 16px;
+  color:#064e3b;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;
+  cursor:pointer;transition:all 0.15s;box-shadow:0 4px 12px rgba(52,211,153,0.4);white-space:nowrap;
+}
+.btn-uitbetalen:hover { transform:translateY(-2px);box-shadow:0 6px 18px rgba(52,211,153,0.5); }
+.btn-uitbetalen:disabled { opacity:0.4;cursor:not-allowed;transform:none; }
+.streak-bonussen { display:flex;flex-direction:column;gap:8px; }
+.streak-row { display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg2);border-radius:12px; }
+.streak-row-left { display:flex;align-items:center;gap:10px; }
+.streak-row-icon { font-size:1.3rem; }
+.streak-row-name { font-weight:700;font-size:13px; }
+.streak-row-desc { font-size:11px;color:var(--text3); }
+.streak-row-val { font-family:'Fredoka One',cursive;font-size:1.1rem;color:var(--accent2); }
+.history-list { display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto; }
+.history-item { display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg2);border-radius:12px;font-size:13px; }
+.history-item-desc { font-weight:700;color:var(--text); }
+.history-item-date { font-size:11px;color:var(--text3); }
+.history-item-amount { font-family:'Fredoka One',cursive;font-size:1.1rem; }
+.history-item-amount.hcredit { color:#34d399; }
+.history-item-amount.hdebit { color:var(--accent2); }
+</style>
+</head>
+<body>
+
+<!-- Stars background -->
+<div class="stars" id="starsContainer"></div>
+
+<!-- XP Popup -->
+<div class="xp-popup" id="xpPopup">+0 XP ⭐</div>
+
+<!-- Level Up Overlay -->
+<div class="levelup-overlay" id="levelupOverlay">
+  <div class="levelup-card">
+    <span class="levelup-emoji">🎉</span>
+    <div class="levelup-title" id="levelupTitle">Level Up!</div>
+    <div class="levelup-desc" id="levelupDesc">Je bent nu level 2!</div>
+    <button class="btn btn-primary" onclick="closeLevelUp()">Wauw! 🚀</button>
+  </div>
+</div>
+
+<!-- Confetti container -->
+<div class="confetti-container" id="confettiContainer"></div>
+
+<!-- PIN Overlay -->
+<div class="pin-overlay" id="pinOverlay">
+  <div class="pin-box">
+    <div class="pin-title">🔐 Ouder-code</div>
+    <div class="pin-sub" id="pinSub">Voer de 4-cijferige code in</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-numpad">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <button class="pin-key" onclick="pinKey('del')" style="font-size:1rem">⌫</button>
+      <button class="pin-key" onclick="pinKey('0')">0</button>
+      <button class="pin-key" onclick="pinKey('ok')" style="background:var(--purple);color:#fff">OK</button>
+    </div>
+    <div class="pin-error" id="pinError"></div>
+    <button class="pin-cancel" onclick="closePin()">Annuleren</button>
+  </div>
+</div>
+
+<div id="app">
+
+  <!-- ====== WELCOME SCREEN ====== -->
+  <div class="screen active" id="screenWelcome">
+    <div class="logo-area">
+      <span class="logo-emoji">🎓</span>
+      <div class="logo-title">Groep 4 Quiz</div>
+      <div class="logo-sub">Leren is een avontuur!</div>
+    </div>
+    <div class="welcome-card">
+      <label for="nameInput">👋 Wat is jouw naam?</label>
+      <input type="text" id="nameInput" placeholder="Typ je naam hier..." maxlength="20" autocomplete="off">
+      <button class="btn btn-primary btn-full" onclick="startApp()">Spelen! 🚀</button>
+    </div>
+  </div>
+
+  <!-- ====== HOME SCREEN ====== -->
+  <div class="screen" id="screenHome" style="justify-content:flex-start;padding-top:24px;">
+    <div class="player-bar" id="playerBar">
+      <div class="player-avatar">😊</div>
+      <span class="player-name-bar" id="playerBarName">Speler</span>
+      <span class="level-badge" id="playerBarLevel">Lv 1</span>
+      <span class="xp-mini" id="playerBarXP">0 XP</span>
+    </div>
+
+    <div class="piggy-bar" id="piggyBar">
+      <div class="piggy-left">
+        <div class="piggy-icon">🐷</div>
+        <div>
+          <div class="piggy-label">Spaarpot</div>
+          <div class="piggy-amount" id="piggyAmount">€0,00</div>
+          <div class="piggy-pending" id="piggyPending">Nog niets verdiend</div>
+        </div>
+      </div>
+      <button class="piggy-btn" onclick="openPin('dashboard')">📊 Dashboard</button>
+    </div>
+
+    <div class="section-title">Kies een vak 📚</div>
+
+    <div class="subject-grid">
+      <div class="subject-card" style="--sc-color:#7c3aed" onclick="startSubject('nl')">
+        <span class="sc-emoji">📖</span>
+        <span class="sc-name">Nederlands</span>
+        <div class="sc-score" id="score-nl">
+          <div class="sc-stars">☆☆☆☆☆</div>
+          <div>0 rondes</div>
+        </div>
+      </div>
+      <div class="subject-card" style="--sc-color:#3b82f6" onclick="startSubject('rk')">
+        <span class="sc-emoji">🔢</span>
+        <span class="sc-name">Rekenen</span>
+        <div class="sc-score" id="score-rk">
+          <div class="sc-stars">☆☆☆☆☆</div>
+          <div>0 rondes</div>
+        </div>
+      </div>
+      <div class="subject-card" style="--sc-color:#10b981" onclick="startSubject('en')">
+        <span class="sc-emoji">🇬🇧</span>
+        <span class="sc-name">Engels</span>
+        <div class="sc-score" id="score-en">
+          <div class="sc-stars">☆☆☆☆☆</div>
+          <div>0 rondes</div>
+        </div>
+      </div>
+      <div class="subject-card" style="--sc-color:#f59e0b" onclick="startSubject('ow')">
+        <span class="sc-emoji">🌍</span>
+        <span class="sc-name">Oriëntatie</span>
+        <div class="sc-score" id="score-ow">
+          <div class="sc-stars">☆☆☆☆☆</div>
+          <div>0 rondes</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== QUIZ SCREEN ====== -->
+  <div class="screen" id="screenQuiz" style="justify-content:flex-start;padding-top:20px;">
+    <div class="quiz-wrap">
+      <div class="quiz-header">
+        <button class="back-btn" onclick="goHome()">←</button>
+        <span class="quiz-subject-label" id="quizSubjectLabel">📖 Nederlands</span>
+        <span class="quiz-counter" id="quizCounter">1/10</span>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+
+      <div class="timer-row">
+        <span class="timer-label">Tijd</span>
+        <div class="timer-bar-wrap">
+          <div class="timer-bar-fill" id="timerBarFill"></div>
+        </div>
+        <span class="timer-num" id="timerNum">20</span>
+        <div class="streak-display" id="streakDisplay">🔥 <span id="streakNum">0</span> op rij!</div>
+      </div>
+
+      <div class="question-card">
+        <div class="q-category" id="qCategory">Spelling</div>
+        <div class="q-text" id="qText">Vraag verschijnt hier...</div>
+      </div>
+
+      <div class="answers-grid" id="answersGrid"></div>
+
+      <div class="feedback-box" id="feedbackBox">
+        <div class="feedback-title" id="feedbackTitle">Goed zo! 🎉</div>
+        <div id="feedbackText">Uitleg hier...</div>
+      </div>
+
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Volgende vraag →</button>
+    </div>
+  </div>
+
+  <!-- ====== RESULTS SCREEN ====== -->
+  <div class="screen" id="screenResults" style="justify-content:flex-start;padding-top:24px;">
+    <div class="results-card">
+      <span class="result-emoji" id="resultEmoji">⭐</span>
+      <div class="result-title" id="resultTitle">Super gedaan!</div>
+      <div class="result-subtitle" id="resultSubtitle">Je hebt de ronde afgerond!</div>
+
+      <div class="result-stats">
+        <div class="stat-box">
+          <div class="stat-num" id="statCorrect">0</div>
+          <div class="stat-label">Goed ✅</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="statWrong">0</div>
+          <div class="stat-label">Fout ❌</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="statStreak">0</div>
+          <div class="stat-label">Beste reeks 🔥</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="statTime">0s</div>
+          <div class="stat-label">Gem. tijd ⏱️</div>
+        </div>
+      </div>
+
+      <div class="xp-gained" id="xpGained">+0 XP verdiend! ⭐</div>
+
+      <div class="achievements-list" id="achievementsList"></div>
+
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="goHome()">🏠 Menu</button>
+        <button class="btn btn-primary" id="playAgainBtn" onclick="playAgain()">🔄 Opnieuw</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== PROFILE SCREEN ====== -->
+  <div class="screen" id="screenProfile" style="justify-content:flex-start;padding-top:24px;align-items:center;">
+    <div class="profile-wrap">
+      <div class="profile-header">
+        <div class="profile-avatar-big">😊</div>
+        <div class="profile-name" id="profileName">Speler</div>
+        <div style="margin-top:6px">
+          <span class="level-badge" id="profileLevel" style="font-size:14px;padding:4px 14px">Level 1 — Beginners ster</span>
+        </div>
+        <div class="xp-bar-wrap" style="margin-top:12px">
+          <div class="xp-bar-fill" id="profileXpBar" style="width:0%"></div>
+        </div>
+        <div class="xp-text" id="profileXpText">0 / 200 XP</div>
+      </div>
+
+      <div class="profile-section-title">📊 Vakken</div>
+      <div class="subject-scores" id="subjectScores"></div>
+
+      <div class="profile-section-title">🏆 Prestaties</div>
+      <div class="achievements-grid" id="achievementsGrid"></div>
+
+      <div style="margin-top:16px">
+        <button class="btn-secondary" style="width:100%" onclick="resetGame()">🗑️ Opnieuw beginnen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== DASHBOARD SCREEN ====== -->
+  <div class="screen" id="screenDashboard" style="justify-content:flex-start;padding-top:24px;align-items:center;">
+    <div class="dash-wrap">
+      <div class="dash-header">
+        <button class="back-btn" onclick="goHome()">←</button>
+        <div>
+          <div class="dash-title">💰 Ouder-dashboard</div>
+          <div class="dash-subtitle">Zakgeld overzicht voor <span id="dashName">—</span></div>
+        </div>
+      </div>
+
+      <div class="dash-card">
+        <div class="dash-card-title">💰 Zakgeld overzicht</div>
+        <div class="money-overview">
+          <div class="money-stat">
+            <div class="money-stat-val mgreen" id="dashTotal">€0,00</div>
+            <div class="money-stat-lbl">Totaal verdiend</div>
+          </div>
+          <div class="money-stat">
+            <div class="money-stat-val mgold" id="dashPaid">€0,00</div>
+            <div class="money-stat-lbl">Uitbetaald</div>
+          </div>
+          <div class="money-stat">
+            <div class="money-stat-val mgreen" id="dashPending">€0,00</div>
+            <div class="money-stat-lbl">Te betalen</div>
+          </div>
+        </div>
+        <div class="uitbetalen-box">
+          <div class="uitbetalen-info">
+            <div class="uitbetalen-label">Nu uitbetalen</div>
+            <div class="uitbetalen-amount" id="dashPayNow">€0,00</div>
+          </div>
+          <button class="btn-uitbetalen" id="btnUitbetalen" onclick="uitbetalen()">✅ Uitbetaald!</button>
+        </div>
+      </div>
+
+      <div class="dash-card">
+        <div class="dash-card-title">📈 Hoe verdient hij/zij?</div>
+        <div class="streak-bonussen">
+          <div class="streak-row">
+            <div class="streak-row-left">
+              <div class="streak-row-icon">📝</div>
+              <div><div class="streak-row-name">Per ronde (10 vragen)</div><div class="streak-row-desc">Elke gespeelde ronde</div></div>
+            </div>
+            <div class="streak-row-val">€0,01</div>
+          </div>
+          <div class="streak-row">
+            <div class="streak-row-left">
+              <div class="streak-row-icon">🏆</div>
+              <div><div class="streak-row-name">Perfecte score (10/10)</div><div class="streak-row-desc">Bonus voor alles goed!</div></div>
+            </div>
+            <div class="streak-row-val">€0,02</div>
+          </div>
+          <div class="streak-row">
+            <div class="streak-row-left">
+              <div class="streak-row-icon">🔥</div>
+              <div><div class="streak-row-name">Streak bonus (3+ op rij)</div><div class="streak-row-desc">Max streak: <span id="dashMaxStreak">0</span></div></div>
+            </div>
+            <div class="streak-row-val">€0,01</div>
+          </div>
+          <div class="streak-row">
+            <div class="streak-row-left">
+              <div class="streak-row-icon">📚</div>
+              <div><div class="streak-row-name">Totaal vragen gespeeld</div><div class="streak-row-desc">Alle vakken samen</div></div>
+            </div>
+            <div class="streak-row-val" id="dashTotalQ">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-card">
+        <div class="dash-card-title">🕐 Uitbetalingshistorie</div>
+        <div class="history-list" id="historyList">
+          <div style="color:var(--text3);font-size:13px;text-align:center;padding:12px">Nog geen uitbetalingen</div>
+        </div>
+      </div>
+
+      <div class="dash-card">
+        <div class="dash-card-title">⚙️ Instellingen</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button class="btn-secondary" onclick="openPin('changepin')" style="font-size:14px">🔐 PIN-code wijzigen</button>
+          <button class="btn-secondary" onclick="resetZakgeld()" style="font-size:14px;color:var(--red2);border-color:rgba(239,68,68,0.3)">🗑️ Zakgeld resetten</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<div class="bottom-nav" id="bottomNav" style="display:none">
+  <button class="nav-item active" id="navHome" onclick="switchNav('home')">
+    <span class="nav-icon">🏠</span>
+    <span>Home</span>
+  </button>
+  <button class="nav-item" id="navProfile" onclick="switchNav('profile')">
+    <span class="nav-icon">👤</span>
+    <span>Profiel</span>
+  </button>
+</div>
+
+<script>
+// ============================================
+// QUESTION BANK - 100 per subject
+// ============================================
+const QUESTIONS = {
+  nl: [
+    // Spelling
+    {cat:"Spelling",q:"Welk woord is goed gespeld?",a:["fiets","fietss","fiest","fietse"],c:0,ex:"'Fiets' schrijf je met ie en ts."},
+    {cat:"Spelling",q:"Hoe schrijf je het meervoud van 'huis'?",a:["huize","huizen","huissen","huis"],c:1,ex:"Van 'huis' maak je 'huizen'. De s wordt z bij meervoud."},
+    {cat:"Spelling",q:"Welk woord hoort bij het dier dat miauwt?",a:["hond","kat","konijn","vogel"],c:1,ex:"Een kat miauwt! Een hond blaft."},
+    {cat:"Spelling",q:"Kies het goede woord: 'De zon ___.'",a:["schijnd","schijnt","schiend","schijend"],c:1,ex:"'Schijnt' is de goede vorm van het werkwoord 'schijnen'."},
+    {cat:"Spelling",q:"Hoe schrijf je het meervoud van 'boom'?",a:["booms","bomes","bomen","boomm"],c:2,ex:"Van 'boom' maak je 'bomen'. De oo wordt o."},
+    {cat:"Spelling",q:"Welke zin is correct?",a:["Ik heb een appel gegeeten.","Ik heb een appel gegeten.","Ik heb een apel gegeten.","Ik hep een appel gegeten."],c:1,ex:"'Gegeten' schrijf je met één e in het midden."},
+    {cat:"Spelling",q:"Wat is het meervoud van 'tafel'?",a:["tafelen","tafels","tafelss","tafeles"],c:1,ex:"Van 'tafel' maak je 'tafels' door een s toe te voegen."},
+    {cat:"Spelling",q:"Hoe schrijf je het woord voor waar water stroomt door bergen?",a:["rievier","rivier","riveer","rivver"],c:1,ex:"'Rivier' schrijf je met ri-vi-er."},
+    {cat:"Spelling",q:"Kies de goede spelling: 'Hij __ naar school.'",a:["lopt","loopt","loolpt","looopt"],c:1,ex:"'Loopt' is de goede vorm. Je stam is loop + t."},
+    {cat:"Spelling",q:"Wat is de goede spelling van het dier dat eieren legt?",a:["kip","kipp","kyp","kiep"],c:0,ex:"'Kip' schrijf je met k-i-p."},
+    // Lezen & Begrijpen
+    {cat:"Lezen",q:"Tom heeft 3 boeken. Hij leent er nog 2. Hoeveel heeft hij nu?",a:["4","5","6","3"],c:1,ex:"3 + 2 = 5. Tom heeft nu 5 boeken."},
+    {cat:"Lezen",q:"'De hond blafte hard.' Wat deed de hond?",a:["huilen","blaffen","springen","slapen"],c:1,ex:"Blaffen betekent het geluid dat een hond maakt."},
+    {cat:"Lezen",q:"Lisa is ouder dan Tim. Tim is ouder dan Bas. Wie is het jongst?",a:["Lisa","Tim","Bas","Ze zijn even oud"],c:2,ex:"Bas is jonger dan Tim, en Tim is jonger dan Lisa. Dus Bas is het jongst."},
+    {cat:"Lezen",q:"Welk woord betekent hetzelfde als 'blij'?",a:["boos","verdrietig","gelukkig","moe"],c:2,ex:"Blij en gelukkig betekenen allebei dat je je fijn voelt."},
+    {cat:"Lezen",q:"Het is 's ochtends. Wat doe jij als eerste?",a:["slapen gaan","ontbijten","avondeten","naar bed"],c:1,ex:"'s Ochtends begin je met opstaan en ontbijten."},
+    {cat:"Lezen",q:"Welk woord is het tegenovergestelde van 'groot'?",a:["lang","klein","breed","dik"],c:1,ex:"Het tegenovergestelde (antoniem) van groot is klein."},
+    {cat:"Lezen",q:"Een verhaal heeft een begin, een midden en een ...?",a:["plaatje","einde","hoofdstuk","titel"],c:1,ex:"Een verhaal heeft altijd een begin, midden en einde."},
+    {cat:"Lezen",q:"Welke zin klopt? 'De vis ...'",a:["rent in het park","vliegt in de lucht","zwemt in het water","slaapt in de boom"],c:2,ex:"Een vis zwemt in het water. Dat is zijn thuis."},
+    {cat:"Lezen",q:"Welk woord hoort bij 'herfst'?",a:["sneeuw","bladeren","bloemen","strand"],c:1,ex:"In de herfst vallen de bladeren van de bomen."},
+    {cat:"Lezen",q:"Wat is een 'bibliotheek'?",a:["een winkel voor eten","een plek waar je boeken leent","een school","een speeltuin"],c:1,ex:"In een bibliotheek kun je boeken lenen."},
+    // Taal
+    {cat:"Taal",q:"Welk woord is een zelfstandig naamwoord?",a:["rennen","mooi","tafel","snel"],c:2,ex:"'Tafel' is een zelfstandig naamwoord — een ding dat je kunt aanraken."},
+    {cat:"Taal",q:"Welk woord is een werkwoord?",a:["groot","spelen","huis","blij"],c:1,ex:"'Spelen' is een werkwoord — het beschrijft een handeling."},
+    {cat:"Taal",q:"Welk woord is een bijvoeglijk naamwoord?",a:["rennen","auto","rood","ik"],c:2,ex:"'Rood' is een bijvoeglijk naamwoord — het beschrijft hoe iets eruit ziet."},
+    {cat:"Taal",q:"Welke zin heeft een punt nodig?",a:["Hoe heet jij","Ik woon in Amsterdam","Wat een mooi dag","Pas op"],c:1,ex:"Een gewone zin eindigt met een punt. Vragen eindigen met een vraagteken."},
+    {cat:"Taal",q:"Welke zin eindigt met een vraagteken?",a:["Ik ga naar huis","Hoe laat is het","Wat een mooie dag","Stop daarmee"],c:1,ex:"Een vraagzin eindigt altijd met een vraagteken (?)."},
+    {cat:"Taal",q:"Wat is de stam van het woord 'lopen'?",a:["lopen","lope","loop","lo"],c:2,ex:"De stam van 'lopen' is 'loop'. Je verwijdert de -en uitgang."},
+    {cat:"Taal",q:"Welk woord past? 'De kat ligt op ___ mat.'",a:["een","de","het","mijn"],c:1,ex:"'Mat' is een de-woord, dus je gebruikt 'de'."},
+    {cat:"Taal",q:"Hoeveel letters heeft het woord 'school'?",a:["4","5","6","7"],c:2,ex:"S-C-H-O-O-L = 6 letters."},
+    {cat:"Taal",q:"Welk woord rijmt op 'maan'?",a:["boom","laan","tafel","fiets"],c:1,ex:"'Laan' rijmt op 'maan', beide eindigen op -aan."},
+    {cat:"Taal",q:"Hoeveel lettergrepen heeft 'ver-jaar-dag'?",a:["1","2","3","4"],c:2,ex:"Ver-jaar-dag heeft 3 lettergrepen."},
+    // Meer spelling
+    {cat:"Spelling",q:"Welk woord schrijf je met een hoofdletter?",a:["mama (midden in de zin)","amsterdam","de stad","haar huis"],c:1,ex:"Plaatsnamen zoals Amsterdam schrijf je altijd met een hoofdletter."},
+    {cat:"Spelling",q:"Hoe schrijf je 'schrijven' correct?",a:["schrijven","schrijvven","shrjiven","schrijfen"],c:0,ex:"Schr-ij-ven. Let op de ij!"},
+    {cat:"Spelling",q:"Meervoud van 'dag'?",a:["dags","dagen","daags","daggen"],c:1,ex:"'Dag' wordt 'dagen' in het meervoud."},
+    {cat:"Taal",q:"Wat is een zin?",a:["Één woord alleen","Een groep woorden met betekenis","Alleen een werkwoord","Alleen een naamwoord"],c:1,ex:"Een zin is een groep woorden die samen iets betekenen."},
+    {cat:"Taal",q:"Welk woord past: 'Ik heb ___ appel gegeten.'",a:["een","de","het","er"],c:0,ex:"Je zegt 'een appel' want appel begint met een medeklinker."},
+    {cat:"Lezen",q:"Welk woord betekent hetzelfde als 'snel'?",a:["langzaam","vlug","rustig","stil"],c:1,ex:"Snel en vlug betekenen allebei dat je in hoog tempo doet."},
+    {cat:"Spelling",q:"Hoe schrijf je het meervoud van 'wolf'?",a:["wolfs","wolven","wolfes","wolfen"],c:1,ex:"'Wolf' wordt 'wolven'. De f wordt v!"},
+    {cat:"Taal",q:"Welke zin is een uitroep?",a:["Hoe heet jij?","Ik ga naar huis.","Wat een prachtig gezicht!","Is dat jouw fiets?"],c:2,ex:"Een uitroep eindigt met een uitroepteken (!)."},
+    {cat:"Spelling",q:"Hoe schrijf je het meervoud van 'brief'?",a:["briefs","brieven","briefen","briefjes"],c:1,ex:"'Brief' wordt 'brieven'. De f verandert in v bij meervoud."},
+    {cat:"Lezen",q:"Wat is een gedicht?",a:["Een lang verhaal","Een tekst met rijm en ritme","Een lijst van woorden","Een lesboek"],c:1,ex:"Een gedicht is een tekst met rijm en/of ritme."},
+    {cat:"Taal",q:"Welk woordje is een voornaamwoord?",a:["tafel","rennen","hij","mooi"],c:2,ex:"'Hij' is een voornaamwoord. Het vervangt een naam."},
+    {cat:"Spelling",q:"Wat is de juiste schrijfwijze van het woord voor een ronde plak?",a:["schijf","schijfd","schijft","scheijf"],c:0,ex:"'Schijf' is een zelfstandig naamwoord (een schijf)."},
+    {cat:"Taal",q:"Hoeveel woorden heeft de zin: 'De hond rent snel.'?",a:["2","3","4","5"],c:2,ex:"De - hond - rent - snel = 4 woorden."},
+    {cat:"Lezen",q:"Welke letter komt als eerste in het alfabet?",a:["B","Z","A","E"],c:2,ex:"De volgorde is A, B, C... A komt als eerste."},
+    {cat:"Spelling",q:"Hoe schrijf je 'vliegtuig'?",a:["vliegtuig","vleigtuig","vlietuig","vliegutig"],c:0,ex:"Vlieg-tuig. Let op de ie en ui!"},
+    {cat:"Taal",q:"Wat staat er voor een hoofdletter in een zin?",a:["Een punt","Een komma","Een spatie","Niets"],c:0,ex:"Na een punt begin je de volgende zin met een hoofdletter."},
+    {cat:"Spelling",q:"Hoe schrijf je het dier dat in een web woont?",a:["spin","spinn","spieen","spien"],c:0,ex:"'Spin' schrijf je met s-p-i-n."},
+    {cat:"Lezen",q:"Lisa leest graag. Ze heeft al 5 boeken gelezen. Hoeveel boeken heeft ze gelezen?",a:["4","3","5","6"],c:2,ex:"In het verhaal staat dat Lisa 5 boeken heeft gelezen."},
+    {cat:"Taal",q:"Welk woord is het tegenovergestelde van 'donker'?",a:["nacht","licht","zwart","grijs"],c:1,ex:"Het tegenovergestelde van donker is licht."},
+    {cat:"Spelling",q:"Meervoud van 'kind'?",a:["kinds","kinderen","kinden","kinders"],c:1,ex:"'Kind' heeft een onregelmatig meervoud: 'kinderen'."},
+    {cat:"Taal",q:"Welke zin klopt?",a:["Ik gaan naar school.","Ik ga naar school.","Ik gaat naar school.","Ik gegaan naar school."],c:1,ex:"Met 'ik' gebruik je de stam van het werkwoord: 'ga'."},
+    {cat:"Spelling",q:"Hoe schrijf je 'paraplu'?",a:["parraplu","paraplu","paraploo","paraply"],c:1,ex:"Pa-ra-plu. Let op de a's en de u!"},
+    {cat:"Taal",q:"Wat is de stam van 'werken'?",a:["werk","werke","werken","werkk"],c:0,ex:"De stam is 'werk'. Je verwijdert -en."},
+    {cat:"Lezen",q:"Welk woord betekent het tegengestelde van 'vriend'?",a:["kennis","vijand","buur","broer"],c:1,ex:"Het tegenovergestelde van vriend is vijand."},
+    {cat:"Spelling",q:"Hoe schrijf je het getal 8 in letters?",a:["acht","agt","aacht","agcht"],c:0,ex:"Het getal 8 schrijf je als 'acht'."},
+    {cat:"Taal",q:"Welk woord past in de zin? '__ het regent, blijf ik binnen.'",a:["Omdat","Maar","Of","Als"],c:3,ex:"'Als het regent' betekent: in het geval dat het regent."},
+    {cat:"Lezen",q:"Welk woord beschrijft hoe iemand loopt die pijn heeft aan zijn been?",a:["rent","sprint","hinkt","danst"],c:2,ex:"Als je pijn hebt aan je been en toch loopt, hink je."},
+    {cat:"Spelling",q:"Hoe schrijf je de dag na donderdag?",a:["vrijdag","vreidag","vreijdag","freidag"],c:0,ex:"De dag na donderdag is 'vrijdag'."},
+    {cat:"Taal",q:"Welk woord is een lidwoord?",a:["tafel","de","rennen","mooi"],c:1,ex:"'De' en 'het' zijn lidwoorden. Ze staan voor zelfstandige naamwoorden."},
+    {cat:"Spelling",q:"Hoe schrijf je het meervoud van 'ei'?",a:["eies","eieren","eis","eien"],c:1,ex:"'Ei' wordt 'eieren' in het meervoud."},
+    {cat:"Lezen",q:"Wat lees je als je een krantenartikel leest?",a:["Een verhaaltje","Nieuws over de wereld","Een gedicht","Een recept"],c:1,ex:"In een krant lees je nieuws over wat er in de wereld gebeurt."},
+    {cat:"Taal",q:"Welk woord rijmt op 'boot'?",a:["vis","groot","zee","water"],c:1,ex:"Boot en groot rijmen allebei op -oot."},
+    {cat:"Spelling",q:"Hoe schrijf je het woord voor een warme drank?",a:["thee","tee","thée","the"],c:0,ex:"'Thee' schrijf je met th-ee."},
+    {cat:"Taal",q:"Hoeveel lettergrepen heeft 'scho-mel'?",a:["1","2","3","4"],c:1,ex:"Scho-mel heeft 2 lettergrepen."},
+    {cat:"Spelling",q:"Wat is de goede schrijfwijze?",a:["chocola","chocala","chocolade","chocoalate"],c:2,ex:"'Chocolade' schrijf je met ch-o-c-o-l-a-d-e."},
+    {cat:"Lezen",q:"Welk woord betekent een plek waar wilde dieren leven?",a:["boerderij","zoo","park","school"],c:1,ex:"In een zoo leven wilde dieren die je kunt bekijken."},
+    {cat:"Taal",q:"Welk woord is een bijwoord (beschrijft het werkwoord)?",a:["snel","rennen","tafel","rood"],c:0,ex:"'Snel' beschrijft hoe iemand iets doet — dat is een bijwoord."},
+    {cat:"Spelling",q:"Hoe schrijf je het seizoen na de zomer?",a:["herfts","herfast","herfst","herfest"],c:2,ex:"'Herfst' schrijf je met h-e-r-f-s-t."},
+    {cat:"Taal",q:"Welke vraag gebruik je bij een naam of ding?",a:["Hoe?","Wanneer?","Wat? of Wie?","Waarom?"],c:2,ex:"Bij een naam gebruik je 'Wie?' en bij een ding gebruik je 'Wat?'."},
+    {cat:"Spelling",q:"Hoe schrijf je 'bibliotheek'?",a:["bibliotheek","biblioteek","biblioteec","bibliotheec"],c:0,ex:"Bi-bli-o-theek. Let op de th!"},
+    {cat:"Lezen",q:"Wat is een 'inhoudsopgave'?",a:["De achterflap van een boek","Een lijst van hoofdstukken met paginanummers","De naam van de schrijver","Het eerste hoofdstuk"],c:1,ex:"De inhoudsopgave is een lijst van alle hoofdstukken."},
+    {cat:"Taal",q:"Welk woord past: 'Hij is ___ zijn fiets.'",a:["op","in","aan","bij"],c:0,ex:"Je rijdt 'op' je fiets — dat is het juiste voorzetsel."},
+    {cat:"Spelling",q:"Hoe schrijf je 'muziek'?",a:["muziek","muiziek","moeziek","musziek"],c:0,ex:"'Muziek' schrijf je met m-u-z-i-e-k."},
+    {cat:"Lezen",q:"Welk woord is het langst?",a:["kat","school","auto","vak"],c:1,ex:"School heeft 6 letters — dat is het langste woord."},
+    {cat:"Spelling",q:"Hoe schrijf je het meervoud van 'been'?",a:["beens","benen","beenen","benes"],c:1,ex:"'Been' wordt 'benen' in het meervoud."},
+    {cat:"Taal",q:"Welke twee woorden rijmen?",a:["huis en tuin","maan en brood","deur en kleur","vis en tas"],c:2,ex:"Deur en kleur rijmen allebei op -eur."},
+    {cat:"Spelling",q:"Hoe schrijf je 'verjaardag'?",a:["verjaardag","verjaardagh","verjaardaag","verjaardak"],c:0,ex:"Ver-jaar-dag. Let op de aa!"},
+    {cat:"Lezen",q:"Waar sla je een boek op aan het begin?",a:["De achterkant","De zijkant","De voorkant","Het midden"],c:2,ex:"Je opent een boek aan de voorkant."},
+    {cat:"Taal",q:"Welk woord is een koppelwerkwoord?",a:["rennen","zijn","springen","eten"],c:1,ex:"'Zijn' is een koppelwerkwoord: 'Ik ben blij.'"},
+    {cat:"Spelling",q:"Hoe schrijf je de kleur van gras?",a:["groen","greon","groeen","groehn"],c:0,ex:"'Groen' schrijf je met gr-oe-n."},
+    {cat:"Taal",q:"Hoeveel zinnen heeft een alinea minimaal?",a:["1","2","3 of meer","10"],c:2,ex:"Een alinea bestaat uit minimaal 3 zinnen over één onderwerp."},
+    {cat:"Spelling",q:"Hoe schrijf je het woord voor een tekening van een land of stad?",a:["kaart","caart","kaert","kaerd"],c:0,ex:"'Kaart' schrijf je met k-aa-r-t."},
+    {cat:"Taal",q:"Welk woord past: 'De bal is ___ de doos.'",a:["op","naast","in","over"],c:2,ex:"Als de bal in de doos zit, gebruik je 'in'."},
+    {cat:"Spelling",q:"Meervoud van 'schip'?",a:["ships","schips","schepen","schipen"],c:2,ex:"'Schip' heeft een onregelmatig meervoud: 'schepen'."},
+    {cat:"Lezen",q:"Wat betekent 'nieuwsgierig'?",a:["bang","boos","graag dingen willen weten","verdrietig"],c:2,ex:"Nieuwsgierig zijn betekent dat je graag dingen wilt weten en ontdekken."},
+    {cat:"Taal",q:"Welke letter gebruik je NIET bij het schrijven van een naam?",a:["Hoofdletter","Kleine letter","Spatie","Punt"],c:3,ex:"Een naam begint met een hoofdletter, maar heeft geen punt erachter."},
+    {cat:"Spelling",q:"Hoe schrijf je de dag voor zaterdag?",a:["freedag","vrijdag","vreidag","vriedaag"],c:1,ex:"De dag voor zaterdag is 'vrijdag'."},
+    {cat:"Taal",q:"Welk woord is een voegwoord (verbindt zinnen)?",a:["snel","tafel","en","blij"],c:2,ex:"'En' is een voegwoord — het verbindt twee zinsdelen."},
+  ],
+
+  rk: [
+    // Optellen
+    {cat:"Optellen",q:"45 + 38 = ?",a:["73","83","84","72"],c:1,ex:"40+30=70, 5+8=13, 70+13=83."},
+    {cat:"Optellen",q:"67 + 25 = ?",a:["91","92","82","93"],c:1,ex:"60+20=80, 7+5=12, 80+12=92."},
+    {cat:"Optellen",q:"123 + 45 = ?",a:["167","168","158","178"],c:1,ex:"100+40=140, 23+5=28, 140+28=168."},
+    {cat:"Optellen",q:"56 + 44 = ?",a:["90","100","110","89"],c:1,ex:"56+44: 6+4=10, 50+40=90, 90+10=100."},
+    {cat:"Optellen",q:"99 + 11 = ?",a:["100","110","109","111"],c:1,ex:"99+11: 99+1=100, 100+10=110."},
+    {cat:"Aftrekken",q:"75 - 38 = ?",a:["37","47","27","36"],c:0,ex:"75-38: 75-30=45, 45-8=37."},
+    {cat:"Aftrekken",q:"100 - 43 = ?",a:["47","57","67","56"],c:1,ex:"100-43: 100-40=60, 60-3=57."},
+    {cat:"Aftrekken",q:"84 - 27 = ?",a:["57","67","56","58"],c:0,ex:"84-27: 84-20=64, 64-7=57."},
+    {cat:"Aftrekken",q:"63 - 45 = ?",a:["28","18","22","19"],c:1,ex:"63-45: 63-40=23, 23-5=18."},
+    {cat:"Aftrekken",q:"150 - 75 = ?",a:["65","80","75","85"],c:2,ex:"150-75=75. Dit is de helft van 150."},
+    // Vermenigvuldigen
+    {cat:"Vermenigvuldigen",q:"6 × 7 = ?",a:["42","36","48","41"],c:0,ex:"6 × 7 = 42. Zes zevens zijn tweeënveertig."},
+    {cat:"Vermenigvuldigen",q:"8 × 4 = ?",a:["28","36","32","24"],c:2,ex:"8 × 4 = 32. Acht vieren zijn tweeëndertig."},
+    {cat:"Vermenigvuldigen",q:"3 × 9 = ?",a:["24","27","30","21"],c:1,ex:"3 × 9 = 27. Drie negens zijn zevenentwintig."},
+    {cat:"Vermenigvuldigen",q:"5 × 6 = ?",a:["25","35","30","40"],c:2,ex:"5 × 6 = 30. Vijf zessen zijn dertig."},
+    {cat:"Vermenigvuldigen",q:"7 × 8 = ?",a:["54","56","48","64"],c:1,ex:"7 × 8 = 56. Zeven achten zijn zesenvijftig."},
+    {cat:"Vermenigvuldigen",q:"4 × 4 = ?",a:["12","8","16","20"],c:2,ex:"4 × 4 = 16. Vier vieren zijn zestien."},
+    {cat:"Vermenigvuldigen",q:"9 × 3 = ?",a:["24","27","21","30"],c:1,ex:"9 × 3 = 27. Negen drieën zijn zevenentwintig."},
+    {cat:"Vermenigvuldigen",q:"2 × 8 = ?",a:["10","14","18","16"],c:3,ex:"2 × 8 = 16. Twee achten zijn zestien."},
+    {cat:"Vermenigvuldigen",q:"10 × 6 = ?",a:["16","60","56","66"],c:1,ex:"10 × 6 = 60. Bij keer 10 zet je een 0 achter."},
+    {cat:"Vermenigvuldigen",q:"5 × 5 = ?",a:["20","30","25","35"],c:2,ex:"5 × 5 = 25. Vijf vijven zijn vijfentwintig."},
+    // Delen
+    {cat:"Delen",q:"24 ÷ 4 = ?",a:["4","5","6","8"],c:2,ex:"24 ÷ 4 = 6. Want 4 × 6 = 24."},
+    {cat:"Delen",q:"36 ÷ 6 = ?",a:["4","5","6","7"],c:2,ex:"36 ÷ 6 = 6. Want 6 × 6 = 36."},
+    {cat:"Delen",q:"42 ÷ 7 = ?",a:["5","6","7","8"],c:1,ex:"42 ÷ 7 = 6. Want 7 × 6 = 42."},
+    {cat:"Delen",q:"56 ÷ 8 = ?",a:["6","7","8","9"],c:1,ex:"56 ÷ 8 = 7. Want 8 × 7 = 56."},
+    {cat:"Delen",q:"45 ÷ 9 = ?",a:["3","4","5","6"],c:2,ex:"45 ÷ 9 = 5. Want 9 × 5 = 45."},
+    // Meten & Meetkunde
+    {cat:"Meten",q:"Hoeveel centimeter is 1 meter?",a:["10","100","1000","50"],c:1,ex:"1 meter = 100 centimeter."},
+    {cat:"Meten",q:"Hoeveel minuten heeft een uur?",a:["30","45","60","100"],c:2,ex:"Een uur heeft 60 minuten."},
+    {cat:"Meten",q:"Hoeveel uur heeft een dag?",a:["12","20","24","48"],c:2,ex:"Een dag heeft 24 uur."},
+    {cat:"Meten",q:"Hoeveel gram is 1 kilogram?",a:["100","500","1000","10"],c:2,ex:"1 kilogram = 1000 gram."},
+    {cat:"Meten",q:"Hoeveel centimeter is een halve meter?",a:["25","50","75","100"],c:1,ex:"De helft van 100 cm = 50 cm."},
+    {cat:"Meetkunde",q:"Hoeveel hoeken heeft een driehoek?",a:["2","3","4","5"],c:1,ex:"Een driehoek heeft 3 hoeken en 3 zijden."},
+    {cat:"Meetkunde",q:"Hoeveel zijden heeft een vierkant?",a:["3","4","5","6"],c:1,ex:"Een vierkant heeft 4 gelijke zijden."},
+    {cat:"Meetkunde",q:"Hoe heet een figuur met 6 hoeken?",a:["hexagon","driehoek","vierhoek","vijfhoek"],c:0,ex:"Een figuur met 6 hoeken heet een hexagon (of zeshoek)."},
+    {cat:"Meetkunde",q:"Wat is de omtrek van een vierkant met zijde 5 cm?",a:["15 cm","20 cm","25 cm","10 cm"],c:1,ex:"Omtrek = 4 × 5 = 20 cm."},
+    {cat:"Meten",q:"Als het nu 10:00 is, hoe laat is het over 90 minuten?",a:["11:00","11:30","12:00","10:30"],c:1,ex:"90 minuten = 1 uur en 30 minuten. 10:00 + 1:30 = 11:30."},
+    // Getallen
+    {cat:"Getallen",q:"Welk getal is het grootst?",a:["345","354","435","453"],c:3,ex:"453 is het grootst. Vergelijk de honderden: 4 > 3."},
+    {cat:"Getallen",q:"Welk getal is het kleinst?",a:["234","243","324","423"],c:0,ex:"234 is het kleinst. De honderden zijn gelijk, kijk naar de tientallen: 3 < 4."},
+    {cat:"Getallen",q:"Hoeveel is de helft van 80?",a:["20","30","40","50"],c:2,ex:"De helft van 80 is 40. 80 ÷ 2 = 40."},
+    {cat:"Getallen",q:"Hoeveel is het dubbele van 35?",a:["60","65","70","75"],c:2,ex:"Het dubbele van 35 is 70. 35 × 2 = 70."},
+    {cat:"Getallen",q:"Welk getal is even?",a:["37","43","56","71"],c:2,ex:"56 is even omdat 56 deelbaar is door 2."},
+    {cat:"Getallen",q:"Welk getal is oneven?",a:["44","68","82","91"],c:3,ex:"91 is oneven omdat 91 niet deelbaar is door 2."},
+    {cat:"Getallen",q:"Rond 67 af op tientallen.",a:["60","70","65","80"],c:1,ex:"67 ligt dichter bij 70 dan bij 60. Dus afronden = 70."},
+    {cat:"Getallen",q:"Rond 43 af op tientallen.",a:["50","40","45","30"],c:1,ex:"43 ligt dichter bij 40 dan bij 50. Dus afronden = 40."},
+    {cat:"Getallen",q:"Wat is 1/4 van 20?",a:["2","4","5","8"],c:2,ex:"1/4 van 20 = 20 ÷ 4 = 5."},
+    {cat:"Getallen",q:"Wat is 1/2 van 36?",a:["12","18","16","24"],c:1,ex:"1/2 van 36 = 36 ÷ 2 = 18."},
+    // Breuken
+    {cat:"Breuken",q:"Welke breuk is groter: 1/2 of 1/4?",a:["1/4","Ze zijn gelijk","1/2","Dat kun je niet zeggen"],c:2,ex:"1/2 is groter. Als je een pizza halveert, heb je meer dan een kwart."},
+    {cat:"Breuken",q:"Hoe schrijf je 'drie kwart'?",a:["3/5","3/4","4/3","2/4"],c:1,ex:"Drie kwart schrijf je als 3/4."},
+    {cat:"Breuken",q:"Welke breuk is 'de helft'?",a:["1/4","2/3","1/2","3/4"],c:2,ex:"De helft schrijf je als 1/2."},
+    {cat:"Breuken",q:"1/4 + 1/4 = ?",a:["1/2","1/4","2/8","1/8"],c:0,ex:"1/4 + 1/4 = 2/4 = 1/2."},
+    // Geld
+    {cat:"Geld",q:"Je betaalt €1,50 en geeft €2,00. Hoeveel wisselgeld krijg je?",a:["€0,25","€0,50","€0,75","€1,00"],c:1,ex:"€2,00 - €1,50 = €0,50 wisselgeld."},
+    {cat:"Geld",q:"Een brood kost €2,30 en een pak melk €1,20. Wat betaal je samen?",a:["€3,40","€3,50","€3,60","€4,00"],c:1,ex:"€2,30 + €1,20 = €3,50."},
+    {cat:"Geld",q:"Je hebt €5,00. Je koopt iets voor €3,75. Hoeveel hou je over?",a:["€1,15","€1,25","€1,50","€2,25"],c:1,ex:"€5,00 - €3,75 = €1,25."},
+    // Woordsommen
+    {cat:"Woordsom",q:"In een klas zitten 28 kinderen. Vandaag zijn er 5 ziek. Hoeveel kinderen zijn er?",a:["22","23","24","25"],c:1,ex:"28 - 5 = 23 kinderen."},
+    {cat:"Woordsom",q:"Een fiets heeft 2 wielen. Hoeveel wielen hebben 8 fietsen?",a:["10","12","16","14"],c:2,ex:"8 × 2 = 16 wielen."},
+    {cat:"Woordsom",q:"Tom heeft 24 snoepjes verdeeld over 4 zakjes. Hoeveel per zakje?",a:["4","5","6","8"],c:2,ex:"24 ÷ 4 = 6 snoepjes per zakje."},
+    {cat:"Woordsom",q:"Een doos heeft 6 eieren. Hoeveel eieren zijn er in 5 dozen?",a:["25","30","35","11"],c:1,ex:"5 × 6 = 30 eieren."},
+    {cat:"Woordsom",q:"De trein vertrekt om 14:00. De reis duurt 45 minuten. Wanneer kom je aan?",a:["14:40","14:45","15:00","15:15"],c:1,ex:"14:00 + 45 minuten = 14:45."},
+    {cat:"Woordsom",q:"Jan heeft 45 plaatjes. Hij geeft er 18 aan zijn vriend. Hoeveel heeft hij nog?",a:["27","28","37","26"],c:0,ex:"45 - 18 = 27 plaatjes."},
+    {cat:"Meten",q:"Hoeveel maanden heeft een jaar?",a:["10","11","12","13"],c:2,ex:"Een jaar heeft 12 maanden."},
+    {cat:"Meten",q:"Hoeveel weken heeft een jaar?",a:["48","52","56","60"],c:1,ex:"Een jaar heeft 52 weken."},
+    {cat:"Getallen",q:"Welk getal past in de reeks: 5, 10, 15, __, 25?",a:["18","19","20","21"],c:2,ex:"De reeks telt steeds 5 op: 5, 10, 15, 20, 25."},
+    {cat:"Getallen",q:"Welk getal past in de reeks: 100, 90, 80, __, 60?",a:["65","70","75","68"],c:1,ex:"De reeks telt steeds 10 af: 100, 90, 80, 70, 60."},
+    {cat:"Vermenigvuldigen",q:"6 × 6 = ?",a:["32","34","36","38"],c:2,ex:"6 × 6 = 36."},
+    {cat:"Vermenigvuldigen",q:"3 × 8 = ?",a:["21","24","27","18"],c:1,ex:"3 × 8 = 24. Drie achten zijn vierentwintig."},
+    {cat:"Meetkunde",q:"Wat is de oppervlakte van een rechthoek van 4 bij 6?",a:["10","20","24","28"],c:2,ex:"Oppervlakte = 4 × 6 = 24 vierkante eenheden."},
+    {cat:"Getallen",q:"Schrijf 500 + 30 + 7 als getal.",a:["537","573","375","735"],c:0,ex:"Honderden + tientallen + eenheden = 537."},
+    {cat:"Delen",q:"81 ÷ 9 = ?",a:["7","8","9","10"],c:2,ex:"81 ÷ 9 = 9. Want 9 × 9 = 81."},
+    {cat:"Delen",q:"64 ÷ 8 = ?",a:["6","7","8","9"],c:2,ex:"64 ÷ 8 = 8. Want 8 × 8 = 64."},
+    {cat:"Optellen",q:"199 + 1 = ?",a:["190","199","200","201"],c:2,ex:"199 + 1 = 200."},
+    {cat:"Aftrekken",q:"200 - 150 = ?",a:["40","50","60","75"],c:1,ex:"200 - 150 = 50."},
+    {cat:"Getallen",q:"Welk getal is het dichtst bij 50?",a:["38","47","61","55"],c:1,ex:"47 is maar 3 van 50. 38 is 12 weg, 55 is 5 weg, 61 is 11 weg. 47 wint!"},
+    {cat:"Breuken",q:"Kleur je 3 van de 5 vakjes in, welke breuk is dat?",a:["2/5","3/5","4/5","1/5"],c:1,ex:"3 vakjes van 5 = 3/5."},
+    {cat:"Meetkunde",q:"Hoeveel hoeken heeft een vijfhoek?",a:["4","5","6","7"],c:1,ex:"Een vijfhoek heeft 5 hoeken."},
+    {cat:"Meten",q:"Hoeveel seconden heeft een minuut?",a:["60","100","30","120"],c:0,ex:"1 minuut = 60 seconden."},
+    {cat:"Getallen",q:"Wat is de waarde van de 4 in het getal 847?",a:["4","40","400","4000"],c:1,ex:"In 847 staat de 4 op de tientallenpositie, dus is het 40."},
+    {cat:"Getallen",q:"Wat is de waarde van de 8 in het getal 381?",a:["8","80","800","8000"],c:1,ex:"In 381 staat de 8 op de tientallenpositie, dus is het 80."},
+    {cat:"Woordsom",q:"Een boek heeft 96 pagina's. Sanne heeft er al 48 gelezen. Hoeveel moet ze nog lezen?",a:["48","38","58","46"],c:0,ex:"96 - 48 = 48 pagina's."},
+    {cat:"Vermenigvuldigen",q:"4 × 9 = ?",a:["32","36","40","28"],c:1,ex:"4 × 9 = 36. Vier negens zijn zesendertig."},
+    {cat:"Optellen",q:"348 + 52 = ?",a:["390","400","410","398"],c:1,ex:"348 + 52: 340 + 60 = 400."},
+  ],
+
+  en: [
+    // Colours & Objects
+    {cat:"Kleuren",q:"What color is the sky on a sunny day?",a:["Green","Blue","Red","Yellow"],c:1,ex:"The sky is blue on a sunny day. 'Blue' = blauw."},
+    {cat:"Kleuren",q:"What color is grass?",a:["Blue","Yellow","Green","Purple"],c:2,ex:"Grass is green. 'Green' = groen."},
+    {cat:"Kleuren",q:"What color is a banana?",a:["Red","Orange","Yellow","Pink"],c:2,ex:"A banana is yellow. 'Yellow' = geel."},
+    {cat:"Kleuren",q:"What color is a tomato?",a:["Blue","Red","Green","White"],c:1,ex:"A tomato is red. 'Red' = rood."},
+    {cat:"Kleuren",q:"What color is snow?",a:["Grey","Black","White","Brown"],c:2,ex:"Snow is white. 'White' = wit."},
+    // Numbers
+    {cat:"Getallen",q:"How do you say 'tien' in English?",a:["Eight","Nine","Ten","Eleven"],c:2,ex:"Tien = Ten. 1, 2, 3, 4, 5, 6, 7, 8, 9, 10!"},
+    {cat:"Getallen",q:"How do you say 'vijftien' in English?",a:["Fourteen","Fifteen","Sixteen","Fifty"],c:1,ex:"Vijftien = Fifteen."},
+    {cat:"Getallen",q:"What is 'twenty' in Dutch?",a:["Twaalf","Twintig","Tien","Dertig"],c:1,ex:"Twenty = Twintig."},
+    {cat:"Getallen",q:"How do you say 'honderd' in English?",a:["Thousand","Hundred","Million","Ten"],c:1,ex:"Honderd = Hundred."},
+    {cat:"Getallen",q:"What is 'first' in Dutch?",a:["Derde","Tweede","Eerste","Vierde"],c:2,ex:"First = Eerste (1ste)."},
+    // Animals
+    {cat:"Dieren",q:"What is 'hond' in English?",a:["Cat","Dog","Bird","Fish"],c:1,ex:"Hond = Dog. 'Good dog!'"},
+    {cat:"Dieren",q:"What is 'kat' in English?",a:["Cow","Dog","Cat","Horse"],c:2,ex:"Kat = Cat. Cats say 'meow'!"},
+    {cat:"Dieren",q:"What is 'vis' in English?",a:["Bird","Fish","Frog","Snake"],c:1,ex:"Vis = Fish. Fish swim in water."},
+    {cat:"Dieren",q:"What is 'vogel' in English?",a:["Bee","Butterfly","Bird","Beetle"],c:2,ex:"Vogel = Bird. Birds have wings and can fly."},
+    {cat:"Dieren",q:"What is 'paard' in English?",a:["Cow","Pig","Horse","Sheep"],c:2,ex:"Paard = Horse. Horses say 'neigh'!"},
+    {cat:"Dieren",q:"What sound does a cow make?",a:["Bark","Moo","Meow","Oink"],c:1,ex:"A cow says 'Moo'! In Dutch: een koe loeit."},
+    {cat:"Dieren",q:"What is 'konijn' in English?",a:["Rabbit","Hamster","Mouse","Squirrel"],c:0,ex:"Konijn = Rabbit."},
+    {cat:"Dieren",q:"What is 'vlinder' in English?",a:["Bee","Fly","Butterfly","Dragonfly"],c:2,ex:"Vlinder = Butterfly."},
+    // Family
+    {cat:"Familie",q:"What is 'moeder' in English?",a:["Father","Sister","Mother","Brother"],c:2,ex:"Moeder = Mother."},
+    {cat:"Familie",q:"What is 'vader' in English?",a:["Father","Uncle","Brother","Grandfather"],c:0,ex:"Vader = Father."},
+    {cat:"Familie",q:"What is 'broer' in English?",a:["Sister","Brother","Uncle","Nephew"],c:1,ex:"Broer = Brother."},
+    {cat:"Familie",q:"What is 'zus' in English?",a:["Brother","Mother","Sister","Aunt"],c:2,ex:"Zus = Sister."},
+    {cat:"Familie",q:"What is 'opa' in English?",a:["Uncle","Father","Grandfather","Godfather"],c:2,ex:"Opa = Grandfather."},
+    // Body
+    {cat:"Lichaam",q:"What is 'hoofd' in English?",a:["Hand","Foot","Head","Eye"],c:2,ex:"Hoofd = Head."},
+    {cat:"Lichaam",q:"What is 'hand' in English?",a:["Foot","Hand","Arm","Leg"],c:1,ex:"Hand = Hand. Hetzelfde woord!"},
+    {cat:"Lichaam",q:"What is 'oog' in English?",a:["Ear","Nose","Eye","Mouth"],c:2,ex:"Oog = Eye."},
+    {cat:"Lichaam",q:"What is 'neus' in English?",a:["Eye","Mouth","Ear","Nose"],c:3,ex:"Neus = Nose."},
+    {cat:"Lichaam",q:"What is 'mond' in English?",a:["Mouth","Nose","Ear","Eye"],c:0,ex:"Mond = Mouth."},
+    // Food
+    {cat:"Eten",q:"What is 'appel' in English?",a:["Orange","Banana","Apple","Pear"],c:2,ex:"Appel = Apple. An apple a day keeps the doctor away!"},
+    {cat:"Eten",q:"What is 'brood' in English?",a:["Cake","Bread","Biscuit","Rice"],c:1,ex:"Brood = Bread."},
+    {cat:"Eten",q:"What is 'melk' in English?",a:["Water","Juice","Milk","Tea"],c:2,ex:"Melk = Milk."},
+    {cat:"Eten",q:"What is 'water' in English?",a:["Milk","Juice","Tea","Water"],c:3,ex:"Water = Water. Hetzelfde woord!"},
+    {cat:"Eten",q:"What is 'koek' in English?",a:["Cake","Biscuit/Cookie","Bread","Pie"],c:1,ex:"Koek = Cookie or Biscuit."},
+    // School
+    {cat:"School",q:"What is 'school' in English?",a:["Store","School","Library","Hospital"],c:1,ex:"School = School. Hetzelfde woord!"},
+    {cat:"School",q:"What is 'boek' in English?",a:["Pen","Paper","Book","Ruler"],c:2,ex:"Boek = Book."},
+    {cat:"School",q:"What is 'potlood' in English?",a:["Pen","Pencil","Ruler","Eraser"],c:1,ex:"Potlood = Pencil."},
+    {cat:"School",q:"What is 'leraar' in English?",a:["Student","Teacher","Principal","Friend"],c:1,ex:"Leraar = Teacher."},
+    {cat:"School",q:"What is 'vriend' in English?",a:["Enemy","Brother","Friend","Neighbour"],c:2,ex:"Vriend = Friend."},
+    // Sentences
+    {cat:"Zinnen",q:"How do you say 'Hoe heet jij?' in English?",a:["How are you?","What is your name?","Where do you live?","How old are you?"],c:1,ex:"Hoe heet jij? = What is your name?"},
+    {cat:"Zinnen",q:"How do you say 'Hoe oud ben jij?' in English?",a:["What is your name?","Where do you live?","How old are you?","How are you?"],c:2,ex:"Hoe oud ben jij? = How old are you?"},
+    {cat:"Zinnen",q:"What does 'I am fine, thank you' mean?",a:["Ik heet dank je wel","Ik ben prima, dank je","Ik ben hongerig","Ik hou van jou"],c:1,ex:"I am fine = ik ben prima/goed. Thank you = dank je."},
+    {cat:"Zinnen",q:"How do you say 'Goedemorgen' in English?",a:["Good evening","Good afternoon","Good night","Good morning"],c:3,ex:"Goedemorgen = Good morning."},
+    {cat:"Zinnen",q:"What does 'Please' mean in Dutch?",a:["Dank je","Sorry","Alsjeblieft","Hallo"],c:2,ex:"Please = Alsjeblieft."},
+    {cat:"Zinnen",q:"What does 'Thank you' mean?",a:["Hallo","Dank je wel","Tot ziens","Sorry"],c:1,ex:"Thank you = Dank je wel."},
+    {cat:"Zinnen",q:"How do you say 'Tot ziens' in English?",a:["Hello","Good morning","Goodbye","Please"],c:2,ex:"Tot ziens = Goodbye."},
+    // Days & Weather
+    {cat:"Dagen",q:"What day comes after Monday?",a:["Sunday","Wednesday","Tuesday","Thursday"],c:2,ex:"Monday, Tuesday, Wednesday... Maandag, Dinsdag, Woensdag..."},
+    {cat:"Dagen",q:"What is 'zaterdag' in English?",a:["Friday","Sunday","Saturday","Monday"],c:2,ex:"Zaterdag = Saturday."},
+    {cat:"Dagen",q:"What is 'zondag' in English?",a:["Sunday","Saturday","Monday","Friday"],c:0,ex:"Zondag = Sunday."},
+    {cat:"Weer",q:"What does 'It is raining' mean?",a:["Het sneeuwt","Het is warm","Het regent","Het waait"],c:2,ex:"It is raining = Het regent."},
+    {cat:"Weer",q:"What is 'sunny' in Dutch?",a:["Regenachtig","Zonnig","Bewolkt","Winderig"],c:1,ex:"Sunny = Zonnig."},
+    {cat:"Weer",q:"What does 'cold' mean in Dutch?",a:["Warm","Heet","Koud","Nat"],c:2,ex:"Cold = Koud."},
+    {cat:"Weer",q:"What does 'hot' mean in Dutch?",a:["Koud","Warm/Heet","Nat","Droog"],c:1,ex:"Hot = Warm of Heet."},
+    // Actions
+    {cat:"Werkwoorden",q:"What does 'to run' mean?",a:["Zwemmen","Lopen/Rennen","Springen","Vliegen"],c:1,ex:"To run = Rennen of hardlopen."},
+    {cat:"Werkwoorden",q:"What does 'to swim' mean?",a:["Rennen","Springen","Zwemmen","Slapen"],c:2,ex:"To swim = Zwemmen."},
+    {cat:"Werkwoorden",q:"What does 'to sleep' mean?",a:["Eten","Drinken","Spelen","Slapen"],c:3,ex:"To sleep = Slapen."},
+    {cat:"Werkwoorden",q:"What does 'to eat' mean?",a:["Eten","Drinken","Koken","Kopen"],c:0,ex:"To eat = Eten."},
+    {cat:"Werkwoorden",q:"What does 'to play' mean?",a:["Werken","Spelen","Leren","Slapen"],c:1,ex:"To play = Spelen."},
+    // Places
+    {cat:"Plaatsen",q:"What is 'huis' in English?",a:["School","Shop","House","Park"],c:2,ex:"Huis = House."},
+    {cat:"Plaatsen",q:"What is 'park' in English?",a:["Store","School","Hospital","Park"],c:3,ex:"Park = Park. Hetzelfde woord!"},
+    {cat:"Plaatsen",q:"What is 'winkel' in English?",a:["School","Shop/Store","Hospital","Park"],c:1,ex:"Winkel = Shop or Store."},
+    {cat:"Plaatsen",q:"What is 'ziekenhuis' in English?",a:["School","Library","Hospital","Church"],c:2,ex:"Ziekenhuis = Hospital."},
+    // Adjectives
+    {cat:"Bijvoeglijk",q:"What does 'big' mean?",a:["Klein","Groot","Snel","Langzaam"],c:1,ex:"Big = Groot."},
+    {cat:"Bijvoeglijk",q:"What does 'small' mean?",a:["Groot","Snel","Klein","Sterk"],c:2,ex:"Small = Klein."},
+    {cat:"Bijvoeglijk",q:"What does 'happy' mean?",a:["Boos","Verdrietig","Bang","Blij/Gelukkig"],c:3,ex:"Happy = Blij of Gelukkig."},
+    {cat:"Bijvoeglijk",q:"What does 'fast' mean?",a:["Langzaam","Snel","Groot","Sterk"],c:1,ex:"Fast = Snel."},
+    {cat:"Bijvoeglijk",q:"What does 'new' mean?",a:["Oud","Nieuw","Vuil","Schoon"],c:1,ex:"New = Nieuw."},
+    {cat:"Bijvoeglijk",q:"What does 'old' mean?",a:["Jong","Nieuw","Oud","Klein"],c:2,ex:"Old = Oud."},
+    // Seasons & Months
+    {cat:"Seizoenen",q:"What is 'zomer' in English?",a:["Winter","Spring","Autumn","Summer"],c:3,ex:"Zomer = Summer. The warmest season!"},
+    {cat:"Seizoenen",q:"What is 'winter' in English?",a:["Winter","Spring","Summer","Autumn"],c:0,ex:"Winter = Winter. Hetzelfde woord!"},
+    {cat:"Seizoenen",q:"What is 'lente' in English?",a:["Summer","Autumn","Winter","Spring"],c:3,ex:"Lente = Spring."},
+    {cat:"Seizoenen",q:"What is 'herfst' in English?",a:["Spring","Summer","Autumn/Fall","Winter"],c:2,ex:"Herfst = Autumn or Fall."},
+    {cat:"Maanden",q:"What month comes after January?",a:["March","December","February","April"],c:2,ex:"January, February, March... Januari, Februari, Maart..."},
+    {cat:"Maanden",q:"What is the first month of the year?",a:["February","December","March","January"],c:3,ex:"The first month is January. Januari."},
+    {cat:"Maanden",q:"What month has only 28 or 29 days?",a:["January","March","February","April"],c:2,ex:"February (Februari) has 28 days, or 29 in a leap year."},
+    // Clothes
+    {cat:"Kleding",q:"What is 'trui' in English?",a:["Coat","Trousers","Sweater/Jumper","Shirt"],c:2,ex:"Trui = Sweater or Jumper."},
+    {cat:"Kleding",q:"What is 'schoenen' in English?",a:["Socks","Shoes","Boots","Gloves"],c:1,ex:"Schoenen = Shoes."},
+    {cat:"Kleding",q:"What is 'broek' in English?",a:["Shirt","Skirt","Socks","Trousers/Pants"],c:3,ex:"Broek = Trousers or Pants."},
+    {cat:"Kleding",q:"What is 'jas' in English?",a:["Coat/Jacket","Shirt","Trousers","Skirt"],c:0,ex:"Jas = Coat or Jacket."},
+    {cat:"Zinnen",q:"How do you greet someone in the afternoon?",a:["Good morning","Good night","Good afternoon","Hello night"],c:2,ex:"In the afternoon you say: Good afternoon! = Goedemiddag!"},
+    {cat:"Zinnen",q:"What does 'I like cats' mean?",a:["Ik hou van honden","Ik like katten","Ik hou van katten","Katten zijn lief"],c:2,ex:"I like cats = Ik hou van katten."},
+    {cat:"Zinnen",q:"What does 'My name is...' mean?",a:["Ik woon in...","Mijn naam is...","Ik ben...jaar","Ik hou van..."],c:1,ex:"My name is... = Mijn naam is..."},
+    {cat:"Zinnen",q:"What does 'I don't understand' mean?",a:["Ik snap het wel","Ik begrijp het niet","Ik ben het eens","Ik heb het"],c:1,ex:"I don't understand = Ik begrijp het niet."},
+  ],
+
+  ow: [
+    // Natuur
+    {cat:"Natuur",q:"Welk dier is een zoogdier?",a:["kip","vis","hond","spin"],c:2,ex:"Een hond is een zoogdier. Zoogdieren voeden hun jongen met melk."},
+    {cat:"Natuur",q:"Wat hebben planten nodig om te groeien?",a:["Zout en sneeuw","Zon, water en lucht","Chocolade en suiker","Stenen en zand"],c:1,ex:"Planten hebben zonlicht, water en lucht (CO2) nodig voor fotosynthese."},
+    {cat:"Natuur",q:"Welk dier legt eieren?",a:["hond","paard","kip","koe"],c:2,ex:"Een kip legt eieren. Vogels en reptielen leggen eieren."},
+    {cat:"Natuur",q:"Wat is het grootste dier op het land?",a:["Leeuw","Olifant","Neushoorn","Nijlpaard"],c:1,ex:"De Afrikaanse olifant is het grootste landdier."},
+    {cat:"Natuur",q:"In welk seizoen bloeien de meeste bloemen?",a:["Winter","Herfst","Zomer","Lente"],c:3,ex:"In de lente bloeien de meeste bloemen omdat het dan warm en zonnig wordt."},
+    {cat:"Natuur",q:"Wat is fotosynthese?",a:["Hoe dieren ademen","Hoe planten voedsel maken van zonlicht","Hoe het regent","Hoe dieren slapen"],c:1,ex:"Fotosynthese is het proces waarbij planten voedsel maken van zonlicht, water en CO2."},
+    {cat:"Natuur",q:"Welk dier verandert van rups naar vlinder?",a:["spin","vliegend hert","vlinder","tor"],c:2,ex:"Een rups wordt een vlinder. Dit heet metamorfose."},
+    {cat:"Natuur",q:"Wat is het grootste dier in zee?",a:["Haai","Dolfijn","Blauwe vinvis","Inktvis"],c:2,ex:"De blauwe vinvis is het grootste dier ter wereld."},
+    {cat:"Natuur",q:"Welke planeet is het dichtst bij de zon?",a:["Aarde","Venus","Mars","Mercurius"],c:3,ex:"Mercurius is de dichtstbijzijnde planeet bij de zon."},
+    {cat:"Natuur",q:"Waarom waait de wind?",a:["Omdat de zon er op schijnt","Omdat lucht van hoge druk naar lage druk stroomt","Omdat de aarde draait","Omdat het regent"],c:1,ex:"Wind ontstaat doordat warme en koude lucht van plaats wisselen."},
+    // Aardrijkskunde
+    {cat:"Aardrijkskunde",q:"Wat is de hoofdstad van Nederland?",a:["Rotterdam","Utrecht","Den Haag","Amsterdam"],c:3,ex:"Amsterdam is de hoofdstad van Nederland."},
+    {cat:"Aardrijkskunde",q:"Hoeveel continenten heeft de aarde?",a:["5","6","7","8"],c:2,ex:"De aarde heeft 7 continenten: Afrika, Azië, Europa, Noord-Amerika, Zuid-Amerika, Australië en Antarctica."},
+    {cat:"Aardrijkskunde",q:"Welke oceaan ligt ten westen van Europa?",a:["Stille Oceaan","Indische Oceaan","Atlantische Oceaan","Arctische Oceaan"],c:2,ex:"De Atlantische Oceaan ligt ten westen van Europa."},
+    {cat:"Aardrijkskunde",q:"In welk land staat de Eiffeltoren?",a:["Nederland","Duitsland","België","Frankrijk"],c:3,ex:"De Eiffeltoren staat in Parijs, de hoofdstad van Frankrijk."},
+    {cat:"Aardrijkskunde",q:"Wat is de langste rivier van Nederland?",a:["Maas","Rijn","IJssel","Schelde"],c:1,ex:"De Rijn is de langste rivier die door Nederland stroomt."},
+    {cat:"Aardrijkskunde",q:"Welke windrichting wijst altijd naar de poolster?",a:["Oost","West","Zuid","Noord"],c:3,ex:"Noord wijst altijd richting de Noordpool en de poolster."},
+    {cat:"Aardrijkskunde",q:"Wat is een eiland?",a:["Een berg aan de kust","Een stuk land omringd door water","Een diepe plek in zee","Een brede rivier"],c:1,ex:"Een eiland is land dat aan alle kanten door water omringd is."},
+    {cat:"Aardrijkskunde",q:"Welk land grenst NIET aan Nederland?",a:["Duitsland","België","Denemarken","Engeland"],c:2,ex:"Engeland grenst niet direct aan Nederland, maar ligt aan de overkant van de Noordzee."},
+    {cat:"Aardrijkskunde",q:"Wat is de naam van de provincie waar Amsterdam in ligt?",a:["Utrecht","Noord-Holland","Zuid-Holland","Gelderland"],c:1,ex:"Amsterdam ligt in de provincie Noord-Holland."},
+    {cat:"Aardrijkskunde",q:"Welke stad is de grootste havenstad van Nederland?",a:["Amsterdam","Rotterdam","Den Haag","Utrecht"],c:1,ex:"Rotterdam heeft de grootste haven van Europa."},
+    // Geschiedenis
+    {cat:"Geschiedenis",q:"Wie was de eerste koning van Nederland?",a:["Willem III","Willem I","Willem II","Willem-Alexander"],c:1,ex:"Willem I was de eerste koning van het Koninkrijk Nederland (1813)."},
+    {cat:"Geschiedenis",q:"Wat is een kasteel?",a:["Een grote boerderij","Een verdedigingsgebouw voor edelen","Een soort kerk","Een marktplaats"],c:1,ex:"Een kasteel is een groot sterk gebouw van vroeger, vaak van edelen of ridders."},
+    {cat:"Geschiedenis",q:"Wat waren Vikingen?",a:["Roemeense boeren","Oude Griekse soldaten","Noord-Europese zeevaarders en strijders","Arabische kooplieden"],c:2,ex:"Vikingen waren zeevaarders en strijders uit Scandinavië (circa 800-1100 na Chr.)."},
+    {cat:"Geschiedenis",q:"Waarmee verplaatsten mensen zich voor de uitvinding van de auto?",a:["Vliegtuig","Trein","Paard en wagen","Tractor"],c:2,ex:"Voor de auto reden mensen in paard-en-wagen of op een paard."},
+    {cat:"Geschiedenis",q:"Wat is een piramide?",a:["Een Egyptische tempel","Een Egyptisch koningsgraf","Een Griekse tempel","Een Romeins stadion"],c:1,ex:"Piramiden zijn de graven van oude Egyptische farao's."},
+    {cat:"Geschiedenis",q:"Wanneer begint de middeleeuwen (globaal)?",a:["Voor Christus","Na de val van Rome (ca. 500)","In de 20e eeuw","In 1800"],c:1,ex:"De Middeleeuwen beginnen rond het jaar 500 na Chr., na de val van het Romeinse Rijk."},
+    {cat:"Geschiedenis",q:"Wat is een ridder?",a:["Een Egyptische prins","Een gepantserde strijder in de Middeleeuwen","Een Griekse god","Een Viking aanvoerder"],c:1,ex:"Een ridder was een gepantserde strijder in de Middeleeuwen, vaak te paard."},
+    {cat:"Geschiedenis",q:"Wat is een tijdlijn?",a:["Een kaart van de wereld","Een overzicht van gebeurtenissen in de tijd","Een foto van vroeger","Een verhaal"],c:1,ex:"Een tijdlijn laat zien wanneer belangrijke gebeurtenissen zijn gebeurd."},
+    // Maatschappij
+    {cat:"Maatschappij",q:"Wat doet een burgemeester?",a:["Regeert het land","Leidt een gemeente","Maakt wetten in de Tweede Kamer","Behartigt het recht"],c:1,ex:"Een burgemeester is de leider van een gemeente (stad of dorp)."},
+    {cat:"Maatschappij",q:"Wat is een democratie?",a:["Een land met één leider","Een land waar het volk meebeslecht via verkiezingen","Een land zonder regels","Een land met een koning die alles beslist"],c:1,ex:"In een democratie mogen mensen stemmen op wie ze willen dat het land leidt."},
+    {cat:"Maatschappij",q:"Wie maakt de wetten in Nederland?",a:["De koning/koningin","De burgemeester","De Tweede Kamer","De politie"],c:2,ex:"De Tweede Kamer (het parlement) maakt en keurt wetten goed."},
+    {cat:"Maatschappij",q:"Wat doet de politie?",a:["Maakt wetten","Zorgt voor orde en veiligheid","Geneest zieke mensen","Bouwt huizen"],c:1,ex:"De politie zorgt voor veiligheid en handhaaft de wet."},
+    {cat:"Maatschappij",q:"Wat is een gemeente?",a:["Een heel land","Een stuk van een land (stad of dorp)","Een school","Een winkel"],c:1,ex:"Een gemeente is een stad of dorp met een eigen bestuur."},
+    {cat:"Maatschappij",q:"Waarvoor gebruik je je BSN-nummer?",a:["Om te spelen","Om je te identificeren bij de overheid","Om te rekenen","Om naar school te gaan"],c:1,ex:"Je BSN (Burgerservicenummer) is je persoonlijk nummer bij de Nederlandse overheid."},
+    // Natuur & Milieu
+    {cat:"Milieu",q:"Wat is recyclen?",a:["Nieuw plastic kopen","Afval weggooien","Gebruikt materiaal opnieuw gebruiken","Meer energie verbruiken"],c:2,ex:"Recyclen betekent dat je oud materiaal verwerkt tot nieuw materiaal."},
+    {cat:"Milieu",q:"Wat is broeikasgassen?",a:["Gassen die verkoeling geven","Gassen die de aarde opwarmen","Schone lucht","Zuurstof"],c:1,ex:"Broeikasgassen, zoals CO2, houden warmte vast en warmen de aarde op."},
+    {cat:"Milieu",q:"Welke energiebron is duurzaam?",a:["Steenkool","Aardgas","Zonne-energie","Benzine"],c:2,ex:"Zonne-energie is duurzaam. De zon raakt nooit op!"},
+    {cat:"Milieu",q:"Waarom is het slecht dat het regenwoud verdwijnt?",a:["Het maakt niet uit","Er leven minder dieren en minder CO2 wordt opgenomen","Het wordt kouder","Er is meer regen"],c:1,ex:"Het regenwoud herbergt miljoenen soorten en neemt veel CO2 op."},
+    // Lichaam & Gezondheid
+    {cat:"Gezondheid",q:"Hoeveel tanden heeft een volwassene normaal?",a:["20","28 of 32","16","36"],c:1,ex:"Een volwassene heeft 28 tanden, of 32 met de verstandskiezen."},
+    {cat:"Gezondheid",q:"Wat doet het hart?",a:["Zuivert het bloed","Pompt bloed door het lichaam","Maakt spijsverteringssappen","Filtert de lucht"],c:1,ex:"Het hart pompt bloed door het hele lichaam."},
+    {cat:"Gezondheid",q:"Waarvoor dienen longen?",a:["Voedsel verteren","Bloed reinigen","Zuurstof opnemen en CO2 afgeven","Water filteren"],c:2,ex:"De longen nemen zuurstof op als je inademt en geven CO2 af als je uitademt."},
+    {cat:"Gezondheid",q:"Hoeveel glazen water moet je per dag drinken?",a:["1-2","3-4","6-8","10-12"],c:2,ex:"Kinderen moeten ongeveer 6-8 glazen water per dag drinken."},
+    {cat:"Gezondheid",q:"Wat doet bewegen voor je lichaam?",a:["Niets","Maakt je slapier","Houd je spieren en hart sterk","Maakt je ziek"],c:2,ex:"Bewegen houdt spieren sterk, het hart gezond en geeft je energie."},
+    {cat:"Gezondheid",q:"Waarom moet je je handen wassen?",a:["Om ze nat te maken","Om ziektekiemen weg te halen","Omdat het leuk is","Omdat mama het zegt"],c:1,ex:"Handen wassen verwijdert bacteriën en virussen die ziektes veroorzaken."},
+    // Technologie
+    {cat:"Technologie",q:"Wat is het internet?",a:["Een tv-zender","Een wereldwijd netwerk van computers","Een soort radio","Een speelgoedsysteem"],c:1,ex:"Het internet is een wereldwijd netwerk dat computers met elkaar verbindt."},
+    {cat:"Technologie",q:"Wat is een zoekmachine?",a:["Een machine die huizen zoekt","Software waarmee je informatie op het internet zoekt","Een speelgoeduiting","Een telefoon"],c:1,ex:"Een zoekmachine (zoals Google) helpt je informatie te zoeken op het internet."},
+    {cat:"Technologie",q:"Wat is een robot?",a:["Een levend dier","Een machine die taken uitvoert","Een speelgoedpop","Een soort insect"],c:1,ex:"Een robot is een machine die automatisch taken kan uitvoeren."},
+    // Meer Aardrijkskunde
+    {cat:"Aardrijkskunde",q:"Wat is een vulkaan?",a:["Een diepe zee-greppel","Een berg waaruit magma (gesmolten steen) komt","Een woestijn","Een soort rivier"],c:1,ex:"Een vulkaan is een berg die lava, as en gas uitstoot."},
+    {cat:"Aardrijkskunde",q:"Welk continent is het grootste?",a:["Afrika","Noord-Amerika","Europa","Azië"],c:3,ex:"Azië is het grootste continent ter wereld."},
+    {cat:"Aardrijkskunde",q:"Waar vind je woestijnen?",a:["Alleen bij de Noordpool","In tropische gebieden met weinig regen","Onder water","In berggebieden"],c:1,ex:"Woestijnen zijn droge gebieden waar weinig regen valt. De Sahara is de grootste."},
+    {cat:"Aardrijkskunde",q:"Wat is een delta?",a:["Een hoge berg","Een plek waar een rivier uitmondt in zee met veel vertakkingen","Een diepe kloof","Een klein eiland"],c:1,ex:"Een delta is de waaier van rivierarmen die ontstaat waar een rivier uitmondt in zee."},
+    {cat:"Aardrijkskunde",q:"Wat zijn de Wadden?",a:["Bergachtig gebied in Nederland","Droogvallend zeegebied in het noorden van Nederland","Een bos in Friesland","Een rivier"],c:1,ex:"De Waddenzee is een bijzonder natuurgebied dat bij laag water droogvalt."},
+    // Weer en klimaat
+    {cat:"Weer",q:"Wat veroorzaakt regen?",a:["De maan trekt water aan","Waterdamp koelt af en vormt druppels die vallen","De wind blaast water omhoog","De aarde draait"],c:1,ex:"Waterdamp in de lucht condenseert tot wolken en valt als regen."},
+    {cat:"Weer",q:"Wat is een thermometer?",a:["Een instrument dat de luchtdruk meet","Een instrument dat de temperatuur meet","Een instrument dat de wind meet","Een instrument dat regen meet"],c:1,ex:"Een thermometer meet de temperatuur in graden Celsius."},
+    {cat:"Weer",q:"Wat is hagel?",a:["Bevroren regen in bolletjes","Natte sneeuw","Zware regen","Mist"],c:0,ex:"Hagel zijn bolletjes ijs die uit een onweersbui vallen."},
+    {cat:"Weer",q:"Hoe heet de grens tussen warm en koud weer?",a:["Oceaan","Front","Cycloon","Horizon"],c:1,ex:"Een weerfront is de grens tussen warme en koude lucht."},
+    {cat:"Natuur",q:"Welke kleuren heeft een regenboog? Hoeveel zijn het er?",a:["5","6","7","8"],c:2,ex:"Een regenboog heeft 7 kleuren: rood, oranje, geel, groen, blauw, indigo en violet."},
+    {cat:"Natuur",q:"Wat is een insect?",a:["Een dier met 4 poten","Een dier met 6 poten en 3 lichaamsdelen","Een klein zoogdier","Een waterdiertje"],c:1,ex:"Insecten hebben altijd 6 poten en een lichaam met 3 delen: kop, borststuk en achterlijf."},
+    {cat:"Natuur",q:"Welk dier is een zoogdier dat in de zee leeft?",a:["Haai","Octopus","Dolfijn","Kwal"],c:2,ex:"Dolfijnen zijn zoogdieren. Ze ademen lucht en voeden hun jongen met melk."},
+    {cat:"Maatschappij",q:"Wat is de Tweede Wereldoorlog (WO II)?",a:["Een oorlog van 1914-1918","Een oorlog van 1939-1945","Een oorlog in 1800","Een oorlog in Amerika"],c:1,ex:"De Tweede Wereldoorlog duurde van 1939 tot 1945. Nederland was ook bezet."},
+    {cat:"Maatschappij",q:"Wat is 4 mei in Nederland?",a:["Koningsdag","Bevrijdingsdag","Dodenherdenking","Sinterklaas"],c:2,ex:"Op 4 mei herdenken we de slachtoffers van de Tweede Wereldoorlog."},
+    {cat:"Maatschappij",q:"Wat is 5 mei in Nederland?",a:["Koningsdag","Bevrijdingsdag","Dodenherdenking","Verjaardag van de koning"],c:1,ex:"Op 5 mei vieren we dat Nederland bevrijd werd van de bezetting in 1945."},
+    {cat:"Natuur",q:"Hoe heet de laag om de aarde die ons beschermt tegen de zon?",a:["Stratsfeer","Troposfeer","Atmosfeer","Ozonlaag"],c:3,ex:"De ozonlaag beschermt de aarde tegen schadelijke ultraviolette straling van de zon."},
+    {cat:"Aardrijkskunde",q:"Hoe heet de grootste oceaan ter wereld?",a:["Atlantische Oceaan","Indische Oceaan","Stille Oceaan (Pacific)","Arctische Oceaan"],c:2,ex:"De Stille Oceaan (Pacific) is de grootste en diepste oceaan ter wereld."},
+    {cat:"Maatschappij",q:"Wat is Koningsdag?",a:["De dag dat de koning jarig is","Een dag om sport te doen","Een religieuze feestdag","De dag dat Nederland vrij werd"],c:0,ex:"Koningsdag (27 april) vieren we de verjaardag van de Nederlandse koning."},
+    {cat:"Natuur",q:"Wat zijn de vier elementen die mensen al eeuwenlang onderscheiden?",a:["Aarde, water, lucht en vuur","Steen, metaal, hout en water","Zon, maan, ster en planeet","Ijs, regen, sneeuw en hagel"],c:0,ex:"Al eeuwenlang kennen mensen de vier elementen: aarde, water, lucht en vuur."},
+    {cat:"Gezondheid",q:"Welk voedsel geeft je veel energie?",a:["Snoep en chips","Groenten en fruit","Frisdrank","Fastfood"],c:1,ex:"Groenten en fruit geven je vitaminen, mineralen en gezonde energie."},
+    {cat:"Technologie",q:"Wat is een magneet?",a:["Een stuk hout","Een object dat ijzer aantrekt","Een soort lamp","Een elektrisch apparaat"],c:1,ex:"Een magneet trekt ijzer en sommige andere metalen aan door magnetisme."},
+    {cat:"Natuur",q:"Wat is de functie van wortels bij planten?",a:["Licht opvangen","Water en voedingsstoffen opnemen uit de grond","Zaden verspreiden","Fotosynthese doen"],c:1,ex:"Wortels nemen water en voedingsstoffen op uit de grond voor de plant."},
+    {cat:"Aardrijkskunde",q:"Wat is een polder?",a:["Een stuk berg in Nederland","Een stuk land dat is drooggelegd uit het water","Een eiland","Een soort kanaal"],c:1,ex:"Een polder is land dat vroeger water was en drooggelegd is. Nederland heeft veel polders."},
+    {cat:"Maatschappij",q:"Wat doet een rechter?",a:["Maakt wetten","Beslist over rechtszaken en straffen","Regeert het land","Verdedigt het land"],c:1,ex:"Een rechter beslist in rechtszaken of iemand schuldig is en welke straf er is."},
+  ]
+};
+
+// ============================================
+// LEVELS & XP
+// ============================================
+const LEVELS = [
+  {name:"Beginnersster",emoji:"⭐",min:0,max:200},
+  {name:"Denker",emoji:"🧠",min:200,max:500},
+  {name:"Ontdekker",emoji:"🔍",min:500,max:900},
+  {name:"Geleerde",emoji:"📚",min:900,max:1400},
+  {name:"Expert",emoji:"🎓",min:1400,max:2000},
+  {name:"Meester",emoji:"🏆",min:2000,max:2800},
+  {name:"Grootmeester",emoji:"💎",min:2800,max:3800},
+  {name:"Legende",emoji:"🌟",min:3800,max:Infinity},
+];
+
+// ============================================
+// ACHIEVEMENTS
+// ============================================
+const ALL_ACHIEVEMENTS = [
+  {id:"first_round",icon:"🎉",name:"Eerste ronde!",desc:"Speel je eerste ronde",condition:(s)=>s.totalRounds>=1},
+  {id:"perfect_10",icon:"💯",name:"Perfect 10!",desc:"10 uit 10 in één ronde",condition:(s,r)=>r&&r.correct===10},
+  {id:"streak5",icon:"🔥",name:"Hete reeks!",desc:"5 vragen op rij goed",condition:(s,r)=>r&&r.bestStreak>=5},
+  {id:"streak10",icon:"🌋",name:"Super reeks!",desc:"10 vragen op rij goed",condition:(s,r)=>r&&r.bestStreak>=10},
+  {id:"all_subjects",icon:"📚",name:"Allrounder!",desc:"Speel alle 4 vakken",condition:(s)=>Object.keys(s.subjects).length>=4},
+  {id:"level2",icon:"⬆️",name:"Opgeklommen!",desc:"Bereik level 2",condition:(s)=>s.level>=2},
+  {id:"level5",icon:"🚀",name:"Raket!",desc:"Bereik level 5",condition:(s)=>s.level>=5},
+  {id:"xp500",icon:"💰",name:"Schatkist!",desc:"Verdien 500 XP totaal",condition:(s)=>s.xp+s.level_xp_spent>=500},
+  {id:"ten_rounds",icon:"🎯",name:"Tien rondes!",desc:"Speel 10 rondes",condition:(s)=>s.totalRounds>=10},
+  {id:"quick",icon:"⚡",name:"Bliksem!",desc:"Beantwoord een vraag in 3 seconden",condition:(s,r)=>r&&r.fastAnswer},
+  {id:"dutch",icon:"🇳🇱",name:"Hollandse leeuw!",desc:"10 rondes Nederlands gedaan",condition:(s)=>((s.subjects||{}).nl||{}).rounds>=10},
+  {id:"math",icon:"🔢",name:"Rekenwonder!",desc:"10 rondes Rekenen gedaan",condition:(s)=>((s.subjects||{}).rk||{}).rounds>=10},
+];
+
+// ============================================
+// GAME STATE
+// ============================================
+let player = {
+  name:"",
+  xp:0,
+  level:1,
+  level_xp_spent:0,
+  totalRounds:0,
+  totalAnswered:0,
+  subjects:{},
+  achievements:[],
+  streak:0,
+  // Zakgeld
+  centsEarned:0,
+  centsPaid:0,
+  payHistory:[],
+  parentPin:"1234",
+  maxStreak:0,
+};
+
+let currentSubject = null;
+let currentQuestions = [];
+let currentQIdx = 0;
+let answered = false;
+let timerInterval = null;
+let timeLeft = 20;
+let roundResults = [];
+let currentStreak = 0;
+let bestStreak = 0;
+let fastAnswer = false;
+let questionStartTime = 0;
+let roundXP = 0;
+
+// ============================================
+// INIT
+// ============================================
+function init() {
+  createStars();
+  loadPlayer();
+  if(player.name) {
+    showScreen('home');
+    showNav();
+    updateUI();
+  }
+  // PWA manifest
+  createManifest();
+}
+
+function createStars() {
+  const c = document.getElementById('starsContainer');
+  for(let i=0;i<60;i++){
+    const s=document.createElement('div');
+    s.className='star';
+    const size=Math.random()*3+1;
+    s.style.cssText=`
+      left:${Math.random()*100}%;
+      top:${Math.random()*100}%;
+      width:${size}px;height:${size}px;
+      --d:${2+Math.random()*4}s;
+      --delay:${Math.random()*5}s;
+    `;
+    c.appendChild(s);
+  }
+}
+
+function createManifest() {
+  const manifest = {
+    name:"Groep 4 Quiz",short_name:"Groep4",start_url:".",display:"standalone",
+    background_color:"#0f0520",theme_color:"#2d0a4e",
+    icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>",sizes:"192x192",type:"image/svg+xml"}]
+  };
+  const blob = new Blob([JSON.stringify(manifest)],{type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('link');
+  link.rel='manifest'; link.href=url;
+  document.head.appendChild(link);
+}
+
+// ============================================
+// STORAGE
+// ============================================
+function savePlayer() {
+  localStorage.setItem('groep4_player', JSON.stringify(player));
+}
+
+function loadPlayer() {
+  const d = localStorage.getItem('groep4_player');
+  if(d) { try{ player = JSON.parse(d); }catch(e){} }
+}
+
+// ============================================
+// SCREENS
+// ============================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen'+id.charAt(0).toUpperCase()+id.slice(1)).classList.add('active');
+  document.getElementById('app').scrollTop=0;
+}
+
+function showNav() {
+  document.getElementById('bottomNav').style.display='flex';
+}
+
+function switchNav(tab) {
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(tab==='home') {
+    document.getElementById('navHome').classList.add('active');
+    showScreen('home');
+    updateUI();
+  } else {
+    document.getElementById('navProfile').classList.add('active');
+    showScreen('profile');
+    updateProfileScreen();
+  }
+}
+
+// ============================================
+// START APP
+// ============================================
+function startApp() {
+  const name = document.getElementById('nameInput').value.trim();
+  if(!name) { document.getElementById('nameInput').focus(); return; }
+  player.name = name;
+  savePlayer();
+  showScreen('home');
+  showNav();
+  updateUI();
+}
+
+// ============================================
+// UI UPDATE
+// ============================================
+const SUBJECT_INFO = {
+  nl:{name:"📖 Nederlands",color:"#7c3aed",barColor:"var(--purple2)"},
+  rk:{name:"🔢 Rekenen",color:"#3b82f6",barColor:"#60a5fa"},
+  en:{name:"🇬🇧 Engels",color:"#10b981",barColor:"#34d399"},
+  ow:{name:"🌍 Oriëntatie",color:"#f59e0b",barColor:"#fbbf24"},
+};
+
+function updateUI() {
+  const lv = getLevelInfo();
+  document.getElementById('playerBarName').textContent = player.name;
+  document.getElementById('playerBarLevel').textContent = `Lv ${player.level} ${lv.emoji}`;
+  document.getElementById('playerBarXP').textContent = `${player.xp} XP`;
+
+  ['nl','rk','en','ow'].forEach(s=>{
+    const sub = (player.subjects||{})[s]||{rounds:0,correct:0,total:0};
+    const stars = getStars(sub);
+    document.getElementById('score-'+s).innerHTML=`<div class="sc-stars">${'★'.repeat(stars)+'☆'.repeat(5-stars)}</div><div>${sub.rounds} rondes</div>`;
+  });
+
+  // Piggy bar
+  const pending = (player.centsEarned||0) - (player.centsPaid||0);
+  document.getElementById('piggyAmount').textContent = formatEuro(pending);
+  document.getElementById('piggyPending').textContent = pending > 0
+    ? `Totaal verdiend: ${formatEuro(player.centsEarned||0)}`
+    : player.centsEarned > 0 ? 'Alles uitbetaald ✓' : 'Nog niets verdiend';
+}
+
+function getLevelInfo() {
+  return LEVELS[Math.min(player.level-1, LEVELS.length-1)];
+}
+
+function getStars(sub) {
+  if(!sub.rounds) return 0;
+  const pct = sub.correct / Math.max(sub.total,1);
+  if(pct>=0.9) return 5;
+  if(pct>=0.75) return 4;
+  if(pct>=0.6) return 3;
+  if(pct>=0.45) return 2;
+  if(pct>0) return 1;
+  return 0;
+}
+
+// ============================================
+// START SUBJECT
+// ============================================
+function startSubject(subj) {
+  currentSubject = subj;
+  const pool = QUESTIONS[subj];
+  currentQuestions = shuffle([...pool]).slice(0,10);
+  currentQIdx = 0;
+  roundResults = [];
+  roundXP = 0;
+  currentStreak = 0;
+  bestStreak = 0;
+  fastAnswer = false;
+
+  const info = SUBJECT_INFO[subj];
+  document.getElementById('quizSubjectLabel').textContent = info.name;
+  showScreen('quiz');
+  showQuestion();
+}
+
+function shuffle(arr) {
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+// ============================================
+// SHOW QUESTION
+// ============================================
+function showQuestion() {
+  const q = currentQuestions[currentQIdx];
+  answered = false;
+
+  // Header
+  document.getElementById('quizCounter').textContent = `${currentQIdx+1}/10`;
+  document.getElementById('progressFill').style.width = `${(currentQIdx/10)*100}%`;
+  document.getElementById('qCategory').textContent = q.cat;
+  document.getElementById('qText').textContent = q.q;
+
+  // Streak
+  const sd = document.getElementById('streakDisplay');
+  if(currentStreak>=2) {
+    sd.classList.add('visible');
+    document.getElementById('streakNum').textContent = currentStreak;
+  } else {
+    sd.classList.remove('visible');
+  }
+
+  // Shuffle answers
+  const indices = [0,1,2,3];
+  const shuffled = shuffle([...indices]);
+  const correctNewIdx = shuffled.indexOf(q.c);
+
+  const grid = document.getElementById('answersGrid');
+  grid.innerHTML='';
+  const letters = ['A','B','C','D'];
+
+  shuffled.forEach((origIdx, newIdx) => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.innerHTML = `<span class="answer-letter">${letters[newIdx]}</span>${q.a[origIdx]}`;
+    btn.onclick = () => {
+      if(!answered) selectAnswer(newIdx, correctNewIdx, origIdx===q.c, q);
+    };
+    // Store original index to check correctness
+    btn.dataset.origIdx = origIdx;
+    btn.dataset.isCorrect = (origIdx === q.c) ? '1' : '0';
+    grid.appendChild(btn);
+  });
+
+  // Feedback & next
+  const fb = document.getElementById('feedbackBox');
+  fb.className = 'feedback-box';
+  fb.style.display='none';
+  document.getElementById('nextBtn').className = 'next-btn';
+
+  // Timer
+  startTimer();
+  questionStartTime = Date.now();
+}
+
+function selectAnswer(clickedIdx, correctNewIdx, isCorrect, q) {
+  if(answered) return;
+  answered = true;
+
+  const elapsed = (Date.now() - questionStartTime) / 1000;
+  clearTimer();
+
+  const btns = document.querySelectorAll('.answer-btn');
+  btns.forEach(b => b.disabled = true);
+
+  if(isCorrect) {
+    btns[clickedIdx].classList.add('correct');
+    currentStreak++;
+    if(currentStreak > bestStreak) bestStreak = currentStreak;
+
+    // XP
+    let xp = 10;
+    if(elapsed<=5) xp=20;
+    else if(elapsed<=10) xp=15;
+    if(currentStreak>=5) xp += 5;
+    roundXP += xp;
+    if(elapsed<=3) fastAnswer = true;
+
+    showFeedback(true, q.ex, xp);
+    showXPPopup(xp);
+  } else {
+    btns[clickedIdx].classList.add('wrong');
+    // Show correct
+    btns.forEach(b => {
+      if(b.dataset.isCorrect === '1') b.classList.add('show-correct');
+    });
+    currentStreak = 0;
+    showFeedback(false, q.ex, 0);
+  }
+
+  roundResults.push({correct: isCorrect, time: elapsed});
+  document.getElementById('nextBtn').className = 'next-btn show';
+}
+
+// ============================================
+// TIMER
+// ============================================
+function startTimer() {
+  timeLeft = 20;
+  updateTimerUI();
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerUI();
+    if(timeLeft<=0) {
+      clearInterval(timerInterval);
+      timeExpired();
+    }
+  }, 1000);
+}
+
+function clearTimer() { clearInterval(timerInterval); }
+
+function updateTimerUI() {
+  const pct = (timeLeft/20)*100;
+  const fill = document.getElementById('timerBarFill');
+  const num = document.getElementById('timerNum');
+  fill.style.width = pct+'%';
+  if(timeLeft<=5) {
+    fill.classList.add('warn');
+    num.classList.add('warn');
+  } else {
+    fill.classList.remove('warn');
+    num.classList.remove('warn');
+  }
+  num.textContent = timeLeft;
+}
+
+function timeExpired() {
+  if(answered) return;
+  answered = true;
+  const q = currentQuestions[currentQIdx];
+
+  const btns = document.querySelectorAll('.answer-btn');
+  btns.forEach(b => {
+    b.disabled = true;
+    if(b.dataset.isCorrect === '1') b.classList.add('show-correct');
+  });
+  currentStreak = 0;
+
+  const fb = document.getElementById('feedbackBox');
+  fb.className = 'feedback-box wrong show';
+  fb.style.display='block';
+  document.getElementById('feedbackTitle').textContent = '⏰ Tijd is op!';
+  document.getElementById('feedbackText').textContent = q.ex;
+  document.getElementById('nextBtn').className = 'next-btn show';
+  roundResults.push({correct:false, time:20});
+}
+
+function showFeedback(correct, explanation, xp) {
+  const fb = document.getElementById('feedbackBox');
+  fb.style.display='block';
+  if(correct) {
+    fb.className = 'feedback-box correct show';
+    document.getElementById('feedbackTitle').textContent = `Goed zo! 🎉 +${xp} XP`;
+  } else {
+    fb.className = 'feedback-box wrong show';
+    document.getElementById('feedbackTitle').textContent = '❌ Helaas, niet goed.';
+  }
+  document.getElementById('feedbackText').textContent = explanation;
+}
+
+// ============================================
+// NEXT QUESTION / END ROUND
+// ============================================
+function nextQuestion() {
+  currentQIdx++;
+  if(currentQIdx >= 10) {
+    endRound();
+  } else {
+    showQuestion();
+  }
+}
+
+function endRound() {
+  clearTimer();
+  const correct = roundResults.filter(r=>r.correct).length;
+  const wrong = 10 - correct;
+  const avgTime = (roundResults.reduce((a,b)=>a+b.time,0)/10).toFixed(1);
+
+  // Save results
+  if(!player.subjects[currentSubject]) player.subjects[currentSubject]={rounds:0,correct:0,total:0};
+  player.subjects[currentSubject].rounds++;
+  player.subjects[currentSubject].correct += correct;
+  player.subjects[currentSubject].total += 10;
+  player.totalRounds++;
+
+  // XP & Level
+  const oldLevel = player.level;
+  player.xp += roundXP;
+  checkLevelUp(oldLevel);
+
+  // Zakgeld
+  let centsThisRound = 1;
+  let bonusDesc = [];
+  if(correct === 10){ centsThisRound += 2; bonusDesc.push("🏆 perfecte score +€0,02"); }
+  if(bestStreak >= 3){ centsThisRound += 1; bonusDesc.push("🔥 streak bonus +€0,01"); }
+  player.centsEarned += centsThisRound;
+  player.totalAnswered = (player.totalAnswered||0) + 10;
+  if(bestStreak > (player.maxStreak||0)) player.maxStreak = bestStreak;
+
+  savePlayer();
+  updateUI();
+  showMoneyToast(centsThisRound, bonusDesc);
+
+  // Check achievements
+  const newAchs = checkAchievements({correct,wrong,bestStreak,fastAnswer});
+
+  // Show results
+  const pct = correct/10;
+  let emoji='😊', title='Goed gedaan!', sub='Blijf oefenen!';
+  if(correct===10){emoji='🏆';title='Perfect!!';sub='10 uit 10! Geweldig!';}
+  else if(pct>=0.8){emoji='⭐';title='Super goed!';sub='Bijna perfect!';}
+  else if(pct>=0.6){emoji='😄';title='Goed gedaan!';sub='Heel aardig!';}
+  else if(pct>=0.4){emoji='💪';title='Doorzetten!';sub='Oefen nog wat meer.';}
+  else{emoji='📚';title='Lees en oefen!';sub='Je kunt dit!';}
+
+  document.getElementById('resultEmoji').textContent=emoji;
+  document.getElementById('resultTitle').textContent=title;
+  document.getElementById('resultSubtitle').textContent=sub;
+  document.getElementById('statCorrect').textContent=correct;
+  document.getElementById('statWrong').textContent=wrong;
+  document.getElementById('statStreak').textContent=bestStreak;
+  document.getElementById('statTime').textContent=avgTime+'s';
+  document.getElementById('xpGained').textContent=`+${roundXP} XP verdiend! ⭐`;
+
+  // Achievements display
+  const al = document.getElementById('achievementsList');
+  al.innerHTML='';
+  newAchs.forEach(a=>{
+    al.innerHTML+=`<div class="achievement-item">
+      <span class="achievement-icon">${a.icon}</span>
+      <div><div class="achievement-name">${a.name}</div><div class="achievement-desc">${a.desc}</div></div>
+    </div>`;
+  });
+
+  showScreen('results');
+
+  if(correct>=7) launchConfetti();
+}
+
+function checkLevelUp(oldLevel) {
+  let lvData = LEVELS[player.level-1];
+  while(player.xp >= lvData.max && player.level < LEVELS.length) {
+    player.xp -= lvData.max;
+    player.level++;
+    lvData = LEVELS[player.level-1];
+    if(player.level > oldLevel) {
+      setTimeout(()=>showLevelUp(player.level),500);
+    }
+  }
+}
+
+function showLevelUp(newLevel) {
+  const lv = LEVELS[newLevel-1];
+  document.getElementById('levelupTitle').textContent = `${lv.emoji} Level ${newLevel}!`;
+  document.getElementById('levelupDesc').textContent = `Je bent nu: ${lv.name}!`;
+  document.getElementById('levelupOverlay').classList.add('show');
+  launchConfetti();
+}
+
+function closeLevelUp() {
+  document.getElementById('levelupOverlay').classList.remove('show');
+}
+
+function checkAchievements(roundData) {
+  const newOnes = [];
+  ALL_ACHIEVEMENTS.forEach(ach=>{
+    if(!player.achievements.includes(ach.id) && ach.condition(player, {...roundData})){
+      player.achievements.push(ach.id);
+      newOnes.push(ach);
+    }
+  });
+  return newOnes;
+}
+
+// ============================================
+// XP POPUP
+// ============================================
+function showXPPopup(xp) {
+  const p = document.getElementById('xpPopup');
+  p.textContent = `+${xp} XP ⭐`;
+  p.classList.add('show');
+  setTimeout(()=>p.classList.remove('show'),2000);
+}
+
+// ============================================
+// CONFETTI
+// ============================================
+function launchConfetti() {
+  const c = document.getElementById('confettiContainer');
+  c.innerHTML='';
+  const colors=['#7c3aed','#f59e0b','#10b981','#ec4899','#3b82f6','#fbbf24','#c084fc'];
+  for(let i=0;i<80;i++){
+    const p=document.createElement('div');
+    p.className='confetti-piece';
+    const color=colors[Math.floor(Math.random()*colors.length)];
+    p.style.cssText=`
+      left:${Math.random()*100}%;
+      background:${color};
+      width:${6+Math.random()*8}px;
+      height:${8+Math.random()*10}px;
+      border-radius:${Math.random()>0.5?'50%':'3px'};
+      --dur:${2+Math.random()*2}s;
+      --delay:${Math.random()*1}s;
+    `;
+    c.appendChild(p);
+  }
+  setTimeout(()=>c.innerHTML='',4000);
+}
+
+// ============================================
+// NAVIGATION
+// ============================================
+function goHome() {
+  clearTimer();
+  showScreen('home');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('navHome').classList.add('active');
+  updateUI();
+}
+
+function playAgain() {
+  startSubject(currentSubject);
+}
+
+// ============================================
+// PROFILE SCREEN
+// ============================================
+function updateProfileScreen() {
+  document.getElementById('profileName').textContent = player.name;
+
+  const lv = LEVELS[Math.min(player.level-1,LEVELS.length-1)];
+  const nextLv = LEVELS[Math.min(player.level, LEVELS.length-1)];
+  const xpPct = lv.max===Infinity ? 100 : Math.min((player.xp/lv.max)*100,100);
+
+  document.getElementById('profileLevel').textContent = `Level ${player.level} — ${lv.name} ${lv.emoji}`;
+  document.getElementById('profileXpBar').style.width = xpPct+'%';
+  document.getElementById('profileXpText').textContent = lv.max===Infinity
+    ? `${player.xp} XP — Max level bereikt!`
+    : `${player.xp} / ${lv.max} XP naar Level ${player.level+1}`;
+
+  // Subject scores
+  const ss = document.getElementById('subjectScores');
+  ss.innerHTML='';
+  [['nl','📖','Nederlands'],['rk','🔢','Rekenen'],['en','🇬🇧','Engels'],['ow','🌍','Oriëntatie']].forEach(([key,emoji,name])=>{
+    const sub=(player.subjects||{})[key]||{rounds:0,correct:0,total:0};
+    const pct = sub.total>0 ? Math.round((sub.correct/sub.total)*100) : 0;
+    const info = SUBJECT_INFO[key];
+    ss.innerHTML+=`<div class="subject-score-row">
+      <span class="ss-emoji">${emoji}</span>
+      <div class="ss-info">
+        <div class="ss-name">${name}</div>
+        <div class="ss-bar-wrap"><div class="ss-bar-fill" style="width:${pct}%;background:${info.barColor}"></div></div>
+      </div>
+      <span class="ss-stat">${pct}% (${sub.rounds} rondes)</span>
+    </div>`;
+  });
+
+  // Achievements
+  const ag = document.getElementById('achievementsGrid');
+  ag.innerHTML='';
+  ALL_ACHIEVEMENTS.forEach(ach=>{
+    const unlocked=player.achievements.includes(ach.id);
+    ag.innerHTML+=`<div class="ach-card ${unlocked?'':'locked'}">
+      <span class="ach-icon">${ach.icon}</span>
+      <div class="ach-name">${ach.name}</div>
+    </div>`;
+  });
+}
+
+// ============================================
+// RESET
+// ============================================
+function resetGame() {
+  if(!confirm('Weet je het zeker? Alle voortgang gaat verloren!')) return;
+  localStorage.removeItem('groep4_player');
+  player = {name:"",xp:0,level:1,level_xp_spent:0,totalRounds:0,subjects:{},achievements:[],streak:0};
+  document.getElementById('bottomNav').style.display='none';
+  document.getElementById('nameInput').value='';
+  showScreen('welcome');
+}
+
+// ============================================
+// ENTER KEY
+// ============================================
+document.getElementById('nameInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter') startApp();
+});
+
+// ============================================
+// ZAKGELD HELPERS
+// ============================================
+function formatEuro(cents) {
+  return '€' + (cents/100).toFixed(2).replace('.',',');
+}
+
+function showMoneyToast(cents, bonusDesc) {
+  const el = document.createElement('div');
+  el.className = 'money-toast';
+  const bonusLine = bonusDesc.length
+    ? `<div style="font-size:11px;color:#6ee7b7;margin-top:3px">${bonusDesc.join(' · ')}</div>` : '';
+  el.innerHTML = `<div class="money-toast-icon">🐷</div><div><div class="money-toast-text">Zakgeld verdiend!</div>${bonusLine}</div><div class="money-toast-amount">+${formatEuro(cents)}</div>`;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 3200);
+}
+
+// ============================================
+// PIN SYSTEEM
+// ============================================
+let pinBuffer = '';
+let pinAction = '';
+let changePinStep = 0;
+let changePinNew = '';
+
+function openPin(action) {
+  pinAction = action;
+  pinBuffer = '';
+  changePinStep = 0;
+  updatePinDots();
+  document.getElementById('pinError').textContent = '';
+  document.getElementById('pinSub').textContent =
+    action === 'changepin' ? 'Voer eerst je huidige code in' : 'Voer de 4-cijferige ouder-code in';
+  document.getElementById('pinOverlay').classList.add('show');
+}
+
+function closePin() {
+  document.getElementById('pinOverlay').classList.remove('show');
+  pinBuffer = '';
+}
+
+function updatePinDots() {
+  for(let i=0;i<4;i++){
+    document.getElementById('pd'+i).classList.toggle('filled', i < pinBuffer.length);
+  }
+}
+
+function pinKey(k) {
+  if(k==='del'){ pinBuffer=pinBuffer.slice(0,-1); updatePinDots(); return; }
+  if(k==='ok' || pinBuffer.length>=4){
+    if(pinBuffer.length<4){ document.getElementById('pinError').textContent='Voer 4 cijfers in.'; return; }
+    verifyPin(); return;
+  }
+  pinBuffer+=k; updatePinDots();
+  if(pinBuffer.length===4) setTimeout(verifyPin,200);
+}
+
+function verifyPin() {
+  if(pinAction==='dashboard') {
+    if(pinBuffer===player.parentPin){ closePin(); openDashboard(); }
+    else { document.getElementById('pinError').textContent='Verkeerde code. Probeer opnieuw.'; pinBuffer=''; updatePinDots(); }
+  } else if(pinAction==='changepin') {
+    if(changePinStep===0){
+      if(pinBuffer===player.parentPin){
+        changePinStep=1; changePinNew=''; pinBuffer=''; updatePinDots();
+        document.getElementById('pinSub').textContent='Voer je nieuwe 4-cijferige code in';
+        document.getElementById('pinError').textContent='';
+      } else { document.getElementById('pinError').textContent='Verkeerde huidige code.'; pinBuffer=''; updatePinDots(); }
+    } else if(changePinStep===1){
+      changePinNew=pinBuffer; changePinStep=2; pinBuffer=''; updatePinDots();
+      document.getElementById('pinSub').textContent='Herhaal de nieuwe code';
+      document.getElementById('pinError').textContent='';
+    } else if(changePinStep===2){
+      if(pinBuffer===changePinNew){
+        player.parentPin=pinBuffer; savePlayer(); changePinStep=0; closePin();
+        showAchievementToast({icon:'🔐',name:'PIN-code gewijzigd!'});
+      } else { document.getElementById('pinError').textContent='Codes komen niet overeen.'; pinBuffer=''; changePinStep=1; updatePinDots(); document.getElementById('pinSub').textContent='Voer je nieuwe code in'; }
+    }
+  }
+}
+
+// ============================================
+// DASHBOARD
+// ============================================
+function openDashboard() {
+  const pending = (player.centsEarned||0) - (player.centsPaid||0);
+  document.getElementById('dashName').textContent = player.name;
+  document.getElementById('dashTotal').textContent = formatEuro(player.centsEarned||0);
+  document.getElementById('dashPaid').textContent = formatEuro(player.centsPaid||0);
+  document.getElementById('dashPending').textContent = formatEuro(pending);
+  document.getElementById('dashPayNow').textContent = formatEuro(pending);
+  document.getElementById('dashMaxStreak').textContent = player.maxStreak||0;
+  document.getElementById('dashTotalQ').textContent = player.totalAnswered||0;
+  document.getElementById('btnUitbetalen').disabled = pending<=0;
+
+  const list = document.getElementById('historyList');
+  if(!(player.payHistory||[]).length){
+    list.innerHTML=`<div style="color:var(--text3);font-size:13px;text-align:center;padding:12px">Nog geen uitbetalingen</div>`;
+  } else {
+    list.innerHTML=[...(player.payHistory||[])].reverse().map(h=>`
+      <div class="history-item">
+        <div><div class="history-item-desc">${h.desc}</div><div class="history-item-date">${h.date}</div></div>
+        <div class="history-item-amount ${h.type}">${h.type==='debit'?'-':'+'}${formatEuro(h.amount)}</div>
+      </div>`).join('');
+  }
+  showScreen('dashboard');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+}
+
+function uitbetalen() {
+  const pending = (player.centsEarned||0) - (player.centsPaid||0);
+  if(pending<=0) return;
+  const now = new Date();
+  const date = now.toLocaleDateString('nl-NL',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  if(!player.payHistory) player.payHistory=[];
+  player.payHistory.push({date, desc:`Uitbetaald aan ${player.name}`, amount:pending, type:'debit'});
+  player.centsPaid += pending;
+  savePlayer();
+  launchConfetti();
+  openDashboard();
+  showAchievementToast({icon:'💸',name:`${formatEuro(pending)} uitbetaald!`});
+}
+
+function resetZakgeld() {
+  if(!confirm('Weet je zeker dat je het zakgeld wil resetten? De uitbetalingshistorie wordt gewist.')) return;
+  player.centsEarned=0; player.centsPaid=0; player.payHistory=[];
+  savePlayer(); openDashboard();
+}
+
+function showAchievementToast(ach) {
+  const el = document.createElement('div');
+  el.style.cssText=`position:fixed;top:20px;right:20px;background:var(--card);border:1.5px solid var(--accent2);border-radius:16px;padding:14px 18px;display:flex;align-items:center;gap:12px;z-index:500;box-shadow:0 0 20px rgba(245,158,11,0.3);animation:fadeIn 0.4s ease;max-width:280px;`;
+  el.innerHTML=`<span style="font-size:1.8rem">${ach.icon}</span><div><div style="font-size:11px;color:var(--accent2);font-weight:700;text-transform:uppercase;letter-spacing:1px">Prestatie!</div><div style="font-weight:800;font-size:14px">${ach.name}</div></div>`;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),4000);
+}
+
+// ============================================
+// START
+// ============================================
+init();
+</script>
+</body>
+</html>
